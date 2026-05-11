@@ -10,9 +10,9 @@ import 'reader_screen.dart';
 
 // ── Category filters ──────────────────────────────────────────────────────────
 
-enum _OTFilter { all, law, history, writings, prophets }
+enum _OTFilter { all, law, history, wisdom, prophets, other }
 
-enum _NTFilter { all, gospels, acts, epistles }
+enum _NTFilter { all, gospels, acts, pauline, general, revelation }
 
 // ── Tab ───────────────────────────────────────────────────────────────────────
 
@@ -69,19 +69,22 @@ class _BooksTabState extends State<BooksTab>
     return switch (_otFilter) {
       _OTFilter.all      => ot,
       _OTFilter.law      => ot.where((b) => b.bookNumber <= 5).toList(),
-      _OTFilter.history  => ot.where((b) => b.bookNumber >= 6 && b.bookNumber <= 17).toList(),
-      _OTFilter.writings => ot.where((b) => b.bookNumber >= 18 && b.bookNumber <= 22).toList(),
-      _OTFilter.prophets => ot.where((b) => b.bookNumber >= 23).toList(),
+      _OTFilter.history  => ot.where((b) => b.bookNumber >= 6  && b.bookNumber <= 17).toList(),
+      _OTFilter.wisdom   => ot.where((b) => b.bookNumber >= 18 && b.bookNumber <= 22).toList(),
+      _OTFilter.prophets => ot.where((b) => b.bookNumber >= 23 && b.bookNumber <= 39).toList(),
+      _OTFilter.other    => ot.where((b) => b.bookNumber >= 40).toList(),
     };
   }
 
   List<BookIndexEntry> get _filteredNT {
     final nt = _ntBooks;
     return switch (_ntFilter) {
-      _NTFilter.all      => nt,
-      _NTFilter.gospels  => nt.where((b) => b.bookNumber >= 47 && b.bookNumber <= 50).toList(),
-      _NTFilter.acts     => nt.where((b) => b.bookNumber == 51).toList(),
-      _NTFilter.epistles => nt.where((b) => b.bookNumber >= 52).toList(),
+      _NTFilter.all        => nt,
+      _NTFilter.gospels    => nt.where((b) => b.bookNumber >= 47 && b.bookNumber <= 50).toList(),
+      _NTFilter.acts       => nt.where((b) => b.bookNumber == 51).toList(),
+      _NTFilter.pauline    => nt.where((b) => b.bookNumber >= 52 && b.bookNumber <= 65).toList(),
+      _NTFilter.general    => nt.where((b) => b.bookNumber >= 66 && b.bookNumber <= 72).toList(),
+      _NTFilter.revelation => nt.where((b) => b.bookNumber >= 73).toList(),
     };
   }
 
@@ -119,8 +122,9 @@ class _BooksTabState extends State<BooksTab>
                       s.booksFilterAll,
                       s.booksFilterLaw,
                       s.booksFilterHistory,
-                      s.booksFilterWritings,
+                      s.booksFilterWisdom,
                       s.booksFilterProphets,
+                      s.booksFilterOther,
                     ],
                     selectedFilter: _otFilter.index,
                     onFilterChanged: (i) =>
@@ -135,7 +139,9 @@ class _BooksTabState extends State<BooksTab>
                       s.booksFilterAll,
                       s.booksFilterGospels,
                       s.booksFilterActs,
-                      s.booksFilterEpistles,
+                      s.booksFilterPauline,
+                      s.booksFilterGeneral,
+                      s.booksFilterRevelation,
                     ],
                     selectedFilter: _ntFilter.index,
                     onFilterChanged: (i) =>

@@ -70,11 +70,14 @@ class EnStrings extends AppStrings {
   @override String get booksFilterAll      => 'All';
   @override String get booksFilterLaw      => 'Law';
   @override String get booksFilterHistory  => 'History';
-  @override String get booksFilterWritings => 'Writings';
+  @override String get booksFilterWisdom   => 'Wisdom';
   @override String get booksFilterProphets => 'Prophets';
-  @override String get booksFilterGospels  => 'Gospels';
-  @override String get booksFilterActs     => 'Acts';
-  @override String get booksFilterEpistles => 'Epistles';
+  @override String get booksFilterOther    => 'Other';
+  @override String get booksFilterGospels    => 'Gospels';
+  @override String get booksFilterActs       => 'Acts';
+  @override String get booksFilterPauline    => 'Pauline';
+  @override String get booksFilterGeneral    => 'General';
+  @override String get booksFilterRevelation => 'Revelation';
   @override String get booksChapterSuffix  => 'chs.';
 
   // ── Reader ────────────────────────────────────────────────────────────────

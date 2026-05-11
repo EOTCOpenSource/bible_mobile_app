@@ -76,13 +76,16 @@ abstract class AppStrings {
   String get booksNewTestament;
   String booksSubtitle(String countStr);
   String get booksFilterAll;
-  String get booksFilterLaw;
-  String get booksFilterHistory;
-  String get booksFilterWritings;
-  String get booksFilterProphets;
+  String get booksFilterLaw;       // Pentateuch — books 1–5
+  String get booksFilterHistory;   // Historical — books 6–17
+  String get booksFilterWisdom;    // Poetry & Wisdom — books 18–22
+  String get booksFilterProphets;  // Prophetic — books 23–39
+  String get booksFilterOther;     // EOTC-specific OT — books 40+
   String get booksFilterGospels;
   String get booksFilterActs;
-  String get booksFilterEpistles;
+  String get booksFilterPauline;    // Pauline Epistles — books 52–65
+  String get booksFilterGeneral;    // General Epistles — books 66–72
+  String get booksFilterRevelation; // Revelation & Apocalyptic — books 73+
   String get booksChapterSuffix;  // e.g. "ምዕ." / "chs."
 
   // ── Reader ────────────────────────────────────────────────────────────────

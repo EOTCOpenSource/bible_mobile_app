@@ -68,13 +68,16 @@ class AmStrings extends AppStrings {
   @override String get booksNewTestament   => 'አዲስ ኪዳን';
   @override String booksSubtitle(String c) => '$c መጻሕፍት';
   @override String get booksFilterAll      => 'ሁሉም';
-  @override String get booksFilterLaw      => 'አርቱ';
-  @override String get booksFilterHistory  => 'ታሪክ';
-  @override String get booksFilterWritings => 'ጣቦ';
-  @override String get booksFilterProphets => 'ነቢት';
-  @override String get booksFilterGospels  => 'ወንጌሎ';
-  @override String get booksFilterActs     => 'ሐዋሪያ';
-  @override String get booksFilterEpistles => 'መልዕክቶ';
+  @override String get booksFilterLaw      => 'ኦሪት';      // Pentateuch / Torah
+  @override String get booksFilterHistory  => 'ታሪካዊ';    // Historical Books
+  @override String get booksFilterWisdom   => 'ጥበብ';     // Poetry & Wisdom
+  @override String get booksFilterProphets => 'ነቢያት';    // Prophetic Books
+  @override String get booksFilterOther    => 'ሌሎቹ';     // Other EOTC books
+  @override String get booksFilterGospels    => 'ወንጌሎ';
+  @override String get booksFilterActs       => 'ሐዋሪያ';
+  @override String get booksFilterPauline    => 'ጳውሎስ';   // Pauline Epistles
+  @override String get booksFilterGeneral    => 'ጠቅላላ';   // General Epistles
+  @override String get booksFilterRevelation => 'ራዕይ';    // Revelation
   @override String get booksChapterSuffix  => 'ምዕ.';
 
   // ── Reader ────────────────────────────────────────────────────────────────
