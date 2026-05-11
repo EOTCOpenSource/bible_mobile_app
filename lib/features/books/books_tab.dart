@@ -6,7 +6,7 @@ import '../../core/settings/app_settings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../data/models/book_index_entry.dart';
-import 'reader_screen.dart';
+import 'chapter_selector_screen.dart';
 
 // ── Category filters ──────────────────────────────────────────────────────────
 
@@ -95,7 +95,7 @@ class _BooksTabState extends State<BooksTab>
   void _openBook(BookIndexEntry entry) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ReaderScreen(entry: entry)),
+      MaterialPageRoute(builder: (_) => ChapterSelectorScreen(entry: entry)),
     );
   }
 

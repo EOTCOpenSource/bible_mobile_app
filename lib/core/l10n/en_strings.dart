@@ -80,6 +80,16 @@ class EnStrings extends AppStrings {
   @override String get booksFilterRevelation => 'Revelation';
   @override String get booksChapterSuffix  => 'chs.';
 
+  // ── Chapter selector ──────────────────────────────────────────────────────
+  @override String get chapSelectorLastRead       => 'Where you left off';
+  @override String get chapSelectorContinueBtn    => 'Continue';
+  @override String get chapSelectorVerseLabel     => 'Vs';
+  @override String get chapSelectorProgressSuffix => 'read';
+  @override String get chapSelectorChapNosLabel   => 'Chapter Nos.';
+  @override String get legendCurrent              => 'Now';
+  @override String get legendUnread               => 'Unread';
+  @override String get legendBookmark             => 'Bookmarked';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override String get chapterAbbr    => 'Ch';
   @override String get verseBookmark  => 'Bookmark';

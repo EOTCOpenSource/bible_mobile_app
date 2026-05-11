@@ -7,7 +7,7 @@ class AmStrings extends AppStrings {
   @override String get navHome   => 'መነሻ';
   @override String get navBooks  => 'መጽሐፍ';
   @override String get navSearch => 'ፈልግ';
-  @override String get navSaved  => 'ተቀምጠ';
+  @override String get navSaved  => 'የተመዘገበ';
   @override String get navMe     => 'እኔ';
 
   // ── Home header ───────────────────────────────────────────────────────────
@@ -43,10 +43,10 @@ class AmStrings extends AppStrings {
 
   @override String get settingTranslation      => 'ነባር ትርጉም';
   @override String get settingTranslationValue => 'አማርኛ';
-  @override String get settingReadingPrefs     => 'የንዳብ ቅንብር';
+  @override String get settingReadingPrefs     => 'የንባብ ቅንብር';
   @override String get settingReadingPrefsHint => 'ፊደሎ፣ መጠን፣ ቀለም';
   @override String get settingNightMode        => 'ሌሊት ሁነታ';
-  @override String get settingNightModeHint    => 'ዓይን ሰቅ ቀንስ';
+  @override String get settingNightModeHint    => 'ዓይን ጉዳት ቀንስ';
   @override String get settingAudio            => 'ድምፅ ንባብ';
   @override String get settingAudioAction      => 'ሞክር';
 
@@ -59,8 +59,8 @@ class AmStrings extends AppStrings {
 
   @override String get settingDailyVerse     => 'የዕለቱ ቃል ማሳወቂያ';
   @override String get settingDailyVerseHint => 'በየቀኑ ጠዋት';
-  @override String get settingReadingTime    => 'የንዳብ ሰዓት';
-  @override String get settingReadingTimeHint => 'የዕለት ንባብ ሰዓቴን ምረጥ';
+  @override String get settingReadingTime    => 'የንባብ ሰዓት';
+  @override String get settingReadingTimeHint => 'የዕለት ንባብ ሰዓት ምረጥ';
 
   // ── Books tab ─────────────────────────────────────────────────────────────
   @override String get booksTitle          => 'መጻሕፍት';
@@ -80,9 +80,19 @@ class AmStrings extends AppStrings {
   @override String get booksFilterRevelation => 'ራዕይ';    // Revelation
   @override String get booksChapterSuffix  => 'ምዕ.';
 
+  // ── Chapter selector ──────────────────────────────────────────────────────
+  @override String get chapSelectorLastRead       => 'ያቆሙበት ቦታ';
+  @override String get chapSelectorContinueBtn    => 'ቀጣይ';
+  @override String get chapSelectorVerseLabel     => 'ቁጥር';
+  @override String get chapSelectorProgressSuffix => 'አንብብ';
+  @override String get chapSelectorChapNosLabel   => 'ምዕራፍ ቁጥሮ';
+  @override String get legendCurrent              => 'አሁን';
+  @override String get legendUnread               => 'ያልተነበበ';
+  @override String get legendBookmark             => 'የተመዘገበ';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override String get chapterAbbr    => 'ምዕ';
-  @override String get verseBookmark  => 'ዕልፍ';
+  @override String get verseBookmark  => 'የተመዘገበ';
   @override String get verseHighlight => 'ምልክት';
   @override String get verseCopy      => 'ቅዳ';
   @override String get verseShare     => 'አጋራ';

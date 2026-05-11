@@ -88,6 +88,16 @@ abstract class AppStrings {
   String get booksFilterRevelation; // Revelation & Apocalyptic — books 73+
   String get booksChapterSuffix;  // e.g. "ምዕ." / "chs."
 
+  // ── Chapter selector ──────────────────────────────────────────────────────
+  String get chapSelectorLastRead;       // "የቀደሙቦ ቦታ" / "Where you left off"
+  String get chapSelectorContinueBtn;    // "ቀጣ" / "Continue"
+  String get chapSelectorVerseLabel;     // "ቁጥ" / "Vs"
+  String get chapSelectorProgressSuffix; // "ተነቧል" / "read"
+  String get chapSelectorChapNosLabel;   // "ምዕራፍ ቁጥሮች" / "Chapter Nos."
+  String get legendCurrent;              // "አሁን" / "Now"
+  String get legendUnread;               // "ያልተነበበ" / "Unread"
+  String get legendBookmark;             // "የተመዘገበ" / "Bookmarked"
+
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr;       // short label for chapter, e.g. "ምዕ" / "Ch"
   String get verseBookmark;
