@@ -4,7 +4,6 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../me/presentation/pages/reading_settings_page.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../widgets/reader/constants.dart';
@@ -123,16 +122,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
         onFontChange: (i) => Settings.update(
           ctx, settings.copyWith(bodyFontIndex: i),
         ),
-        onDarkToggle: () => Settings.update(
-          ctx, settings.copyWith(isDarkReader: !isDark),
-        ),
-        onOpenFullSettings: () {
-          Navigator.pop(ctx); // close sheet
-          Navigator.push(
-            ctx,
-            MaterialPageRoute(builder: (_) => const ReadingSettingsPage()),
-          );
-        },
       ),
     );
   }

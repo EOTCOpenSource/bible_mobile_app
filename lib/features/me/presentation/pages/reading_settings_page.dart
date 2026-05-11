@@ -4,6 +4,7 @@ import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../books/presentation/widgets/reader/constants.dart';
+import '../../../books/presentation/widgets/reader/font_settings_widgets.dart';
 
 /// Full-page reading customizer — opened from Me settings or the reader Aa sheet.
 class ReadingSettingsPage extends StatelessWidget {
@@ -45,7 +46,6 @@ class ReadingSettingsPage extends StatelessWidget {
                 bodyFontIndex: 0,
                 titleFontIndex: 0,
                 fontSize: 17.0,
-                isDarkReader: false,
               ),
             ),
             child: Text(
@@ -73,13 +73,13 @@ class ReadingSettingsPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Font size slider ──────────────────────────────────────────────
-          _SectionLabel(
+          SectionLabel(
             label: s.readingSettingsFontSize,
             textColor: textColor,
             mutedColor: mutedColor,
           ),
           const SizedBox(height: 8),
-          _FontSizeSlider(
+          FontSizeSlider(
             fontSize: settings.fontSize,
             accentColor: accentColor,
             mutedColor: mutedColor,
@@ -92,15 +92,16 @@ class ReadingSettingsPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Body font picker ──────────────────────────────────────────────
-          _SectionLabel(
+          SectionLabel(
             label: s.readingSettingsBodyFont,
             textColor: textColor,
             mutedColor: mutedColor,
           ),
           const SizedBox(height: 10),
-          _FontGrid(
+          FontDropdown(
             selectedIndex: settings.bodyFontIndex,
             accentColor: accentColor,
+            textColor: textColor,
             mutedColor: mutedColor,
             surfaceColor: surfaceColor,
             onSelect: (i) => Settings.update(
@@ -111,33 +112,21 @@ class ReadingSettingsPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Title font picker ─────────────────────────────────────────────
-          _SectionLabel(
+          SectionLabel(
             label: s.readingSettingsTitleFont,
             textColor: textColor,
             mutedColor: mutedColor,
           ),
           const SizedBox(height: 10),
-          _FontGrid(
+          FontDropdown(
             selectedIndex: settings.titleFontIndex,
             accentColor: accentColor,
+            textColor: textColor,
             mutedColor: mutedColor,
             surfaceColor: surfaceColor,
             onSelect: (i) => Settings.update(
               context,
               settings.copyWith(titleFontIndex: i),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // ── Night mode toggle ─────────────────────────────────────────────
-          _NightModeRow(
-            isDark: isDark,
-            textColor: textColor,
-            mutedColor: mutedColor,
-            label: s.readingSettingsNightMode,
-            onToggle: () => Settings.update(
-              context,
-              settings.copyWith(isDarkReader: !isDark),
             ),
           ),
         ],
@@ -242,212 +231,6 @@ class _PreviewCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ── Section label ───────────────────────────────────────────────────────────────
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({
-    required this.label,
-    required this.textColor,
-    required this.mutedColor,
-  });
-
-  final String label;
-  final Color textColor;
-  final Color mutedColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
-        label,
-        style: AppTypography.amharicLabel.copyWith(color: textColor),
-      ),
-    );
-  }
-}
-
-// ── Font size slider ────────────────────────────────────────────────────────────
-
-class _FontSizeSlider extends StatelessWidget {
-  const _FontSizeSlider({
-    required this.fontSize,
-    required this.accentColor,
-    required this.mutedColor,
-    required this.textColor,
-    required this.onChanged,
-  });
-
-  final double fontSize;
-  final Color accentColor;
-  final Color mutedColor;
-  final Color textColor;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => onChanged((fontSize - 2).clamp(13, 26)),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              'A',
-              style: TextStyle(
-                fontFamily: AppTypography.nokiaPureheadline,
-                fontSize: 13,
-                color: mutedColor,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: Slider(
-            value: fontSize,
-            min: 13,
-            max: 26,
-            divisions: 6,
-            activeColor: accentColor,
-            inactiveColor: mutedColor.withValues(alpha: 0.3),
-            onChanged: onChanged,
-          ),
-        ),
-        GestureDetector(
-          onTap: () => onChanged((fontSize + 2).clamp(13, 26)),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              'A',
-              style: TextStyle(
-                fontFamily: AppTypography.nokiaPureheadline,
-                fontSize: 20,
-                color: textColor,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Font grid ───────────────────────────────────────────────────────────────────
-
-class _FontGrid extends StatelessWidget {
-  const _FontGrid({
-    required this.selectedIndex,
-    required this.accentColor,
-    required this.mutedColor,
-    required this.surfaceColor,
-    required this.onSelect,
-  });
-
-  final int selectedIndex;
-  final Color accentColor;
-  final Color mutedColor;
-  final Color surfaceColor;
-  final ValueChanged<int> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (int i = 0; i < readerFonts.length; i++)
-          GestureDetector(
-            onTap: () => onSelect(i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: i == selectedIndex
-                    ? accentColor.withValues(alpha: 0.14)
-                    : surfaceColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: i == selectedIndex
-                      ? accentColor
-                      : mutedColor.withValues(alpha: 0.25),
-                  width: i == selectedIndex ? 1.5 : 1.0,
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'አ',
-                    style: TextStyle(
-                      fontFamily: readerFonts[i],
-                      fontSize: 22,
-                      color: i == selectedIndex ? accentColor : mutedColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    readerFontNames[i],
-                    style: TextStyle(
-                      fontFamily: readerFonts[i],
-                      fontSize: 10,
-                      color: i == selectedIndex
-                          ? accentColor
-                          : mutedColor.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-// ── Night mode row ──────────────────────────────────────────────────────────────
-
-class _NightModeRow extends StatelessWidget {
-  const _NightModeRow({
-    required this.isDark,
-    required this.textColor,
-    required this.mutedColor,
-    required this.label,
-    required this.onToggle,
-  });
-
-  final bool isDark;
-  final Color textColor;
-  final Color mutedColor;
-  final String label;
-  final VoidCallback onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          color: mutedColor,
-          size: 20,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: AppTypography.amharicLabel.copyWith(color: textColor),
-          ),
-        ),
-        Switch(
-          value: isDark,
-          onChanged: (_) => onToggle(),
-          activeThumbColor: AppColors.primary,
-          activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
-        ),
-      ],
     );
   }
 }
