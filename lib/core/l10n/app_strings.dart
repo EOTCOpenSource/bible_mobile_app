@@ -69,4 +69,28 @@ abstract class AppStrings {
   String get settingDailyVerseHint;
   String get settingReadingTime;
   String get settingReadingTimeHint;
+
+  // ── Books tab ─────────────────────────────────────────────────────────────
+  String get booksTitle;
+  String get booksOldTestament;
+  String get booksNewTestament;
+  String booksSubtitle(String countStr);
+  String get booksFilterAll;
+  String get booksFilterLaw;
+  String get booksFilterHistory;
+  String get booksFilterWritings;
+  String get booksFilterProphets;
+  String get booksFilterGospels;
+  String get booksFilterActs;
+  String get booksFilterEpistles;
+  String get booksChapterSuffix;  // e.g. "ምዕ." / "chs."
+
+  // ── Reader ────────────────────────────────────────────────────────────────
+  String get chapterAbbr;       // short label for chapter, e.g. "ምዕ" / "Ch"
+  String get verseBookmark;
+  String get verseHighlight;
+  String get verseCopy;
+  String get verseShare;
+  String get verseMore;
+  String get comingSoon;
 }

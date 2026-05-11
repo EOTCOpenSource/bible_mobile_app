@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/app_bottom_nav.dart';
+import '../books/books_tab.dart';
 import '../me/me_screen.dart';
 import 'home_tab.dart';
 
@@ -23,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _selectedIndex,
         children: const [
           HomeTab(),
-          _StubTab('መጽሐፍ'),
+          BooksTab(),
           _StubTab('ፈልግ'),
           _StubTab('ተቀምጠ'),
           MeScreen(),

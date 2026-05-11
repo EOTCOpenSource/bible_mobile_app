@@ -61,4 +61,28 @@ class EnStrings extends AppStrings {
   @override String get settingDailyVerseHint => 'Every morning';
   @override String get settingReadingTime    => 'Reading Time';
   @override String get settingReadingTimeHint => 'Set your daily reading time';
+
+  // ── Books tab ─────────────────────────────────────────────────────────────
+  @override String get booksTitle          => 'Books';
+  @override String get booksOldTestament   => 'Old Testament';
+  @override String get booksNewTestament   => 'New Testament';
+  @override String booksSubtitle(String c) => '$c Books';
+  @override String get booksFilterAll      => 'All';
+  @override String get booksFilterLaw      => 'Law';
+  @override String get booksFilterHistory  => 'History';
+  @override String get booksFilterWritings => 'Writings';
+  @override String get booksFilterProphets => 'Prophets';
+  @override String get booksFilterGospels  => 'Gospels';
+  @override String get booksFilterActs     => 'Acts';
+  @override String get booksFilterEpistles => 'Epistles';
+  @override String get booksChapterSuffix  => 'chs.';
+
+  // ── Reader ────────────────────────────────────────────────────────────────
+  @override String get chapterAbbr    => 'Ch';
+  @override String get verseBookmark  => 'Bookmark';
+  @override String get verseHighlight => 'Highlight';
+  @override String get verseCopy      => 'Copy';
+  @override String get verseShare     => 'Share';
+  @override String get verseMore      => 'More';
+  @override String get comingSoon     => 'Coming soon';
 }

@@ -12,7 +12,8 @@ class BibleRepository {
   Future<List<BookIndexEntry>> loadIndex() async {
     if (_index != null) return _index!;
     final raw = await rootBundle.loadString('$_basePath/index.json');
-    final list = jsonDecode(raw) as List;
+    final root = jsonDecode(raw) as Map<String, dynamic>;
+    final list = root['files'] as List;
     _index = list
         .map((e) => BookIndexEntry.fromJson(e as Map<String, dynamic>))
         .toList();

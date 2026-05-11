@@ -61,4 +61,28 @@ class AmStrings extends AppStrings {
   @override String get settingDailyVerseHint => 'በየቀኑ ጠዋት';
   @override String get settingReadingTime    => 'የንዳብ ሰዓት';
   @override String get settingReadingTimeHint => 'የዕለት ንባብ ሰዓቴን ምረጥ';
+
+  // ── Books tab ─────────────────────────────────────────────────────────────
+  @override String get booksTitle          => 'መጻሕፍት';
+  @override String get booksOldTestament   => 'ብሉይ ኪዳን';
+  @override String get booksNewTestament   => 'አዲስ ኪዳን';
+  @override String booksSubtitle(String c) => '$c መጻሕፍት';
+  @override String get booksFilterAll      => 'ሁሉም';
+  @override String get booksFilterLaw      => 'አርቱ';
+  @override String get booksFilterHistory  => 'ታሪክ';
+  @override String get booksFilterWritings => 'ጣቦ';
+  @override String get booksFilterProphets => 'ነቢት';
+  @override String get booksFilterGospels  => 'ወንጌሎ';
+  @override String get booksFilterActs     => 'ሐዋሪያ';
+  @override String get booksFilterEpistles => 'መልዕክቶ';
+  @override String get booksChapterSuffix  => 'ምዕ.';
+
+  // ── Reader ────────────────────────────────────────────────────────────────
+  @override String get chapterAbbr    => 'ምዕ';
+  @override String get verseBookmark  => 'ዕልፍ';
+  @override String get verseHighlight => 'ምልክት';
+  @override String get verseCopy      => 'ቅዳ';
+  @override String get verseShare     => 'አጋራ';
+  @override String get verseMore      => 'ተጨማሪ';
+  @override String get comingSoon     => 'በቅርቡ ይመጣል';
 }

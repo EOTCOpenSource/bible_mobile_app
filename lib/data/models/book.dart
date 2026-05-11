@@ -7,7 +7,7 @@ class Verse {
   factory Verse.fromJson(Map<String, dynamic> json) {
     return Verse(
       verseNumber: json['verse'] as int,
-      text: json['text'] as String,
+      text: (json['text'] as String?) ?? '',
     );
   }
 }
@@ -20,7 +20,7 @@ class Section {
 
   factory Section.fromJson(Map<String, dynamic> json) {
     return Section(
-      title: json['title'] as String,
+      title: (json['title'] as String?) ?? '',
       verses: (json['verses'] as List)
           .map((v) => Verse.fromJson(v as Map<String, dynamic>))
           .toList(),
@@ -69,11 +69,11 @@ class Book {
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       bookNumber: json['book_number'] as int,
-      bookNameAm: json['book_name_am'] as String,
-      bookNameEn: json['book_name_en'] as String,
-      bookShortNameAm: json['book_short_name_am'] as String,
-      bookShortNameEn: json['book_short_name_en'] as String,
-      testament: json['testament'] as String,
+      bookNameAm: (json['book_name_am'] as String?) ?? '',
+      bookNameEn: (json['book_name_en'] as String?) ?? '',
+      bookShortNameAm: (json['book_short_name_am'] as String?) ?? '',
+      bookShortNameEn: (json['book_short_name_en'] as String?) ?? '',
+      testament: (json['testament'] as String?) ?? '',
       chapters: (json['chapters'] as List)
           .map((c) => Chapter.fromJson(c as Map<String, dynamic>))
           .toList(),
