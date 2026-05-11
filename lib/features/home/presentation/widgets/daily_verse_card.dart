@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_icons.dart';
-import '../../../core/l10n/l10n.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../../../core/constants/app_icons.dart';
+import '../../../../core/l10n/l10n.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 
 class DailyVerseCard extends StatelessWidget {
   const DailyVerseCard({super.key});

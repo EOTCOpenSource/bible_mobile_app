@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../../../../core/theme/app_typography.dart';
 
 const List<String> readerFonts = [
   AppTypography.shiromeda,

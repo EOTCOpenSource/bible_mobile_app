@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../../../../core/l10n/app_strings.dart';
+import '../../../../../core/theme/app_typography.dart';
 
 class VerseActionBar extends StatelessWidget {
   const VerseActionBar({

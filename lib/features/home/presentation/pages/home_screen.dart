@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
-import '../../core/widgets/app_bottom_nav.dart';
-import '../books/books_tab.dart';
-import '../me/me_screen.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_bottom_nav.dart';
+import '../../../books/presentation/pages/books_tab.dart';
+import '../../../me/presentation/pages/me_screen.dart';
 import 'home_tab.dart';
 
 class HomeScreen extends StatefulWidget {

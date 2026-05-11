@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
-import '../../../core/l10n/l10n.dart';
-import '../../../core/settings/app_settings.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/pill_button.dart';
+import '../../../../core/l10n/l10n.dart';
+import '../../../../core/settings/app_settings.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/pill_button.dart';
 
 class ReadingStreakCard extends StatelessWidget {
   const ReadingStreakCard({super.key, required this.todayWeekday});

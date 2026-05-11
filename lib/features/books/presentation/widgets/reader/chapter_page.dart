@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/book_index_entry.dart';
 

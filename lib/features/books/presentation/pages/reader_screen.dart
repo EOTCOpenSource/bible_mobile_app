@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/l10n/l10n.dart';
-import '../../core/providers/repository_provider.dart';
-import '../../core/settings/app_settings.dart';
-import '../../core/theme/app_colors.dart';
+import '../../../../core/l10n/l10n.dart';
+import '../../../../core/services/repository_provider.dart';
+import '../../../../core/settings/app_settings.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
-import 'reader/constants.dart';
-import 'reader/toolbar.dart';
-import 'reader/breadcrumb.dart';
-import 'reader/chapter_page.dart';
-import 'reader/font_sheet.dart';
-import 'reader/verse_action_bar.dart';
-import 'reader/chapter_nav_bar.dart';
+import '../widgets/reader/constants.dart';
+import '../widgets/reader/toolbar.dart';
+import '../widgets/reader/breadcrumb.dart';
+import '../widgets/reader/chapter_page.dart';
+import '../widgets/reader/font_sheet.dart';
+import '../widgets/reader/verse_action_bar.dart';
+import '../widgets/reader/chapter_nav_bar.dart';
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
@@ -106,7 +106,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
   Color get _surfaceColor => _isDark ? readerDarkSurface  : Colors.white;
   Color get _textColor    => _isDark ? readerDarkText     : AppColors.textOnParchment;
   Color get _mutedColor   => _isDark ? readerDarkMuted    : AppColors.textMuted;
-
   Color get _accentColor  => _isDark ? readerDarkAccent   : AppColors.accentDeep;
 
   // ── Font settings bottom sheet ────────────────────────────────────────────

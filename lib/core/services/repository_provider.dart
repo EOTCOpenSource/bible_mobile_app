@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/repository/bible_repository.dart';
+import '../../features/books/data/repositories/bible_repository.dart';
 
 class BibleRepositoryProvider extends InheritedWidget {
   const BibleRepositoryProvider({

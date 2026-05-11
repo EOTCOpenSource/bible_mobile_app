@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'core/l10n/l10n.dart';
-import 'core/providers/repository_provider.dart';
+import 'core/services/repository_provider.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
-import 'data/repository/bible_repository.dart';
-import 'features/home/home_screen.dart';
+import 'features/books/data/repositories/bible_repository.dart';
+import 'features/home/presentation/pages/home_screen.dart';
 
 void main() {
   runApp(const BibleApp());

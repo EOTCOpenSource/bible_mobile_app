@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../../../../core/l10n/app_strings.dart';
+import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book_index_entry.dart';
 
 class ReaderToolbar extends StatelessWidget {

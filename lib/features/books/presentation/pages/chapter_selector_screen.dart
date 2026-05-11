@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
-import '../../core/l10n/l10n.dart';
-import '../../core/providers/repository_provider.dart';
-import '../../core/settings/app_settings.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
+import '../../../../core/l10n/l10n.dart';
+import '../../../../core/services/repository_provider.dart';
+import '../../../../core/settings/app_settings.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import 'reader_screen.dart';
