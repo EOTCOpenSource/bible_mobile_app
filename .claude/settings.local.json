@@ -10,7 +10,9 @@
       "PowerShell(New-Item *)",
       "Bash(flutter pub *)",
       "Bash(flutter analyze *)",
-      "WebFetch(domain:pub.dev)"
+      "WebFetch(domain:pub.dev)",
+      "Bash(xargs cat)",
+      "Bash(python -c \"import sys,json; pkgs=json.load\\(sys.stdin\\)['packages']; k=[p for p in pkgs if p['name']=='kenat']; print\\(k[0]['rootUri'] if k else 'not found'\\)\")"
     ]
   }
 }

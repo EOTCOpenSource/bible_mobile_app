@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kenat/kenat.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/pill_button.dart';
@@ -21,6 +23,8 @@ class ReadingStreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
+    final useGeez = Settings.of(context).useGeezNumbers;
+    final streakDisplay = useGeez ? toGeez(_streakCount) : '$_streakCount';
     final status = _status;
 
     return Padding(
@@ -45,7 +49,7 @@ class ReadingStreakCard extends StatelessWidget {
                 const Text('🔥', style: TextStyle(fontSize: 22)),
                 const SizedBox(width: 8),
                 Text(
-                  '$_streakCount',
+                  streakDisplay,
                   style: AppTypography.amharicSubheading.copyWith(
                     color: AppColors.textOnParchment,
                     fontSize: 17,

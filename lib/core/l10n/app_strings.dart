@@ -15,23 +15,58 @@ abstract class AppStrings {
   String get welcomeGreeting;
 
   // ── Reading streak ────────────────────────────────────────────────────────
-  String get streakConsecutiveLabel;   // "ተከታታይ ንባብ" / "reading streak"
-  String get streakDaysSuffix;         // "ቀናት" / "days"
-  String get streakReadTodayHint;      // "ዛሬ ምዕራፍ ፲ ያንብቡ" / "Read a chapter today"
-  String get streakReadTodayBtn;       // "ዛሬ ያንብቡ" / "Read Now"
+  String get streakConsecutiveLabel;
+  String get streakDaysSuffix;
+  String get streakReadTodayHint;
+  String get streakReadTodayBtn;
 
   /// One-letter weekday abbreviations, Sunday=0 through Saturday=6.
   List<String> get weekdayAbbr;
 
   // ── Daily verse ───────────────────────────────────────────────────────────
-  String get dailyVerseTag;            // "የዕለቱ ቃል" / "Daily Verse"
+  String get dailyVerseTag;
 
   // ── Continue reading ──────────────────────────────────────────────────────
-  String get continueReadingTitle;     // "ንባብ ቀጥል" / "Continue Reading"
-  String completedPercent(int pct);    // "፵% ተጠናቅቋ" / "40% complete"
+  String get continueReadingTitle;
+  String completedPercent(int pct);
 
   // ── Reading plans ─────────────────────────────────────────────────────────
-  String get readingPlansTitle;        // "የንባብ ዕቅዶ" / "Reading Plans"
-  String get viewAll;                  // "ሁሉንም ይመልከቱ" / "View all"
-  String daysCount(int n);             // "30 ቀናት" / "30 days"
+  String get readingPlansTitle;
+  String get viewAll;
+  String daysCount(int n);
+
+  // ── Me / Settings screen ──────────────────────────────────────────────────
+  String get meTitle;
+  String get meProfileEditBadge;
+
+  // Section headers (Amharic half — English half is always uppercase ASCII)
+  String get sectionReading;
+  String get sectionLanguage;
+  String get sectionNumbers;
+  String get sectionReminders;
+
+  // Reading group
+  String get settingTranslation;
+  String get settingTranslationValue;
+  String get settingReadingPrefs;
+  String get settingReadingPrefsHint;
+  String get settingNightMode;
+  String get settingNightModeHint;
+  String get settingAudio;
+  String get settingAudioAction;
+
+  // Language group
+  String get settingLanguage;
+  String get langAmharic;
+  String get langEnglish;
+
+  // Numbers group
+  String get settingGeezNums;
+  String get settingGeezNumsHint;
+
+  // Reminders group
+  String get settingDailyVerse;
+  String get settingDailyVerseHint;
+  String get settingReadingTime;
+  String get settingReadingTimeHint;
 }

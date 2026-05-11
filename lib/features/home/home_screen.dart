@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/app_bottom_nav.dart';
+import '../me/me_screen.dart';
 import 'home_tab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _StubTab('መጽሐፍ'),
           _StubTab('ፈልግ'),
           _StubTab('ተቀምጠ'),
-          _StubTab('እኔ'),
+          MeScreen(),
         ],
       ),
       bottomNavigationBar: AppBottomNav(

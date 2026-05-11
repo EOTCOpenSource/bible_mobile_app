@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
+import '../../core/settings/app_settings.dart';
 import 'widgets/home_header.dart';
 import 'widgets/reading_streak_card.dart';
 import 'widgets/daily_verse_card.dart';
@@ -12,7 +13,10 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = Kenat.now();
-    final dateLabel = '${today.getWeekdayName()} · ${today.formatStandard()}';
+    final useGeez = Settings.of(context).useGeezNumbers;
+    final dateLabel = useGeez
+        ? '${today.getWeekdayName()} · ${today.formatInGeez()}'
+        : '${today.getWeekdayName()} · ${today.formatStandard()}';
     final todayWeekday = today.getWeekday();
 
     return SafeArea(

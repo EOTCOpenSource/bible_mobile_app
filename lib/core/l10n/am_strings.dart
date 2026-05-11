@@ -18,19 +18,47 @@ class AmStrings extends AppStrings {
   @override String get streakDaysSuffix       => 'ቀናት';
   @override String get streakReadTodayHint    => 'ዛሬ ምዕራፍ ያንብቡ';
   @override String get streakReadTodayBtn     => 'ዛሬ ያንብቡ';
-
-  /// Sun=0 … Sat=6 abbreviations in Ethiopic script.
-  @override List<String> get weekdayAbbr => ['እ', 'ሰ', 'ሠ', 'ረ', 'ሐ', 'ዓ', 'ቅ'];
+  @override List<String> get weekdayAbbr      => ['እ', 'ሰ', 'ሠ', 'ረ', 'ሐ', 'ዓ', 'ቅ'];
 
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override String get dailyVerseTag => 'የዕለቱ ቃል';
 
   // ── Continue reading ──────────────────────────────────────────────────────
-  @override String get continueReadingTitle          => 'ንባብ ቀጥል';
-  @override String completedPercent(int pct)         => '$pct% ተጠናቅቋ';
+  @override String get continueReadingTitle      => 'ንባብ ቀጥል';
+  @override String completedPercent(int pct)     => '$pct% ተጠናቅቋ';
 
   // ── Reading plans ─────────────────────────────────────────────────────────
   @override String get readingPlansTitle => 'የንባብ ዕቅዶ';
   @override String get viewAll           => 'ሁሉንም ይመልከቱ';
   @override String daysCount(int n)      => '$n ቀናት';
+
+  // ── Me / Settings ─────────────────────────────────────────────────────────
+  @override String get meTitle            => 'ቅንብር';
+  @override String get meProfileEditBadge => 'ፕሮፋይልን ይስተካከሉ';
+
+  @override String get sectionReading   => 'ንባብ';
+  @override String get sectionLanguage  => 'ቋንቋ';
+  @override String get sectionNumbers   => 'ቁጥሮች';
+  @override String get sectionReminders => 'ማሳወቂያ';
+
+  @override String get settingTranslation      => 'ነባር ትርጉም';
+  @override String get settingTranslationValue => 'አማርኛ';
+  @override String get settingReadingPrefs     => 'የንዳብ ቅንብር';
+  @override String get settingReadingPrefsHint => 'ፊደሎ፣ መጠን፣ ቀለም';
+  @override String get settingNightMode        => 'ሌሊት ሁነታ';
+  @override String get settingNightModeHint    => 'ዓይን ሰቅ ቀንስ';
+  @override String get settingAudio            => 'ድምፅ ንባብ';
+  @override String get settingAudioAction      => 'ሞክር';
+
+  @override String get settingLanguage => 'ቋንቋ';
+  @override String get langAmharic     => 'አማርኛ';
+  @override String get langEnglish     => 'English';
+
+  @override String get settingGeezNums     => 'የግዕዝ ቁጥሮች';
+  @override String get settingGeezNumsHint => '፩፪፫ አይነት ቁጥሮችን ተጠቀም';
+
+  @override String get settingDailyVerse     => 'የዕለቱ ቃል ማሳወቂያ';
+  @override String get settingDailyVerseHint => 'በየቀኑ ጠዋት';
+  @override String get settingReadingTime    => 'የንዳብ ሰዓት';
+  @override String get settingReadingTimeHint => 'የዕለት ንባብ ሰዓቴን ምረጥ';
 }
