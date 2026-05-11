@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_icons.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
 class ContinueReadingSection extends StatelessWidget {
   const ContinueReadingSection({super.key});
 
+  static const _progressPercent = 40; // placeholder until data layer is wired
+
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -18,14 +22,14 @@ class ContinueReadingSection extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                'ንባብ ቀጥል',
+                s.continueReadingTitle,
                 style: AppTypography.amharicSubheading.copyWith(
                   color: AppColors.textOnParchment,
                 ),
               ),
               const Spacer(),
               Text(
-                '፵% ተጠናቅቋ',
+                s.completedPercent(_progressPercent),
                 style: AppTypography.englishCaption.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,

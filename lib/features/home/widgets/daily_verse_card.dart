@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_icons.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
 class DailyVerseCard extends StatelessWidget {
   const DailyVerseCard({super.key});
 
+  // These will come from the Bible data layer once wired up
   static const _verse = 'ቃልህ ለእግሬ መብራት ነው፤\nለመንገዴም ብርሃን ነው።';
   static const _reference = 'መዝሙረ ዳዊት ፻፲፱፥፻፭';
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -29,7 +32,7 @@ class DailyVerseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Label row ──────────────────────────────────────────────────
+            // ── Tag row ────────────────────────────────────────────────────
             Row(
               children: [
                 Container(
@@ -39,7 +42,7 @@ class DailyVerseCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'የዕለቱ ቃል',
+                    s.dailyVerseTag,
                     style: AppTypography.amharicCaption.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w700,

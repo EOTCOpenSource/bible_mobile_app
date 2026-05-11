@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_icons.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
 class ReadingPlansSection extends StatelessWidget {
   const ReadingPlansSection({super.key});
 
+  // Titles are data — will come from the data layer once wired.
+  // Using Amharic names directly here since they're proper nouns.
   static const _plans = [
     _PlanData(
       titleAm: 'መጽሐፈ ዘፍጥረት',
-      daysLabel: '30 ቀናት',
+      titleEn: 'Genesis',
       totalDays: 30,
       completedDays: 12,
       color: AppColors.primary,
     ),
     _PlanData(
       titleAm: 'ወንጌለ ዮሐንስ',
-      daysLabel: '21 ቀናት',
+      titleEn: 'Gospel of John',
       totalDays: 21,
       completedDays: 5,
       color: AppColors.newTestament,
     ),
     _PlanData(
       titleAm: 'መዝሙረ ዳዊት',
-      daysLabel: '45 ቀናት',
+      titleEn: 'Psalms',
       totalDays: 45,
       completedDays: 0,
       color: Color(0xFF3E5C3A),
@@ -32,6 +35,7 @@ class ReadingPlansSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -42,7 +46,7 @@ class ReadingPlansSection extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                'የንባብ ዕቅዶ',
+                s.readingPlansTitle,
                 style: AppTypography.amharicSubheading.copyWith(
                   color: AppColors.textOnParchment,
                 ),
@@ -51,7 +55,7 @@ class ReadingPlansSection extends StatelessWidget {
               GestureDetector(
                 onTap: () {},
                 child: Text(
-                  'ሁሉንም ይመልከቱ',
+                  s.viewAll,
                   style: AppTypography.amharicCaption.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -69,7 +73,7 @@ class ReadingPlansSection extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: _plans.length,
-            itemBuilder: (_, i) => Padding(
+            itemBuilder: (ctx, i) => Padding(
               padding: const EdgeInsets.only(right: 12),
               child: _ReadingPlanCard(plan: _plans[i]),
             ),
@@ -82,14 +86,14 @@ class ReadingPlansSection extends StatelessWidget {
 
 class _PlanData {
   final String titleAm;
-  final String daysLabel;
+  final String titleEn;
   final int totalDays;
   final int completedDays;
   final Color color;
 
   const _PlanData({
     required this.titleAm,
-    required this.daysLabel,
+    required this.titleEn,
     required this.totalDays,
     required this.completedDays,
     required this.color,
@@ -102,7 +106,10 @@ class _ReadingPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final isAmharic = s is AmStrings;
     final progress = plan.completedDays / plan.totalDays;
+
     return Container(
       width: 158,
       padding: const EdgeInsets.all(14),
@@ -135,7 +142,7 @@ class _ReadingPlanCard extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            plan.titleAm,
+            isAmharic ? plan.titleAm : plan.titleEn,
             style: AppTypography.amharicLabel.copyWith(
               color: Colors.white,
               fontSize: 13,
@@ -146,7 +153,7 @@ class _ReadingPlanCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            plan.daysLabel,
+            s.daysCount(plan.totalDays),
             style: AppTypography.amharicCaption.copyWith(
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 11,

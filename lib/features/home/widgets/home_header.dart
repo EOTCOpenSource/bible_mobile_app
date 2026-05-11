@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
@@ -9,6 +10,7 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Row(
@@ -27,7 +29,7 @@ class HomeHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'እንኳን ደህና\nመጡ',
+                  s.welcomeGreeting,
                   style: AppTypography.amharicDisplay.copyWith(
                     color: AppColors.textOnParchment,
                     height: 1.15,

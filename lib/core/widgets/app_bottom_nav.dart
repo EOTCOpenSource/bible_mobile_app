@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -12,16 +13,19 @@ class AppBottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
-  static const _items = [
-    (Icons.home_rounded,      Icons.home_outlined,          'መነሻ'),
-    (Icons.menu_book_rounded, Icons.menu_book_outlined,     'መጽሐፍ'),
-    (Icons.search_rounded,    Icons.search_rounded,         'ፈልግ'),
-    (Icons.bookmark_rounded,  Icons.bookmark_border_rounded,'ተቀምጠ'),
-    (Icons.person_rounded,    Icons.person_outline_rounded, 'እኔ'),
+  static const _icons = [
+    (Icons.home_rounded,      Icons.home_outlined),
+    (Icons.menu_book_rounded, Icons.menu_book_outlined),
+    (Icons.search_rounded,    Icons.search_rounded),
+    (Icons.bookmark_rounded,  Icons.bookmark_border_rounded),
+    (Icons.person_rounded,    Icons.person_outline_rounded),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final labels = [s.navHome, s.navBooks, s.navSearch, s.navSaved, s.navMe];
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -35,8 +39,8 @@ class AppBottomNav extends StatelessWidget {
         child: SizedBox(
           height: 64,
           child: Row(
-            children: List.generate(_items.length, (i) {
-              final (activeIcon, inactiveIcon, label) = _items[i];
+            children: List.generate(_icons.length, (i) {
+              final (activeIcon, inactiveIcon) = _icons[i];
               final isActive = i == selectedIndex;
               return Expanded(
                 child: InkWell(
@@ -57,7 +61,7 @@ class AppBottomNav extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        label,
+                        labels[i],
                         style: AppTypography.amharicCaption.copyWith(
                           fontSize: 10,
                           color: isActive ? AppColors.primary : AppColors.textCaption,
