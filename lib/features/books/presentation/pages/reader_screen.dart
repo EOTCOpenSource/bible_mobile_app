@@ -4,6 +4,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../me/presentation/pages/reading_settings_page.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../widgets/reader/constants.dart';
@@ -31,10 +32,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
   bool _loading = true;
   late final PageController _pageCtrl;
   int _currentChapter = 0;
-
-  bool _isDark = false;
-  double _fontSize = 17.0;
-  int _fontIndex = 0;
 
   String? _selectedKey;
 
@@ -82,7 +79,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   bool _isSelected(int chNum, int secIdx, int verseNum) =>
       _selectedKey == _verseKey(chNum, secIdx, verseNum);
 
-  String? get _selectedVerseText {
+  String? _selectedVerseText(AppSettings settings) {
     if (_book == null || _selectedKey == null) return null;
     final parts = _selectedKey!.split(':');
     if (parts.length != 3) return null;
@@ -100,48 +97,42 @@ class _ReaderScreenState extends State<ReaderScreen> {
     }
   }
 
-  // ── Computed colors ───────────────────────────────────────────────────────
-
-  Color get _bgColor      => _isDark ? readerDarkBg      : AppColors.parchment;
-  Color get _surfaceColor => _isDark ? readerDarkSurface  : Colors.white;
-  Color get _textColor    => _isDark ? readerDarkText     : AppColors.textOnParchment;
-  Color get _mutedColor   => _isDark ? readerDarkMuted    : AppColors.textMuted;
-  Color get _accentColor  => _isDark ? readerDarkAccent   : AppColors.accentDeep;
-
   // ── Font settings bottom sheet ────────────────────────────────────────────
 
-  void _showFontSheet(BuildContext ctx) {
-    double localSize   = _fontSize;
-    int    localFont   = _fontIndex;
-    bool   localDark   = _isDark;
+  void _showFontSheet(BuildContext ctx, AppSettings settings) {
+    final isDark       = settings.isDarkReader;
+    final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+    final textColor    = isDark ? readerDarkText    : AppColors.textOnParchment;
+    final mutedColor   = isDark ? readerDarkMuted   : AppColors.textMuted;
+    final accentColor  = isDark ? readerDarkAccent  : AppColors.accentDeep;
 
     showModalBottomSheet(
       context: ctx,
-      backgroundColor: _surfaceColor,
+      backgroundColor: surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => StatefulBuilder(
-        builder: (_, setSheet) => ReaderFontSheet(
-          isDark:   localDark,
-          fontSize: localSize,
-          fontIdx:  localFont,
-          textColor:   _textColor,
-          mutedColor:  _mutedColor,
-          accentColor: _accentColor,
-          onSizeChange: (v) {
-            setSheet(() => localSize = v);
-            setState(() => _fontSize = v);
-          },
-          onFontChange: (i) {
-            setSheet(() => localFont = i);
-            setState(() => _fontIndex = i);
-          },
-          onDarkToggle: () {
-            setSheet(() => localDark = !localDark);
-            setState(() => _isDark = !_isDark);
-          },
+      builder: (_) => ReaderFontSheet(
+        settings: settings,
+        textColor: textColor,
+        mutedColor: mutedColor,
+        accentColor: accentColor,
+        onSizeChange: (v) => Settings.update(
+          ctx, settings.copyWith(fontSize: v),
         ),
+        onFontChange: (i) => Settings.update(
+          ctx, settings.copyWith(bodyFontIndex: i),
+        ),
+        onDarkToggle: () => Settings.update(
+          ctx, settings.copyWith(isDarkReader: !isDark),
+        ),
+        onOpenFullSettings: () {
+          Navigator.pop(ctx); // close sheet
+          Navigator.push(
+            ctx,
+            MaterialPageRoute(builder: (_) => const ReadingSettingsPage()),
+          );
+        },
       ),
     );
   }
@@ -150,16 +141,27 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s       = L10n.of(context);
-    final useGeez = Settings.of(context).useGeezNumbers;
-    final isAm    = s is AmStrings;
+    final s        = L10n.of(context);
+    final settings = Settings.of(context);
+    final useGeez  = settings.useGeezNumbers;
+    final isAm     = s is AmStrings;
+    final isDark   = settings.isDarkReader;
+
+    final bgColor      = isDark ? readerDarkBg      : AppColors.parchment;
+    final surfaceColor = isDark ? readerDarkSurface  : Colors.white;
+    final textColor    = isDark ? readerDarkText     : AppColors.textOnParchment;
+    final mutedColor   = isDark ? readerDarkMuted    : AppColors.textMuted;
+    final accentColor  = isDark ? readerDarkAccent   : AppColors.accentDeep;
+
+    final bodyFont = readerFonts[settings.bodyFontIndex];
+    final titleFont = readerFonts[settings.titleFontIndex];
 
     final chapterReady = !_loading &&
         _book != null &&
         _currentChapter < _book!.chapters.length;
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -169,12 +171,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
               currentChapter: _currentChapter,
               useGeez:        useGeez,
               isAmharic:      isAm,
-              bgColor:        _bgColor,
-              textColor:      _textColor,
-              mutedColor:     _mutedColor,
+              bgColor:        bgColor,
+              textColor:      textColor,
+              mutedColor:     mutedColor,
               s:              s,
               onBack:         () => Navigator.pop(context),
-              onFontSettings: () => _showFontSheet(context),
+              onFontSettings: () => _showFontSheet(context, settings),
             ),
             // ── Breadcrumb ───────────────────────────────────────────────────
             if (chapterReady)
@@ -184,16 +186,16 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 useGeez:        useGeez,
                 isAmharic:      isAm,
                 s:              s,
-                bgColor:        _bgColor,
-                accentColor:    _accentColor,
-                mutedColor:     _mutedColor,
+                bgColor:        bgColor,
+                accentColor:    accentColor,
+                mutedColor:     mutedColor,
               ),
             // ── Pages ────────────────────────────────────────────────────────
             Expanded(
               child: _loading || _book == null
                   ? Center(
                       child: CircularProgressIndicator(
-                        color: _isDark ? AppColors.accent : AppColors.primary,
+                        color: isDark ? AppColors.accent : AppColors.primary,
                       ),
                     )
                   : GestureDetector(
@@ -209,12 +211,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             itemBuilder: (ctx, i) => ReaderChapterPage(
                               entry:         widget.entry,
                               chapter:       _book!.chapters[i],
-                              isDark:        _isDark,
-                              fontSize:      _fontSize,
-                              fontFamily:    readerFonts[_fontIndex],
-                              textColor:     _textColor,
-                              mutedColor:    _mutedColor,
-                              accentColor:   _accentColor,
+                              isDark:        isDark,
+                              fontSize:      settings.fontSize,
+                              fontFamily:    bodyFont,
+                              titleFontFamily: titleFont,
+                              textColor:     textColor,
+                              mutedColor:    mutedColor,
+                              accentColor:   accentColor,
                               useGeez:       useGeez,
                               isAmharic:     isAm,
                               isSelectedFn:  _isSelected,
@@ -233,9 +236,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               alignment: Alignment.bottomCenter,
                               child: VerseActionBar(
                                 s:            s,
-                                isDark:       _isDark,
-                                surfaceColor: _surfaceColor,
-                                textColor:    _textColor,
+                                isDark:       isDark,
+                                surfaceColor: surfaceColor,
+                                textColor:    textColor,
                                 onBookmark: () {
                                   _deselect();
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -247,7 +250,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                     SnackBar(content: Text(s.comingSoon)));
                                 },
                                 onCopy: () async {
-                                  final text = _selectedVerseText;
+                                  final text = _selectedVerseText(settings);
                                   if (text != null) {
                                     await Clipboard.setData(
                                         ClipboardData(text: text));
@@ -280,13 +283,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
               ChapterNavBar(
                 currentChapter: _currentChapter,
                 totalChapters:  _book!.chapters.length,
-                isDark:         _isDark,
+                isDark:         isDark,
                 useGeez:        useGeez,
                 s:              s,
-                bgColor:        _bgColor,
-                surfaceColor:   _surfaceColor,
-                textColor:      _textColor,
-                mutedColor:     _mutedColor,
+                bgColor:        bgColor,
+                surfaceColor:   surfaceColor,
+                textColor:      textColor,
+                mutedColor:     mutedColor,
                 onPrev: () => _goToChapter(_currentChapter - 1),
                 onNext: () => _goToChapter(_currentChapter + 1),
               ),

@@ -90,6 +90,15 @@ class EnStrings extends AppStrings {
   @override String get legendUnread               => 'Unread';
   @override String get legendBookmark             => 'Bookmarked';
 
+  // ── Reading Settings ──────────────────────────────────────────────────────
+  @override String get readingSettingsTitle     => 'Reading Settings';
+  @override String get readingSettingsBodyFont  => 'Body Font';
+  @override String get readingSettingsTitleFont => 'Title Font';
+  @override String get readingSettingsFontSize  => 'Font Size';
+  @override String get readingSettingsNightMode => 'Night Mode';
+  @override String get readingSettingsPreview   => 'Preview';
+  @override String get readingSettingsReset     => 'Reset';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override String get chapterAbbr    => 'Ch';
   @override String get verseBookmark  => 'Bookmark';

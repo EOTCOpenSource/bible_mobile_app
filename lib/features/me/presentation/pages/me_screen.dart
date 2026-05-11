@@ -3,6 +3,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import 'reading_settings_page.dart';
 
 class MeScreen extends StatefulWidget {
   const MeScreen({super.key});
@@ -12,7 +13,6 @@ class MeScreen extends StatefulWidget {
 }
 
 class _MeScreenState extends State<MeScreen> {
-  bool _nightMode = false;
   bool _dailyVerse = true;
 
   @override
@@ -37,12 +37,22 @@ class _MeScreenState extends State<MeScreen> {
               enLabel: 'READING',
               rows: [
                 _ArrowRow(label: s.settingTranslation, value: s.settingTranslationValue),
-                _ArrowRow(label: s.settingReadingPrefs, hint: s.settingReadingPrefsHint),
+                _ArrowRow(
+                  label: s.settingReadingPrefs,
+                  hint: s.settingReadingPrefsHint,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReadingSettingsPage()),
+                  ),
+                ),
                 _ToggleRow(
                   label: s.settingNightMode,
                   hint: s.settingNightModeHint,
-                  value: _nightMode,
-                  onChanged: (v) => setState(() => _nightMode = v),
+                  value: settings.isDarkReader,
+                  onChanged: (v) => Settings.update(
+                    context,
+                    settings.copyWith(isDarkReader: v),
+                  ),
                 ),
                 _ActionRow(
                   label: s.settingAudio,
@@ -320,16 +330,17 @@ class _SettingsSection extends StatelessWidget {
 // ── Row types ──────────────────────────────────────────────────────────────────
 
 class _ArrowRow extends StatelessWidget {
-  const _ArrowRow({required this.label, this.hint, this.value});
+  const _ArrowRow({required this.label, this.hint, this.value, this.onTap});
 
   final String label;
   final String? hint;
   final String? value;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap ?? () {},
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(

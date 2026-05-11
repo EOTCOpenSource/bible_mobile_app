@@ -1,34 +1,39 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/settings/app_settings.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import 'constants.dart';
 
+/// Compact bottom-sheet for quick font/size/dark tweaks.
+/// Uses global [AppSettings] — same data the full ReadingSettingsPage modifies.
 class ReaderFontSheet extends StatelessWidget {
   const ReaderFontSheet({
     super.key,
-    required this.isDark,
-    required this.fontSize,
-    required this.fontIdx,
+    required this.settings,
     required this.textColor,
     required this.mutedColor,
     required this.accentColor,
     required this.onSizeChange,
     required this.onFontChange,
     required this.onDarkToggle,
+    required this.onOpenFullSettings,
   });
 
-  final bool isDark;
-  final double fontSize;
-  final int fontIdx;
+  final AppSettings settings;
   final Color textColor;
   final Color mutedColor;
   final Color accentColor;
   final ValueChanged<double> onSizeChange;
   final ValueChanged<int> onFontChange;
   final VoidCallback onDarkToggle;
+  final VoidCallback onOpenFullSettings;
 
   @override
   Widget build(BuildContext context) {
+    final fontSize = settings.fontSize;
+    final fontIdx  = settings.bodyFontIndex;
+    final isDark   = settings.isDarkReader;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       child: Column(
@@ -91,12 +96,12 @@ class ReaderFontSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          // Font family picker
+          // Font family picker (horizontal scroll — all 9 fonts)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                for (int i = 0; i < readerFontNames.length; i++)
+                for (int i = 0; i < readerFonts.length; i++)
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
@@ -157,6 +162,35 @@ class ReaderFontSheet extends StatelessWidget {
                 activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          // "More settings" link
+          GestureDetector(
+            onTap: onOpenFullSettings,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.tune_rounded, size: 16, color: accentColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    'All Reading Settings',
+                    style: TextStyle(
+                      fontFamily: AppTypography.nokiaPureheadline,
+                      fontSize: 12,
+                      color: accentColor,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -98,6 +98,15 @@ abstract class AppStrings {
   String get legendUnread;               // "ያልተነበበ" / "Unread"
   String get legendBookmark;             // "የተመዘገበ" / "Bookmarked"
 
+  // ── Reading Settings ──────────────────────────────────────────────────────
+  String get readingSettingsTitle;
+  String get readingSettingsBodyFont;
+  String get readingSettingsTitleFont;
+  String get readingSettingsFontSize;
+  String get readingSettingsNightMode;
+  String get readingSettingsPreview;
+  String get readingSettingsReset;
+
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr;       // short label for chapter, e.g. "ምዕ" / "Ch"
   String get verseBookmark;

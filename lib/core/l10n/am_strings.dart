@@ -90,6 +90,15 @@ class AmStrings extends AppStrings {
   @override String get legendUnread               => 'ያልተነበበ';
   @override String get legendBookmark             => 'የተመዘገበ';
 
+  // ── Reading Settings ──────────────────────────────────────────────────────
+  @override String get readingSettingsTitle     => 'የንባብ ቅንብር';
+  @override String get readingSettingsBodyFont  => 'የጽሁፍ ፊደል';
+  @override String get readingSettingsTitleFont => 'የርዕስ ፊደል';
+  @override String get readingSettingsFontSize  => 'የፊደል መጠን';
+  @override String get readingSettingsNightMode => 'ሌሊት ሁነታ';
+  @override String get readingSettingsPreview   => 'ቅድመ ዕይታ';
+  @override String get readingSettingsReset     => 'ዳግም ጀምር';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override String get chapterAbbr    => 'ምዕ';
   @override String get verseBookmark  => 'የተመዘገበ';

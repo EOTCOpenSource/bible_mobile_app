@@ -8,8 +8,9 @@ abstract final class AppTypography {
   static const String selam           = 'Selam';           // alternate body
   static const String ethiopicSadiss  = 'EthiopicSadiss';  // light ambient labels
   static const String geezHandwriting = 'GeezHandwriting'; // decorative / splash
-  static const String kiros           = 'Kiros';           // traditional alternate
-  static const String nokiaPureheadline = 'NokiaPureheadline'; // Latin / English UI
+  static const String kiros              = 'Kiros';              // traditional alternate
+  static const String addisAbebaUnicode  = 'AddisAbebaUnicode';  // classic unicode Geez
+  static const String nokiaPureheadline  = 'NokiaPureheadline';  // Latin / English UI
 
   // ── Amharic – Shiromeda (primary reading) ─────────────────────────────────
 

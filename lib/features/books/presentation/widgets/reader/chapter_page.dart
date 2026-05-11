@@ -15,6 +15,7 @@ class ReaderChapterPage extends StatelessWidget {
     required this.isDark,
     required this.fontSize,
     required this.fontFamily,
+    required this.titleFontFamily,
     required this.textColor,
     required this.mutedColor,
     required this.accentColor,
@@ -30,6 +31,7 @@ class ReaderChapterPage extends StatelessWidget {
   final bool isDark;
   final double fontSize;
   final String fontFamily;
+  final String titleFontFamily;
   final Color textColor;
   final Color mutedColor;
   final Color accentColor;
@@ -55,6 +57,7 @@ class ReaderChapterPage extends StatelessWidget {
             accentColor: accentColor,
             textColor:   textColor,
             mutedColor:  mutedColor,
+            titleFontFamily: titleFontFamily,
           );
         }
         final secIdx = i - 1;
@@ -64,6 +67,7 @@ class ReaderChapterPage extends StatelessWidget {
           chapter:      chapter,
           fontSize:     fontSize,
           fontFamily:   fontFamily,
+          titleFontFamily: titleFontFamily,
           textColor:    textColor,
           accentColor:  accentColor,
           isDark:       isDark,
@@ -89,6 +93,7 @@ class ChapterHeader extends StatelessWidget {
     required this.accentColor,
     required this.textColor,
     required this.mutedColor,
+    required this.titleFontFamily,
   });
 
   final BookIndexEntry entry;
@@ -98,6 +103,7 @@ class ChapterHeader extends StatelessWidget {
   final Color accentColor;
   final Color textColor;
   final Color mutedColor;
+  final String titleFontFamily;
 
   String get _firstSectionTitle {
     for (final sec in chapter.sections) {
@@ -161,7 +167,7 @@ class ChapterHeader extends StatelessWidget {
                     Text(
                       bookName,
                       style: TextStyle(
-                        fontFamily: AppTypography.shiromeda,
+                        fontFamily: titleFontFamily,
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: textColor,
@@ -186,7 +192,7 @@ class ChapterHeader extends StatelessWidget {
                       Text(
                         sectionTitle,
                         style: TextStyle(
-                          fontFamily: AppTypography.abbaGarima,
+                          fontFamily: titleFontFamily,
                           fontSize: 13,
                           color: accentColor,
                           height: 1.5,
@@ -221,6 +227,7 @@ class SectionView extends StatelessWidget {
     required this.chapter,
     required this.fontSize,
     required this.fontFamily,
+    required this.titleFontFamily,
     required this.textColor,
     required this.accentColor,
     required this.isDark,
@@ -235,6 +242,7 @@ class SectionView extends StatelessWidget {
   final Chapter chapter;
   final double fontSize;
   final String fontFamily;
+  final String titleFontFamily;
   final Color textColor;
   final Color accentColor;
   final bool isDark;
@@ -260,7 +268,7 @@ class SectionView extends StatelessWidget {
               child: Text(
                 section.title,
                 style: TextStyle(
-                  fontFamily: AppTypography.abbaGarima,
+                  fontFamily: titleFontFamily,
                   fontSize: fontSize - 2,
                   color: accentColor,
                   fontWeight: FontWeight.w400,
