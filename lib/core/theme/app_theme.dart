@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
@@ -194,16 +193,16 @@ abstract final class AppTheme {
       ),
 
       // ── Text theme ────────────────────────────────────────────────────────
-      textTheme: GoogleFonts.interTextTheme(base.textTheme).copyWith(
-        displayLarge: AppTypography.amharicDisplay,
+      textTheme: const TextTheme(
+        displayLarge:  AppTypography.amharicDisplay,
         displayMedium: AppTypography.amharicHeading,
-        displaySmall: AppTypography.amharicSubheading,
-        bodyLarge: AppTypography.amharicVerse,
-        bodyMedium: AppTypography.amharicBody,
-        bodySmall: AppTypography.amharicCaption,
-        labelLarge: AppTypography.englishLabel,
-        labelMedium: AppTypography.englishLabel,
-        labelSmall: AppTypography.englishCaption,
+        displaySmall:  AppTypography.amharicSubheading,
+        bodyLarge:     AppTypography.amharicVerse,
+        bodyMedium:    AppTypography.amharicBody,
+        bodySmall:     AppTypography.amharicCaption,
+        labelLarge:    AppTypography.englishLabel,
+        labelMedium:   AppTypography.englishLabel,
+        labelSmall:    AppTypography.englishCaption,
       ),
     );
   }

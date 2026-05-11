@@ -61,6 +61,42 @@ flutter:
   assets:
     - assets/bibledata/
 
+  fonts:
+    - family: Shiromeda
+      fonts:
+        - asset: assets/fonts/Shiromeda_Regular_3cc9866348.ttf
+        - asset: assets/fonts/Shiromeda_Bold_0ad34492db.ttf
+          weight: 700
+    - family: BelaHidaseQedmo
+      fonts:
+        - asset: assets/fonts/Bela_Hidase_Qedmo_Extra_Bold_fa986f6c22.ttf
+          weight: 800
+    - family: AbbaGarima
+      fonts:
+        - asset: assets/fonts/Abba_Garima_Regular_d8040ce97a.ttf
+    - family: Selam
+      fonts:
+        - asset: assets/fonts/Selam_Regular_a59259475e.otf
+    - family: EthiopicSadiss
+      fonts:
+        - asset: assets/fonts/Ethiopic_Sadiss_Light_9f053f0273.ttf
+          weight: 300
+    - family: GeezHandwriting
+      fonts:
+        - asset: assets/fonts/Geez_Handwriting_ea6b90e5a8.ttf
+        - asset: assets/fonts/Geez_Handwriting_Bold_797edd48ee.ttf
+          weight: 700
+    - family: Kiros
+      fonts:
+        - asset: assets/fonts/kiros_61f90ce99a.ttf
+    - family: AddisAbebaUnicode
+      fonts:
+        - asset: assets/fonts/A0_Addis_Abeba_Unicode_20030827_e3a95c0418.ttf
+    - family: NokiaPureheadline
+      fonts:
+        - asset: assets/fonts/Nokia_Pureheadline_Light_55fdcc36e6.ttf
+          weight: 300
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
