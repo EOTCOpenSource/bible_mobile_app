@@ -7,7 +7,9 @@
       "Bash(Out-Null)",
       "Bash(Move-Item \"D:\\\\Projects\\\\EOTCOpenSource\\\\bibleflutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\\\\eotcopensource\\\\bibleflutter\\\\MainActivity.kt\" \"D:\\\\Projects\\\\EOTCOpenSource\\\\bibleflutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\org\\\\nehemiah_osc\\\\bibleflutter\\\\MainActivity.kt\")",
       "Bash(Remove-Item -Recurse \"D:\\\\Projects\\\\EOTCOpenSource\\\\bibleflutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\" -Force)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)"
     ]
   }
 }
