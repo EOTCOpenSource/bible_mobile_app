@@ -11,7 +11,7 @@ class AmStrings extends AppStrings {
   @override String get navMe     => 'እኔ';
 
   // ── Home header ───────────────────────────────────────────────────────────
-  @override String get welcomeGreeting => 'እንኳን ደህና\nመጡ';
+  @override String get welcomeGreeting => 'እንኳን ደህና መጡ';
 
   // ── Reading streak ────────────────────────────────────────────────────────
   @override String get streakConsecutiveLabel => 'ተከታታይ ንባብ';

@@ -11,7 +11,7 @@ class EnStrings extends AppStrings {
   @override String get navMe     => 'Me';
 
   // ── Home header ───────────────────────────────────────────────────────────
-  @override String get welcomeGreeting => 'Welcome\nBack';
+  @override String get welcomeGreeting => 'Welcome Back';
 
   // ── Reading streak ────────────────────────────────────────────────────────
   @override String get streakConsecutiveLabel => 'reading streak';

@@ -14,7 +14,7 @@ class HomeHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
@@ -30,10 +30,11 @@ class HomeHeader extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   s.welcomeGreeting,
-                  style: AppTypography.amharicDisplay.copyWith(
+                  style: AppTypography.amharicHeading.copyWith(
                     color: AppColors.textOnParchment,
-                    height: 1.15,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
