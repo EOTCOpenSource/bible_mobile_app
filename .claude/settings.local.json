@@ -9,7 +9,8 @@
       "Bash(Remove-Item -Recurse \"D:\\\\Projects\\\\EOTCOpenSource\\\\bibleflutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\" -Force)",
       "PowerShell(New-Item *)",
       "Bash(flutter pub *)",
-      "Bash(flutter analyze *)"
+      "Bash(flutter analyze *)",
+      "WebFetch(domain:pub.dev)"
     ]
   }
 }

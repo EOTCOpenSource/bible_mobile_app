@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kenat/kenat.dart';
 import '../../core/constants/app_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -137,20 +138,26 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final today = Kenat.now();
+    // "ሐሙስ · ግንቦት 15 2016"
+    final dateLabel = '${today.getWeekdayName()} · ${today.formatStandard()}';
+    // 0 = Sunday … 6 = Saturday
+    final todayWeekday = today.getWeekday();
+
     return SafeArea(
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
-        slivers: const [
-          SliverToBoxAdapter(child: _Header()),
-          SliverToBoxAdapter(child: SizedBox(height: 20)),
-          SliverToBoxAdapter(child: _ReadingStreakCard()),
-          SliverToBoxAdapter(child: SizedBox(height: 14)),
-          SliverToBoxAdapter(child: _DailyVerseCard()),
-          SliverToBoxAdapter(child: SizedBox(height: 24)),
-          SliverToBoxAdapter(child: _ContinueReadingSection()),
-          SliverToBoxAdapter(child: SizedBox(height: 24)),
-          SliverToBoxAdapter(child: _ReadingPlansSection()),
-          SliverToBoxAdapter(child: SizedBox(height: 32)),
+        slivers: [
+          SliverToBoxAdapter(child: _Header(dateLabel: dateLabel)),
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+          SliverToBoxAdapter(child: _ReadingStreakCard(todayWeekday: todayWeekday)),
+          const SliverToBoxAdapter(child: SizedBox(height: 14)),
+          const SliverToBoxAdapter(child: _DailyVerseCard()),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          const SliverToBoxAdapter(child: _ContinueReadingSection()),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          const SliverToBoxAdapter(child: _ReadingPlansSection()),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),
     );
@@ -162,7 +169,9 @@ class _HomeTab extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 
 class _Header extends StatelessWidget {
-  const _Header();
+  const _Header({required this.dateLabel});
+
+  final String dateLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +185,7 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'እሁድ · ጥቅምት ፳፪',
+                  dateLabel,
                   style: AppTypography.amharicCaption.copyWith(
                     color: AppColors.textMuted,
                     fontSize: 12,
@@ -231,11 +240,23 @@ class _Avatar extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 
 class _ReadingStreakCard extends StatelessWidget {
-  const _ReadingStreakCard();
+  const _ReadingStreakCard({required this.todayWeekday});
 
-  static const _dayLabels = ['ሰ', 'ሞ', 'ሠ', 'ረ', 'ሐ', 'ዓ', 'ቅ'];
-  // true = done, false = future/missed, null = today
-  static const List<bool?> _status = [true, true, true, true, null, false, false];
+  /// 0 = Sunday … 6 = Saturday, as returned by Kenat.getWeekday()
+  final int todayWeekday;
+
+  // First-character abbreviations for Sun → Sat, matching Kenat's 0-based weekday
+  static const _dayLabels = ['እ', 'ሰ', 'ሠ', 'ረ', 'ሐ', 'ዓ', 'ቅ'];
+
+  // true = done (past day this week), null = today, false = future
+  List<bool?> get _status => List.generate(
+        7,
+        (i) => i < todayWeekday
+            ? true
+            : i == todayWeekday
+                ? null
+                : false,
+      );
 
   @override
   Widget build(BuildContext context) {
