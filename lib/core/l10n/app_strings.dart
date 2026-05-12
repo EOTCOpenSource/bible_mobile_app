@@ -20,9 +20,6 @@ abstract class AppStrings {
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
 
-  /// One-letter weekday abbreviations, Sunday=0 through Saturday=6.
-  List<String> get weekdayAbbr;
-
   // ── Daily verse ───────────────────────────────────────────────────────────
   String get dailyVerseTag;
 

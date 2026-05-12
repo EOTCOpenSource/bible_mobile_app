@@ -9,13 +9,16 @@ import '../../../../core/widgets/pill_button.dart';
 class ReadingStreakCard extends StatelessWidget {
   const ReadingStreakCard({super.key, required this.todayWeekday});
 
-  /// 0 = Sunday … 6 = Saturday, as returned by Kenat.getWeekday()
+  /// Raw value from Kenat.getWeekday(): 0 = Sunday … 6 = Saturday
   final int todayWeekday;
+
+  // Remap to Monday-first display index (0 = Mon … 6 = Sun)
+  int get _todayIndex => (todayWeekday + 6) % 7;
 
   // true = done, null = today, false = future
   List<bool?> get _status => List.generate(
         7,
-        (i) => i < todayWeekday ? true : i == todayWeekday ? null : false,
+        (i) => i < _todayIndex ? true : i == _todayIndex ? null : false,
       );
 
   static const _streakCount = 12; // placeholder until user data is wired
@@ -26,6 +29,13 @@ class ReadingStreakCard extends StatelessWidget {
     final useGeez = Settings.of(context).useGeezNumbers;
     final streakDisplay = useGeez ? toGeez(_streakCount) : '$_streakCount';
     final status = _status;
+    final isAm = s is AmStrings;
+    // Monday-first display index i → Kenat Sunday-first index via (i+1)%7
+    final dayNames = isAm ? DaysOfWeek.amharic : DaysOfWeek.english;
+    String dayAbbr(int i) {
+      final name = dayNames[(i + 1) % 7];
+      return name.length <= 3 ? name : name.substring(0, 3);
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -104,7 +114,7 @@ class ReadingStreakCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      s.weekdayAbbr[i],
+                      dayAbbr(i),
                       style: AppTypography.amharicCaption.copyWith(
                         fontSize: 9,
                         color: AppColors.textCaption,

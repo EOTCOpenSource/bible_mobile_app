@@ -18,8 +18,6 @@ class AmStrings extends AppStrings {
   @override String get streakDaysSuffix       => 'ቀናት';
   @override String get streakReadTodayHint    => 'ዛሬ ምዕራፍ ያንብቡ';
   @override String get streakReadTodayBtn     => 'ዛሬ ያንብቡ';
-  @override List<String> get weekdayAbbr      => ['እ', 'ሰ', 'ሠ', 'ረ', 'ሐ', 'ዓ', 'ቅ'];
-
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override String get dailyVerseTag => 'የዕለቱ ቃል';
 

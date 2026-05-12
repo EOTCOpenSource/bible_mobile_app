@@ -18,8 +18,6 @@ class EnStrings extends AppStrings {
   @override String get streakDaysSuffix       => 'days';
   @override String get streakReadTodayHint    => 'Read a chapter today';
   @override String get streakReadTodayBtn     => 'Read Now';
-  @override List<String> get weekdayAbbr      => ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override String get dailyVerseTag => 'Daily Verse';
 
