@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../books/presentation/pages/books_tab.dart';
 import '../../../me/presentation/pages/me_screen.dart';
+import '../../../saved/presentation/pages/saved_screen.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 import 'home_tab.dart';
 
@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SearchTab(),
-          const _StubTab('ተቀምጠ'),
+          const SavedScreen(),
           const MeScreen(),
         ],
       ),
@@ -46,17 +46,3 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _StubTab extends StatelessWidget {
-  const _StubTab(this.label);
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        label,
-        style: AppTypography.amharicHeading.copyWith(color: AppColors.textMuted),
-      ),
-    );
-  }
-}

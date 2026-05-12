@@ -11,7 +11,7 @@ class AmStrings extends AppStrings {
   @override
   String get navSearch => 'ፈልግ';
   @override
-  String get navSaved => 'የተመዘገበ';
+  String get navSaved => 'ስብስቤ';
   @override
   String get navMe => 'እኔ';
 

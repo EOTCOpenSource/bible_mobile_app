@@ -157,6 +157,39 @@ class AppDatabase {
     await db.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<List<Bookmark>> getAllBookmarks() async {
+    final db = await database;
+    final rows = await db.query(
+      'bookmarks',
+      where: 'sync_status != ?',
+      whereArgs: [SyncStatus.pendingDelete.name],
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(Bookmark.fromMap).toList();
+  }
+
+  Future<List<Highlight>> getAllHighlights() async {
+    final db = await database;
+    final rows = await db.query(
+      'highlights',
+      where: 'sync_status != ?',
+      whereArgs: [SyncStatus.pendingDelete.name],
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(Highlight.fromMap).toList();
+  }
+
+  Future<List<Note>> getAllNotes() async {
+    final db = await database;
+    final rows = await db.query(
+      'notes',
+      where: 'sync_status != ?',
+      whereArgs: [SyncStatus.pendingDelete.name],
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(Note.fromMap).toList();
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;

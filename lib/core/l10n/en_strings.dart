@@ -7,7 +7,7 @@ class EnStrings extends AppStrings {
   @override String get navHome   => 'Home';
   @override String get navBooks  => 'Books';
   @override String get navSearch => 'Search';
-  @override String get navSaved  => 'Saved';
+  @override String get navSaved  => 'Collection';
   @override String get navMe     => 'Me';
 
   // ── Home header ───────────────────────────────────────────────────────────
