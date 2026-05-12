@@ -309,26 +309,27 @@ class SectionView extends StatelessWidget {
                     accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
                 : (hlColor?.withValues(alpha: 0.28) ?? Colors.transparent);
 
-            Widget verseWidget = GestureDetector(
-              key: isSpotlight ? spotlightKey : null,
-              onTap: () => onVerseTap(key),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                margin: const EdgeInsets.only(bottom: 2),
-                padding: EdgeInsets.fromLTRB(
-                    isBookmarked ? 3 : 6, 4, 6, 4),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(6),
-                  border: isBookmarked
-                      ? Border(
-                          left: BorderSide(color: accentColor, width: 3),
-                        )
-                      : null,
-                ),
-                child: Stack(
-                  children: [
-                    RichText(
+            Widget verseWidget = Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GestureDetector(
+                  key: isSpotlight ? spotlightKey : null,
+                  onTap: () => onVerseTap(key),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    margin: const EdgeInsets.only(bottom: 2),
+                    padding: EdgeInsets.fromLTRB(
+                        isBookmarked ? 3 : 6, 4, 6, 4),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(6),
+                      border: isBookmarked
+                          ? Border(
+                              left: BorderSide(color: accentColor, width: 3),
+                            )
+                          : null,
+                    ),
+                    child: RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
@@ -353,22 +354,19 @@ class SectionView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (hasNote)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.accentDeep,
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
+                if (hasNote)
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: Icon(
+                      Icons.sticky_note_2_rounded,
+                      size: 13,
+                      color: AppColors.accentDeep,
+                    ),
+                  ),
+              ],
             );
 
             if (isSpotlight) {
