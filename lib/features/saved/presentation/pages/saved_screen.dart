@@ -485,25 +485,29 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
           // ── List ──────────────────────────────────────────────────────────
           Expanded(
-            child: _loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary))
-                : items.isEmpty
-                    ? _EmptyState(tab: _tab)
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        color: AppColors.primary,
-                        child: ListView.builder(
-                          padding:
-                              const EdgeInsets.fromLTRB(16, 4, 16, 32),
-                          itemCount: items.length,
-                          itemBuilder: (_, i) => _AnnotationCard(
-                            item: items[i],
-                            tab: _tab,
-                            onTap: () => _openVerse(items[i]),
+            child: ColoredBox(
+              color: AppColors.surfaceDim,
+              child: _loading
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator(color: AppColors.primary))
+                  : items.isEmpty
+                      ? _EmptyState(tab: _tab)
+                      : RefreshIndicator(
+                          onRefresh: _load,
+                          color: AppColors.primary,
+                          child: ListView.builder(
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                            itemCount: items.length,
+                            itemBuilder: (_, i) => _AnnotationCard(
+                              item: items[i],
+                              tab: _tab,
+                              onTap: () => _openVerse(items[i]),
+                            ),
                           ),
                         ),
-                      ),
+            ),
           ),
         ],
       ),
@@ -808,124 +812,166 @@ class _AnnotationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _accentColor;
-    final chRef = '${item.bookEntry.bookShortNameAm} ${item.chapter}:${item.verseStart}';
-    final bodyText = tab == 2
-        ? (item.noteContent ?? item.verseText)
-        : item.verseText;
+    final chRef =
+        '${item.bookEntry.bookShortNameAm} ${item.chapter}:${item.verseStart}';
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border(
-            left: BorderSide(color: accent, width: 4),
-            top: BorderSide(color: AppColors.borderSubtle),
-            right: BorderSide(color: AppColors.borderSubtle),
-            bottom: BorderSide(color: AppColors.borderSubtle),
-          ),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: accent.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+            BoxShadow(
+              color: accent.withValues(alpha: 0.10),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Reference row ──────────────────────────────────────────
-              Row(
-                children: [
-                  _TypeBadge(tab: tab, accent: accent),
-                  const SizedBox(width: 8),
-                  Text(
-                    chRef,
-                    style: TextStyle(
-                      fontFamily: AppTypography.shiromeda,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: accent,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    _daysAgo(),
-                    style: AppTypography.amharicCaption.copyWith(
-                      fontSize: 11,
-                      color: AppColors.textCaption,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              // ── Body text ──────────────────────────────────────────────
-              if (tab == 2 && item.noteContent != null) ...[
-                Text(
-                  item.noteContent!,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.amharicBody.copyWith(
-                    fontSize: 14,
-                    color: AppColors.textOnParchment,
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 8),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Accent sidebar ───────────────────────────────────────
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    bodyText,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.amharicCaption.copyWith(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                      fontStyle: FontStyle.italic,
+                  width: 5,
+                  color: accent,
+                ),
+                // ── Card body ────────────────────────────────────────────
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Reference row ────────────────────────────────
+                        Row(
+                          children: [
+                            _TypeBadge(tab: tab, accent: accent),
+                            const SizedBox(width: 8),
+                            Text(
+                              chRef,
+                              style: TextStyle(
+                                fontFamily: AppTypography.shiromeda,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: accent,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              _daysAgo(),
+                              style: AppTypography.amharicCaption.copyWith(
+                                fontSize: 11,
+                                color: AppColors.textCaption,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // ── Body ─────────────────────────────────────────
+                        if (tab == 2 && item.noteContent != null) ...[
+                          Text(
+                            item.noteContent!,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.amharicBody.copyWith(
+                              fontSize: 14,
+                              color: AppColors.textOnParchment,
+                              height: 1.6,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.07),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                  color: accent.withValues(alpha: 0.18)),
+                            ),
+                            child: Text(
+                              item.verseText,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.amharicCaption.copyWith(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          // highlight tint strip behind verse text
+                          if (tab == 0 && item.highlightColor != null)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: item.highlightColor!
+                                    .withValues(alpha: 0.20),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                item.verseText,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.amharicBody.copyWith(
+                                  fontSize: 14,
+                                  color: AppColors.textOnParchment,
+                                  height: 1.65,
+                                ),
+                              ),
+                            )
+                          else
+                            Text(
+                              item.verseText,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.amharicBody.copyWith(
+                                fontSize: 14,
+                                color: AppColors.textOnParchment,
+                                height: 1.65,
+                              ),
+                            ),
+                        ],
+                        const SizedBox(height: 10),
+                        // ── Footer ───────────────────────────────────────
+                        Row(
+                          children: [
+                            Icon(Icons.menu_book_outlined,
+                                size: 12, color: AppColors.textCaption),
+                            const SizedBox(width: 4),
+                            Text(
+                              item.bookEntry.bookNameAm,
+                              style: AppTypography.amharicCaption.copyWith(
+                                fontSize: 11,
+                                color: AppColors.textCaption,
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(Icons.arrow_forward_ios_rounded,
+                                size: 11, color: AppColors.textCaption),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ] else
-                Text(
-                  bodyText,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.amharicBody.copyWith(
-                    fontSize: 14,
-                    color: AppColors.textOnParchment,
-                    height: 1.65,
-                  ),
-                ),
-              const SizedBox(height: 10),
-              // ── Footer row ─────────────────────────────────────────────
-              Row(
-                children: [
-                  Icon(Icons.menu_book_outlined,
-                      size: 12, color: AppColors.textCaption),
-                  const SizedBox(width: 4),
-                  Text(
-                    item.bookEntry.bookNameAm,
-                    style: AppTypography.amharicCaption.copyWith(
-                      fontSize: 11,
-                      color: AppColors.textCaption,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(Icons.open_in_new_rounded,
-                      size: 14, color: AppColors.textCaption),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
