@@ -26,16 +26,27 @@ class BibleApp extends StatelessWidget {
       child: Settings(
         child: L10n(
           initialLanguage: AppLanguage.amharic,
-          child: MaterialApp(
-            title: 'መጽሐፍ ቅዱስ',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: ThemeMode.system,
-            home: const HomeScreen(),
-          ),
+          child: const _BibleMaterialApp(),
         ),
       ),
+    );
+  }
+}
+
+/// [MaterialApp] must read [Settings] so night mode updates the whole UI (not only the reader).
+class _BibleMaterialApp extends StatelessWidget {
+  const _BibleMaterialApp();
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Settings.of(context);
+    return MaterialApp(
+      title: 'መጽሐፍ ቅዱስ',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: settings.isDarkReader ? ThemeMode.dark : ThemeMode.light,
+      home: const HomeScreen(),
     );
   }
 }

@@ -20,7 +20,7 @@ class AppSettings {
   /// Base font size for reading.
   final double fontSize;
 
-  /// Dark mode for the reader.
+  /// App + reader dark theme (Settings “night mode”).
   final bool isDarkReader;
 
   AppSettings copyWith({
