@@ -36,6 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^8.1.0
   kenat: ^1.0.1
+  flutter_riverpod: ^2.6.1
+  sqflite: ^2.4.1
+  sqflite_common_ffi: ^2.3.4
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:

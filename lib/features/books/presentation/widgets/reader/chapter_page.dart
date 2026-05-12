@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
+import '../../../../../core/annotations/annotation_models.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book.dart';
@@ -24,6 +25,7 @@ class ReaderChapterPage extends StatelessWidget {
     required this.isSelectedFn,
     required this.onVerseTap,
     required this.verseKeyFn,
+    required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
   });
@@ -44,6 +46,7 @@ class ReaderChapterPage extends StatelessWidget {
   final String Function(int chNum, int secIdx, int verseNum) verseKeyFn;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
+  final ChapterAnnotations annotations;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +82,7 @@ class ReaderChapterPage extends StatelessWidget {
           isSelectedFn:     isSelectedFn,
           onVerseTap:       onVerseTap,
           verseKeyFn:       verseKeyFn,
+          annotations:      annotations,
           spotlightVerseNum: spotlightVerseNum,
           spotlightKey:     spotlightKey,
         );
@@ -241,6 +245,7 @@ class SectionView extends StatelessWidget {
     required this.isSelectedFn,
     required this.onVerseTap,
     required this.verseKeyFn,
+    required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
   });
@@ -258,6 +263,7 @@ class SectionView extends StatelessWidget {
   final bool Function(int, int, int) isSelectedFn;
   final ValueChanged<String> onVerseTap;
   final String Function(int, int, int) verseKeyFn;
+  final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
 
@@ -290,10 +296,18 @@ class SectionView extends StatelessWidget {
             const SizedBox(height: 8),
           // Inline verse: ‹number› text
           ...section.verses.map((verse) {
-            final key         = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final selected    = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final isSpotlight = spotlightVerseNum == verse.verseNumber;
-            final numStr      = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
+            final key           = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
+            final selected      = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
+            final isSpotlight   = spotlightVerseNum == verse.verseNumber;
+            final numStr        = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
+            final hlColor       = annotations.highlightColor(verse.verseNumber);
+            final isBookmarked  = annotations.isBookmarked(verse.verseNumber);
+            final hasNote       = annotations.noteFor(verse.verseNumber) != null;
+
+            final bgColor = selected
+                ? (hlColor?.withValues(alpha: 0.5) ??
+                    accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
+                : (hlColor?.withValues(alpha: 0.28) ?? Colors.transparent);
 
             Widget verseWidget = GestureDetector(
               key: isSpotlight ? spotlightKey : null,
@@ -301,37 +315,58 @@ class SectionView extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 margin: const EdgeInsets.only(bottom: 2),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                padding: EdgeInsets.fromLTRB(
+                    isBookmarked ? 3 : 6, 4, 6, 4),
                 decoration: BoxDecoration(
-                  color: selected
-                      ? accentColor.withValues(alpha: isDark ? 0.18 : 0.15)
-                      : Colors.transparent,
+                  color: bgColor,
                   borderRadius: BorderRadius.circular(6),
+                  border: isBookmarked
+                      ? Border(
+                          left: BorderSide(color: accentColor, width: 3),
+                        )
+                      : null,
                 ),
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '$numStr ',
-                        style: TextStyle(
-                          fontFamily: AppTypography.nokiaPureheadline,
-                          fontSize: fontSize * 0.62,
-                          fontWeight: FontWeight.w700,
-                          color: accentColor,
+                child: Stack(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '$numStr ',
+                            style: TextStyle(
+                              fontFamily: AppTypography.nokiaPureheadline,
+                              fontSize: fontSize * 0.62,
+                              fontWeight: FontWeight.w700,
+                              color: accentColor,
+                            ),
+                          ),
+                          TextSpan(
+                            text: verse.text,
+                            style: TextStyle(
+                              fontFamily: fontFamily,
+                              fontSize: fontSize,
+                              height: 1.85,
+                              color: textColor,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (hasNote)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.accentDeep,
+                          ),
                         ),
                       ),
-                      TextSpan(
-                        text: verse.text,
-                        style: TextStyle(
-                          fontFamily: fontFamily,
-                          fontSize: fontSize,
-                          height: 1.85,
-                          color: textColor,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             );

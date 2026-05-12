@@ -199,11 +199,11 @@ class AmStrings extends AppStrings {
   @override
   String get verseHighlight => 'ምልክት';
   @override
+  String get verseNote => 'ማስታወሻ';
+  @override
   String get verseCopy => 'ቅዳ';
   @override
   String get verseShare => 'አጋራ';
-  @override
-  String get verseMore => 'ተጨማሪ';
   @override
   String get comingSoon => 'በቅርቡ ይመጣል';
 }

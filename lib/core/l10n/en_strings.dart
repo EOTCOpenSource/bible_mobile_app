@@ -114,8 +114,8 @@ class EnStrings extends AppStrings {
   @override String get chapterAbbr    => 'Ch';
   @override String get verseBookmark  => 'Bookmark';
   @override String get verseHighlight => 'Highlight';
+  @override String get verseNote      => 'Note';
   @override String get verseCopy      => 'Copy';
   @override String get verseShare     => 'Share';
-  @override String get verseMore      => 'More';
   @override String get comingSoon     => 'Coming soon';
 }

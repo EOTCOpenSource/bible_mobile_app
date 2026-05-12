@@ -121,8 +121,8 @@ String get searchScopeTitle;
   String get chapterAbbr;       // short label for chapter, e.g. "ምዕ" / "Ch"
   String get verseBookmark;
   String get verseHighlight;
+  String get verseNote;
   String get verseCopy;
   String get verseShare;
-  String get verseMore;
   String get comingSoon;
 }
