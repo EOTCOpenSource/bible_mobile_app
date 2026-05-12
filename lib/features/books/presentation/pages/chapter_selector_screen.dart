@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import 'reader_screen.dart';
+import '../../../search/presentation/pages/search_tab.dart';
 
 class ChapterSelectorScreen extends StatefulWidget {
   const ChapterSelectorScreen({super.key, required this.entry});
@@ -65,7 +66,17 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _TopBar(entry: widget.entry, s: s, isAmharic: isAmharic),
+            _TopBar(
+              entry:      widget.entry,
+              s:          s,
+              isAmharic:  isAmharic,
+              onSearch:   () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SearchTab(initialBook: widget.entry),
+                ),
+              ),
+            ),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
@@ -135,10 +146,11 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
 // ── Top bar ───────────────────────────────────────────────────────────────────
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.entry, required this.s, required this.isAmharic});
+  const _TopBar({required this.entry, required this.s, required this.isAmharic, this.onSearch});
   final BookIndexEntry entry;
   final AppStrings s;
   final bool isAmharic;
+  final VoidCallback? onSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +191,7 @@ class _TopBar extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
-            onPressed: () {},
+            onPressed: onSearch,
           ),
         ],
       ),

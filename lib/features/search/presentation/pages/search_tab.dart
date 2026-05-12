@@ -58,7 +58,9 @@ List<TextSpan> _highlightSpans(
 enum _SearchState { idle, loading, results, empty }
 
 class SearchTab extends StatefulWidget {
-  const SearchTab({super.key});
+  const SearchTab({super.key, this.initialBook, this.initialScope});
+  final BookIndexEntry? initialBook;
+  final SearchScope? initialScope;
 
   @override
   State<SearchTab> createState() => _SearchTabState();
@@ -74,9 +76,16 @@ class _SearchTabState extends State<SearchTab> {
   List<SearchHit> _hits = [];
   String _activeQuery   = '';
 
-  SearchMode  _mode      = SearchMode.smart;
-  SearchScope _scope     = SearchScope.all;
-  BookIndexEntry? _book;
+  SearchMode  _mode  = SearchMode.smart;
+  SearchScope _scope = SearchScope.all;
+  late BookIndexEntry? _book;
+
+  @override
+  void initState() {
+    super.initState();
+    _book  = widget.initialBook;
+    _scope = widget.initialScope ?? SearchScope.all;
+  }
 
   @override
   void dispose() {

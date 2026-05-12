@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book_index_entry.dart';
 import 'chapter_selector_screen.dart';
+import '../../data/repositories/bible_repository.dart' show SearchScope;
 
 // ── Category filters ──────────────────────────────────────────────────────────
 
@@ -17,7 +18,8 @@ enum _NTFilter { all, gospels, acts, pauline, general, revelation, other }
 // ── Tab ───────────────────────────────────────────────────────────────────────
 
 class BooksTab extends StatefulWidget {
-  const BooksTab({super.key});
+  const BooksTab({super.key, this.onSearchTap});
+  final void Function(SearchScope scope)? onSearchTap;
 
   @override
   State<BooksTab> createState() => _BooksTabState();
@@ -108,7 +110,17 @@ class _BooksTabState extends State<BooksTab>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _BooksHeader(s: s, total: _books.isEmpty ? 81 : _books.length, useGeez: useGeez),
+          _BooksHeader(
+            s:           s,
+            total:       _books.isEmpty ? 81 : _books.length,
+            useGeez:     useGeez,
+            onSearchTap: widget.onSearchTap == null ? null : () {
+              final scope = _tabController.index == 0
+                  ? SearchScope.oldTestament
+                  : SearchScope.newTestament;
+              widget.onSearchTap!(scope);
+            },
+          ),
           const SizedBox(height: 10),
           _BooksTabBar(controller: _tabController, s: s),
           const SizedBox(height: 4),
@@ -168,11 +180,12 @@ class _BooksTabState extends State<BooksTab>
 // ── Header ────────────────────────────────────────────────────────────────────
 
 class _BooksHeader extends StatelessWidget {
-  const _BooksHeader({required this.s, required this.total, required this.useGeez});
+  const _BooksHeader({required this.s, required this.total, required this.useGeez, this.onSearchTap});
 
   final AppStrings s;
   final int total;
   final bool useGeez;
+  final VoidCallback? onSearchTap;
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +216,7 @@ class _BooksHeader extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
-            onPressed: () {},
+            onPressed: onSearchTap,
           ),
         ],
       ),

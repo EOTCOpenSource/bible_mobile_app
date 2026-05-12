@@ -23,12 +23,19 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.surface,
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          HomeTab(),
-          BooksTab(),
-          SearchTab(),
-          _StubTab('ተቀምጠ'),
-          MeScreen(),
+        children: [
+          const HomeTab(),
+          BooksTab(
+            onSearchTap: (scope) => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SearchTab(initialScope: scope),
+              ),
+            ),
+          ),
+          const SearchTab(),
+          const _StubTab('ተቀምጠ'),
+          const MeScreen(),
         ],
       ),
       bottomNavigationBar: AppBottomNav(
