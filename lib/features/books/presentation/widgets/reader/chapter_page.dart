@@ -24,6 +24,8 @@ class ReaderChapterPage extends StatelessWidget {
     required this.isSelectedFn,
     required this.onVerseTap,
     required this.verseKeyFn,
+    this.spotlightVerseNum,
+    this.spotlightKey,
   });
 
   final BookIndexEntry entry;
@@ -40,6 +42,8 @@ class ReaderChapterPage extends StatelessWidget {
   final bool Function(int chNum, int secIdx, int verseNum) isSelectedFn;
   final ValueChanged<String> onVerseTap;
   final String Function(int chNum, int secIdx, int verseNum) verseKeyFn;
+  final int? spotlightVerseNum;
+  final GlobalKey? spotlightKey;
 
   @override
   Widget build(BuildContext context) {
@@ -62,19 +66,21 @@ class ReaderChapterPage extends StatelessWidget {
         }
         final secIdx = i - 1;
         return SectionView(
-          section:      chapter.sections[secIdx],
-          secIdx:       secIdx,
-          chapter:      chapter,
-          fontSize:     fontSize,
-          fontFamily:   fontFamily,
-          titleFontFamily: titleFontFamily,
-          textColor:    textColor,
-          accentColor:  accentColor,
-          isDark:       isDark,
-          useGeez:      useGeez,
-          isSelectedFn: isSelectedFn,
-          onVerseTap:   onVerseTap,
-          verseKeyFn:   verseKeyFn,
+          section:          chapter.sections[secIdx],
+          secIdx:           secIdx,
+          chapter:          chapter,
+          fontSize:         fontSize,
+          fontFamily:       fontFamily,
+          titleFontFamily:  titleFontFamily,
+          textColor:        textColor,
+          accentColor:      accentColor,
+          isDark:           isDark,
+          useGeez:          useGeez,
+          isSelectedFn:     isSelectedFn,
+          onVerseTap:       onVerseTap,
+          verseKeyFn:       verseKeyFn,
+          spotlightVerseNum: spotlightVerseNum,
+          spotlightKey:     spotlightKey,
         );
       },
     );
@@ -235,6 +241,8 @@ class SectionView extends StatelessWidget {
     required this.isSelectedFn,
     required this.onVerseTap,
     required this.verseKeyFn,
+    this.spotlightVerseNum,
+    this.spotlightKey,
   });
 
   final Section section;
@@ -250,6 +258,8 @@ class SectionView extends StatelessWidget {
   final bool Function(int, int, int) isSelectedFn;
   final ValueChanged<String> onVerseTap;
   final String Function(int, int, int) verseKeyFn;
+  final int? spotlightVerseNum;
+  final GlobalKey? spotlightKey;
 
   @override
   Widget build(BuildContext context) {
@@ -280,11 +290,13 @@ class SectionView extends StatelessWidget {
             const SizedBox(height: 8),
           // Inline verse: ‹number› text
           ...section.verses.map((verse) {
-            final key      = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final selected = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final numStr   = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
+            final key         = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
+            final selected    = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
+            final isSpotlight = spotlightVerseNum == verse.verseNumber;
+            final numStr      = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
 
-            return GestureDetector(
+            Widget verseWidget = GestureDetector(
+              key: isSpotlight ? spotlightKey : null,
               onTap: () => onVerseTap(key),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
@@ -323,9 +335,82 @@ class SectionView extends StatelessWidget {
                 ),
               ),
             );
+
+            if (isSpotlight) {
+              verseWidget = _SpotlightWrapper(
+                accentColor: accentColor,
+                child: verseWidget,
+              );
+            }
+
+            return verseWidget;
           }),
         ],
       ),
+    );
+  }
+}
+
+// ── Spotlight glow wrapper ────────────────────────────────────────────────────
+
+class _SpotlightWrapper extends StatefulWidget {
+  const _SpotlightWrapper({required this.accentColor, required this.child});
+  final Color accentColor;
+  final Widget child;
+
+  @override
+  State<_SpotlightWrapper> createState() => _SpotlightWrapperState();
+}
+
+class _SpotlightWrapperState extends State<_SpotlightWrapper>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      duration: const Duration(milliseconds: 2200),
+      vsync: this,
+    );
+    _anim = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: ConstantTween(1.0),           weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 60),
+    ]).animate(_ctrl);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, child) {
+        final t = _anim.value;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: t > 0.01
+                ? [
+                    BoxShadow(
+                      color: widget.accentColor.withValues(alpha: t * 0.55),
+                      blurRadius: t * 18,
+                      spreadRadius: t * 2,
+                    ),
+                  ]
+                : const [],
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 }

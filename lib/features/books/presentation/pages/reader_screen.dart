@@ -17,10 +17,18 @@ import '../widgets/reader/chapter_nav_bar.dart';
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ReaderScreen extends StatefulWidget {
-  const ReaderScreen({super.key, required this.entry, this.initialChapter = 0});
+  const ReaderScreen({
+    super.key,
+    required this.entry,
+    this.initialChapter = 0,
+    this.initialVerse,
+  });
 
   final BookIndexEntry entry;
   final int initialChapter;
+
+  /// When set, the reader pre-selects this verse number and scrolls to it.
+  final int? initialVerse;
 
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -33,6 +41,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   int _currentChapter = 0;
 
   String? _selectedKey;
+  final GlobalKey _spotlightKey = GlobalKey();
 
   @override
   void initState() {
@@ -55,7 +64,35 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   Future<void> _loadBook() async {
     final book = await BibleRepositoryProvider.of(context).loadBook(widget.entry);
-    if (mounted) setState(() { _book = book; _loading = false; });
+    if (!mounted) return;
+    setState(() { _book = book; _loading = false; });
+    _autoSelectInitialVerse();
+  }
+
+  void _autoSelectInitialVerse() {
+    final targetVerse = widget.initialVerse;
+    if (targetVerse == null || _book == null) return;
+    final chIdx   = widget.initialChapter.clamp(0, _book!.chapters.length - 1);
+    final chapter = _book!.chapters[chIdx];
+    for (var sIdx = 0; sIdx < chapter.sections.length; sIdx++) {
+      if (chapter.sections[sIdx].verses.any((v) => v.verseNumber == targetVerse)) {
+        setState(() {
+          _selectedKey = _verseKey(chapter.chapterNumber, sIdx, targetVerse);
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final ctx = _spotlightKey.currentContext;
+          if (ctx != null) {
+            Scrollable.ensureVisible(
+              ctx,
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut,
+              alignment: 0.3,
+            );
+          }
+        });
+        break;
+      }
+    }
   }
 
   void _goToChapter(int idx) {
@@ -198,20 +235,28 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             onPageChanged: (i) =>
                                 setState(() => _currentChapter = i),
                             itemBuilder: (ctx, i) => ReaderChapterPage(
-                              entry:         widget.entry,
-                              chapter:       _book!.chapters[i],
-                              isDark:        isDark,
-                              fontSize:      settings.fontSize,
-                              fontFamily:    bodyFont,
-                              titleFontFamily: titleFont,
-                              textColor:     textColor,
-                              mutedColor:    mutedColor,
-                              accentColor:   accentColor,
-                              useGeez:       useGeez,
-                              isAmharic:     isAm,
-                              isSelectedFn:  _isSelected,
-                              onVerseTap:    _selectVerse,
-                              verseKeyFn:    _verseKey,
+                              entry:            widget.entry,
+                              chapter:          _book!.chapters[i],
+                              isDark:           isDark,
+                              fontSize:         settings.fontSize,
+                              fontFamily:       bodyFont,
+                              titleFontFamily:  titleFont,
+                              textColor:        textColor,
+                              mutedColor:       mutedColor,
+                              accentColor:      accentColor,
+                              useGeez:          useGeez,
+                              isAmharic:        isAm,
+                              isSelectedFn:     _isSelected,
+                              onVerseTap:       _selectVerse,
+                              verseKeyFn:       _verseKey,
+                              spotlightVerseNum: (widget.initialVerse != null &&
+                                  i == widget.initialChapter)
+                                  ? widget.initialVerse
+                                  : null,
+                              spotlightKey:     (widget.initialVerse != null &&
+                                  i == widget.initialChapter)
+                                  ? _spotlightKey
+                                  : null,
                             ),
                           ),
                           // Verse action bar

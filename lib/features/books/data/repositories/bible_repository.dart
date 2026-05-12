@@ -1,13 +1,33 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/book_index_entry.dart';
 import '../models/book.dart';
+
+class DailyVerseResult {
+  final String text;
+  final String bookNameAm;
+  final String bookNameEn;
+  final int chapter;
+  final int verse;
+  final BookIndexEntry bookEntry;
+
+  const DailyVerseResult({
+    required this.text,
+    required this.bookNameAm,
+    required this.bookNameEn,
+    required this.chapter,
+    required this.verse,
+    required this.bookEntry,
+  });
+}
 
 class BibleRepository {
   static const _basePath = 'assets/bibledata';
 
   List<BookIndexEntry>? _index;
   final Map<String, Book> _bookCache = {};
+  Map<String, Map<String, dynamic>>? _dailyVerseIndex;
 
   Future<List<BookIndexEntry>> loadIndex() async {
     if (_index != null) return _index!;
@@ -31,5 +51,77 @@ class BibleRepository {
     return book;
   }
 
-  void clearCache() => _bookCache.clear();
+  Future<DailyVerseResult?> loadDailyVerse(int month, int day) async {
+    try {
+      if (_dailyVerseIndex == null) {
+        final raw = await rootBundle.loadString(
+            '$_basePath/ethiopian_daily_verses.json');
+        final root = jsonDecode(raw) as Map<String, dynamic>;
+        final list = root['verses'] as List;
+        _dailyVerseIndex = {
+          for (final e in list)
+            '${e['month']}:${e['day']}': e as Map<String, dynamic>,
+        };
+        debugPrint('[DailyVerse] loaded ${_dailyVerseIndex!.length} entries');
+      }
+
+      final key   = '$month:$day';
+      final entry = _dailyVerseIndex![key];
+      if (entry == null) {
+        debugPrint('[DailyVerse] no entry for key "$key"');
+        return null;
+      }
+
+      final bookName   = entry['book']    as String;
+      final chapterNum = entry['chapter'] as int;
+      final verseNum   = entry['verse']   as int;
+      debugPrint('[DailyVerse] found $bookName $chapterNum:$verseNum for $key');
+
+      final index     = await loadIndex();
+      final bookEntry = index.cast<BookIndexEntry?>().firstWhere(
+        (e) => e!.bookNameEn.toLowerCase() == bookName.toLowerCase(),
+        orElse: () => null,
+      );
+      if (bookEntry == null) {
+        debugPrint('[DailyVerse] book not found in index: "$bookName"');
+        return null;
+      }
+
+      final book    = await loadBook(bookEntry);
+      final chapter = book.chapters.cast<Chapter?>().firstWhere(
+        (c) => c!.chapterNumber == chapterNum,
+        orElse: () => null,
+      );
+      if (chapter == null) {
+        debugPrint('[DailyVerse] chapter $chapterNum not found in ${bookEntry.bookNameEn}');
+        return null;
+      }
+
+      final verse = chapter.allVerses.cast<Verse?>().firstWhere(
+        (v) => v!.verseNumber == verseNum,
+        orElse: () => null,
+      );
+      if (verse == null) {
+        debugPrint('[DailyVerse] verse $verseNum not found in chapter $chapterNum');
+        return null;
+      }
+
+      return DailyVerseResult(
+        text:       verse.text,
+        bookNameAm: bookEntry.bookNameAm,
+        bookNameEn: bookEntry.bookNameEn,
+        chapter:    chapterNum,
+        verse:      verseNum,
+        bookEntry:  bookEntry,
+      );
+    } catch (e, st) {
+      debugPrint('[DailyVerse] error: $e\n$st');
+      return null;
+    }
+  }
+
+  void clearCache() {
+    _bookCache.clear();
+    _dailyVerseIndex = null;
+  }
 }
