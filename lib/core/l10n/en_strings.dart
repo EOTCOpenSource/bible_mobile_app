@@ -97,6 +97,19 @@ class EnStrings extends AppStrings {
   @override String get readingSettingsPreview   => 'Preview';
   @override String get readingSettingsReset     => 'Reset';
 
+  // ── Search ───────────────────────────────────────────────────────────────
+  @override String get searchHint         => 'Search the scriptures...';
+  @override String get searchPrompt       => 'Type to search';
+  @override String get searchNoResults    => 'No results found';
+  @override String searchResultCount(int n) => '$n result${n == 1 ? '' : 's'}';
+  @override String get searchRunBtn       => 'Go';
+  @override String get searchSmartMode    => 'Smart';
+  @override String get searchAllWords     => 'All Words';
+  @override String get searchInAll        => 'In All';
+@override String get searchScopeTitle   => 'Search Scope';
+  @override String get searchPickBook     => 'Pick a Book';
+  @override String get searchOrPickBook   => 'Or pick a book';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override String get chapterAbbr    => 'Ch';
   @override String get verseBookmark  => 'Bookmark';

@@ -97,6 +97,19 @@ class AmStrings extends AppStrings {
   @override String get readingSettingsPreview   => 'ቅድመ ዕይታ';
   @override String get readingSettingsReset     => 'ዳግም ጀምር';
 
+  // ── Search ───────────────────────────────────────────────────────────────
+  @override String get searchHint         => 'በቅዱሳት መጻሕፍት ፈልግ...';
+  @override String get searchPrompt       => 'ቃሉን ለመፈለግ ይጻፉ';
+  @override String get searchNoResults    => 'ምንም አልተገኘም';
+  @override String searchResultCount(int n) => '$n ውጤቶ ተገኙ';
+  @override String get searchRunBtn       => 'ፈልግ';
+  @override String get searchSmartMode    => 'Smart';
+  @override String get searchAllWords     => 'ሁሉም ቃላት';
+  @override String get searchInAll        => 'በሁሉም';
+@override String get searchScopeTitle   => 'ፍለጋ ወሰን';
+  @override String get searchPickBook     => 'መጽሐፍ ምረጥ';
+  @override String get searchOrPickBook   => 'ወይም መጽሐፍ ምረጥ';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override String get chapterAbbr    => 'ምዕ';
   @override String get verseBookmark  => 'የተመዘገበ';

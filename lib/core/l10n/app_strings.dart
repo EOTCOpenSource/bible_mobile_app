@@ -104,6 +104,19 @@ abstract class AppStrings {
   String get readingSettingsPreview;
   String get readingSettingsReset;
 
+  // ── Search ───────────────────────────────────────────────────────────────
+  String get searchHint;
+  String get searchPrompt;
+  String get searchNoResults;
+  String searchResultCount(int n);
+  String get searchRunBtn;
+  String get searchSmartMode;
+  String get searchAllWords;
+  String get searchInAll;
+String get searchScopeTitle;
+  String get searchPickBook;
+  String get searchOrPickBook;
+
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr;       // short label for chapter, e.g. "ምዕ" / "Ch"
   String get verseBookmark;

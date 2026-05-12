@@ -22,6 +22,38 @@ class DailyVerseResult {
   });
 }
 
+class SearchHit {
+  final BookIndexEntry bookEntry;
+  final int chapter;
+  final int verse;
+  final String text;
+  final int matchStart;
+  final int matchEnd;
+
+  const SearchHit({
+    required this.bookEntry,
+    required this.chapter,
+    required this.verse,
+    required this.text,
+    required this.matchStart,
+    required this.matchEnd,
+  });
+}
+
+enum SearchMode { smart, allWords }
+enum SearchScope { all, oldTestament, newTestament }
+
+class SearchFilter {
+  const SearchFilter({
+    this.mode  = SearchMode.smart,
+    this.scope = SearchScope.all,
+    this.book,
+  });
+  final SearchMode mode;
+  final SearchScope scope;
+  final BookIndexEntry? book;
+}
+
 class BibleRepository {
   static const _basePath = 'assets/bibledata';
 
@@ -118,6 +150,63 @@ class BibleRepository {
       debugPrint('[DailyVerse] error: $e\n$st');
       return null;
     }
+  }
+
+  Future<List<SearchHit>> searchVerses(
+    String query, {
+    SearchFilter filter = const SearchFilter(),
+  }) async {
+    final q = query.trim();
+    if (q.length < 2) return [];
+
+    final bookIndex = await loadIndex();
+    final List<BookIndexEntry> scope = filter.book != null
+        ? [filter.book!]
+        : switch (filter.scope) {
+            SearchScope.all          => bookIndex,
+            SearchScope.oldTestament => bookIndex.where((e) => e.isOldTestament).toList(),
+            SearchScope.newTestament => bookIndex.where((e) => !e.isOldTestament).toList(),
+          };
+
+    final books = await Future.wait(scope.map(loadBook));
+
+    final words = filter.mode == SearchMode.allWords
+        ? q.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList()
+        : null;
+
+    const maxResults = 300;
+    final hits = <SearchHit>[];
+
+    for (var i = 0; i < scope.length; i++) {
+      if (hits.length >= maxResults) break;
+      final entry = scope[i];
+      for (final chapter in books[i].chapters) {
+        if (hits.length >= maxResults) break;
+        for (final section in chapter.sections) {
+          if (hits.length >= maxResults) break;
+          for (final verse in section.verses) {
+            final text = verse.text;
+            int mStart;
+            if (words != null) {
+              if (!words.every(text.contains)) continue;
+              mStart = text.indexOf(words.first);
+            } else {
+              mStart = text.indexOf(q);
+              if (mStart < 0) continue;
+            }
+            hits.add(SearchHit(
+              bookEntry:  entry,
+              chapter:    chapter.chapterNumber,
+              verse:      verse.verseNumber,
+              text:       text,
+              matchStart: mStart,
+              matchEnd:   mStart + (words != null ? words.first.length : q.length),
+            ));
+          }
+        }
+      }
+    }
+    return hits;
   }
 
   void clearCache() {

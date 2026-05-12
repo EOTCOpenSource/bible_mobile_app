@@ -4,6 +4,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../books/presentation/pages/books_tab.dart';
 import '../../../me/presentation/pages/me_screen.dart';
+import '../../../search/presentation/pages/search_tab.dart';
 import 'home_tab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: const [
           HomeTab(),
           BooksTab(),
-          _StubTab('ፈልግ'),
+          SearchTab(),
           _StubTab('ተቀምጠ'),
           MeScreen(),
         ],
