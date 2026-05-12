@@ -68,6 +68,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     if (!mounted) return;
     setState(() => _loading = true);
 
+    try {
+      await _doLoad();
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _doLoad() async {
     final db = ref.read(annotationDbProvider);
     final repo = BibleRepositoryProvider.of(context);
 

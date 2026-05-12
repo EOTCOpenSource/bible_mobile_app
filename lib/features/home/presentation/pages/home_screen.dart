@@ -16,6 +16,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  // Incremented each time the saved tab is tapped so IndexedStack recreates
+  // SavedScreen fresh (picks up any annotations made since last visit).
+  int _savedKey = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +37,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SearchTab(),
-          const SavedScreen(),
+          SavedScreen(key: ValueKey(_savedKey)),
           const MeScreen(),
         ],
       ),
       bottomNavigationBar: AppBottomNav(
         selectedIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
+        onTap: (i) => setState(() {
+          if (i == 3) _savedKey++;
+          _selectedIndex = i;
+        }),
       ),
     );
   }
