@@ -12,6 +12,7 @@ class ContinueReadingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -24,14 +25,14 @@ class ContinueReadingSection extends StatelessWidget {
               Text(
                 s.continueReadingTitle,
                 style: AppTypography.amharicSubheading.copyWith(
-                  color: AppColors.textOnParchment,
+                  color: c.textOnParchment,
                 ),
               ),
               const Spacer(),
               Text(
                 s.completedPercent(_progressPercent),
                 style: AppTypography.englishCaption.copyWith(
-                  color: AppColors.primary,
+                  color: c.primary,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0,
                 ),
@@ -51,12 +52,13 @@ class _ContinueReadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: c.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: c.borderSubtle),
         boxShadow: const [
           BoxShadow(color: Color(0x08000000), blurRadius: 12, offset: Offset(0, 4)),
         ],
@@ -68,17 +70,17 @@ class _ContinueReadingCard extends StatelessWidget {
             width: 54,
             height: 68,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primaryDark, AppColors.primary],
+              gradient: LinearGradient(
+                colors: [c.primaryDark, c.primary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               AppIcons.ethiopianCross,
-              style: TextStyle(color: AppColors.accent, fontSize: 24),
+              style: TextStyle(color: c.accent, fontSize: 24),
             ),
           ),
           const SizedBox(width: 14),
@@ -90,24 +92,24 @@ class _ContinueReadingCard extends StatelessWidget {
                 Text(
                   'መጽሐፈ ነገሥት ቀዳማዊ',
                   style: AppTypography.amharicLabel.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   '1 Kings · Chapter 8',
                   style: AppTypography.englishCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                   ),
                 ),
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: const LinearProgressIndicator(
+                  child: LinearProgressIndicator(
                     value: 0.40,
                     minHeight: 6,
-                    backgroundColor: AppColors.parchmentDark,
-                    valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                    backgroundColor: c.parchmentDark,
+                    valueColor: AlwaysStoppedAnimation(c.primary),
                   ),
                 ),
               ],
@@ -119,12 +121,12 @@ class _ContinueReadingCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: c.primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.primary,
+              color: c.primary,
               size: 22,
             ),
           ),

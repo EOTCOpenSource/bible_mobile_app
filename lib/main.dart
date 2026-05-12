@@ -30,6 +30,8 @@ class BibleApp extends StatelessWidget {
             title: 'መጽሐፍ ቅዱስ',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: ThemeMode.system,
             home: const HomeScreen(),
           ),
         ),

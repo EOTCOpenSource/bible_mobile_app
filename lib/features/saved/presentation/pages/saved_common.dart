@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/models/book_index_entry.dart';
 
@@ -41,12 +41,6 @@ class AnnotationCard extends StatelessWidget {
   final int tab;
   final VoidCallback onTap;
 
-  Color get _accent {
-    if (tab == 0 && item.highlightColor != null) return item.highlightColor!;
-    if (tab == 1) return AppColors.primary;
-    return AppColors.accentDeep;
-  }
-
   String _daysAgo() {
     final diff = DateTime.now().difference(item.createdAt);
     if (diff.inDays == 0) return 'ዛሬ';
@@ -56,7 +50,12 @@ class AnnotationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _accent;
+    final c = context.colors;
+    final accent = tab == 0 && item.highlightColor != null
+        ? item.highlightColor!
+        : tab == 1
+            ? c.primary
+            : c.accentDeep;
     final chRef =
         '${item.bookEntry.bookShortNameAm} ${item.chapter}:${item.verseStart}';
 
@@ -65,7 +64,7 @@ class AnnotationCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: c.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -112,7 +111,7 @@ class AnnotationCard extends StatelessWidget {
                               _daysAgo(),
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
-                                color: AppColors.textCaption,
+                                color: c.textCaption,
                               ),
                             ),
                           ],
@@ -126,7 +125,7 @@ class AnnotationCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: AppTypography.amharicBody.copyWith(
                               fontSize: 14,
-                              color: AppColors.textOnParchment,
+                              color: c.textOnParchment,
                               height: 1.6,
                             ),
                           ),
@@ -147,7 +146,7 @@ class AnnotationCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 12,
-                                color: AppColors.textMuted,
+                                color: c.textMuted,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -168,7 +167,7 @@ class AnnotationCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: AppTypography.amharicBody.copyWith(
                                 fontSize: 14,
-                                color: AppColors.textOnParchment,
+                                color: c.textOnParchment,
                                 height: 1.65,
                               ),
                             ),
@@ -180,7 +179,7 @@ class AnnotationCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: AppTypography.amharicBody.copyWith(
                               fontSize: 14,
-                              color: AppColors.textOnParchment,
+                              color: c.textOnParchment,
                               height: 1.65,
                             ),
                           ),
@@ -189,18 +188,18 @@ class AnnotationCard extends StatelessWidget {
                         Row(
                           children: [
                             Icon(Icons.menu_book_outlined,
-                                size: 12, color: AppColors.textCaption),
+                                size: 12, color: c.textCaption),
                             const SizedBox(width: 4),
                             Text(
                               item.bookEntry.bookNameAm,
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
-                                color: AppColors.textCaption,
+                                color: c.textCaption,
                               ),
                             ),
                             const Spacer(),
                             Icon(Icons.arrow_forward_ios_rounded,
-                                size: 11, color: AppColors.textCaption),
+                                size: 11, color: c.textCaption),
                           ],
                         ),
                       ],
@@ -267,16 +266,17 @@ class AnnotationEmptyState extends StatelessWidget {
         ),
     };
 
+    final c = context.colors;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 56, color: AppColors.borderSubtle),
+          Icon(icon, size: 56, color: c.borderSubtle),
           const SizedBox(height: 16),
           Text(
             label,
             style: AppTypography.amharicLabel.copyWith(
-              color: AppColors.textMuted,
+              color: c.textMuted,
               fontSize: 16,
             ),
           ),
@@ -287,7 +287,7 @@ class AnnotationEmptyState extends StatelessWidget {
               hint,
               textAlign: TextAlign.center,
               style: AppTypography.amharicCaption.copyWith(
-                color: AppColors.textCaption,
+                color: c.textCaption,
                 fontSize: 13,
               ),
             ),
@@ -316,16 +316,17 @@ class SavedFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.fromLTRB(12, 6, trailing != null ? 6 : 12, 6),
         decoration: BoxDecoration(
-          color: active ? AppColors.primary : AppColors.surfaceDim,
+          color: active ? c.primary : c.surfaceDim,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: active ? AppColors.primary : AppColors.borderSubtle,
+            color: active ? c.primary : c.borderSubtle,
           ),
         ),
         child: Row(
@@ -335,13 +336,13 @@ class SavedFilterChip extends StatelessWidget {
               label,
               style: AppTypography.amharicLabel.copyWith(
                 fontSize: 12,
-                color: active ? Colors.white : AppColors.textMuted,
+                color: active ? Colors.white : c.textMuted,
               ),
             ),
             if (trailing != null) ...[
               const SizedBox(width: 2),
               Icon(trailing, size: 16,
-                  color: active ? Colors.white : AppColors.textMuted),
+                  color: active ? Colors.white : c.textMuted),
             ],
           ],
         ),
@@ -374,6 +375,7 @@ class AnnotationPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(
@@ -385,7 +387,7 @@ class AnnotationPickerSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: AppColors.borderSubtle,
+                color: c.borderSubtle,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -397,18 +399,18 @@ class AnnotationPickerSheet extends StatelessWidget {
               style: AppTypography.amharicLabel.copyWith(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textOnParchment,
+                color: c.textOnParchment,
               ),
             ),
           ),
-          const Divider(color: AppColors.borderSubtle, height: 1),
+          Divider(color: c.borderSubtle, height: 1),
           Flexible(
             child: ListView.separated(
               shrinkWrap: true,
               padding: const EdgeInsets.only(bottom: 32),
               itemCount: items.length,
-              separatorBuilder: (_, _) => const Divider(
-                  color: AppColors.borderSubtle, height: 1, indent: 20),
+              separatorBuilder: (_, idx) => Divider(
+                  color: c.borderSubtle, height: 1, indent: 20),
               itemBuilder: (_, i) {
                 final it = items[i];
                 final isSelected = it.id == selectedId;
@@ -424,8 +426,8 @@ class AnnotationPickerSheet extends StatelessWidget {
                             style: AppTypography.amharicLabel.copyWith(
                               fontSize: 14,
                               color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textOnParchment,
+                                  ? c.primary
+                                  : c.textOnParchment,
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w400,
@@ -433,8 +435,8 @@ class AnnotationPickerSheet extends StatelessWidget {
                           ),
                         ),
                         if (isSelected)
-                          const Icon(Icons.check_rounded,
-                              size: 18, color: AppColors.primary),
+                          Icon(Icons.check_rounded,
+                              size: 18, color: c.primary),
                       ],
                     ),
                   ),

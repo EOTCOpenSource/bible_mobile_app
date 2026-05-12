@@ -191,8 +191,9 @@ class _SearchTabState extends State<SearchTab> {
     final isAm    = s is AmStrings;
     final useGeez = Settings.of(context).useGeezNumbers;
 
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: c.surface,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +215,7 @@ class _SearchTabState extends State<SearchTab> {
               onMode:      _applyMode,
               onScopeTap:  () => _showScopeSheet(context, s),
             ),
-            const Divider(color: AppColors.borderSubtle, height: 1),
+            Divider(color: c.borderSubtle, height: 1),
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
@@ -264,6 +265,7 @@ class _SearchInputRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
       child: Row(
@@ -272,15 +274,14 @@ class _SearchInputRow extends StatelessWidget {
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.surfaceDim,
+                color: c.surfaceDim,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderSubtle),
+                border: Border.all(color: c.borderSubtle),
               ),
               child: Row(
                 children: [
                   const SizedBox(width: 10),
-                  const Icon(Icons.search_rounded,
-                      size: 18, color: AppColors.textCaption),
+                  Icon(Icons.search_rounded, size: 18, color: c.textCaption),
                   const SizedBox(width: 6),
                   Expanded(
                     child: TextField(
@@ -291,14 +292,14 @@ class _SearchInputRow extends StatelessWidget {
                       textInputAction: TextInputAction.search,
                       style: AppTypography.amharicBody.copyWith(
                         fontSize: 15,
-                        color: AppColors.textOnParchment,
+                        color: c.textOnParchment,
                         height: 1.2,
                       ),
                       decoration: InputDecoration(
                         hintText: hint,
                         hintStyle: AppTypography.amharicBody.copyWith(
                           fontSize: 15,
-                          color: AppColors.textCaption,
+                          color: c.textCaption,
                           height: 1.2,
                         ),
                         border:        InputBorder.none,
@@ -317,7 +318,7 @@ class _SearchInputRow extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: Icon(Icons.close_rounded,
-                                  size: 16, color: AppColors.textMuted),
+                                  size: 16, color: c.textMuted),
                             ),
                           )
                         : const SizedBox(width: 8),
@@ -333,7 +334,7 @@ class _SearchInputRow extends StatelessWidget {
               height: 44,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: c.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
@@ -416,9 +417,10 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg     = active ? AppColors.primary : Colors.white;
-    final fg     = active ? Colors.white : AppColors.textBody;
-    final border = active ? AppColors.primary : AppColors.borderSubtle;
+    final c = context.colors;
+    final bg     = active ? c.primary : c.surface;
+    final fg     = active ? Colors.white : c.textBody;
+    final border = active ? c.primary : c.borderSubtle;
 
     return GestureDetector(
       onTap: onTap,
@@ -496,6 +498,7 @@ class _ScopeSheetState extends State<_ScopeSheet> {
   Widget build(BuildContext context) {
     final s = widget.s;
     final isAm = s is AmStrings;
+    final c = context.colors;
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.68,
@@ -506,7 +509,7 @@ class _ScopeSheetState extends State<_ScopeSheet> {
           Container(
             width: 36, height: 4,
             decoration: BoxDecoration(
-              color: AppColors.borderSubtle,
+              color: c.borderSubtle,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -516,7 +519,7 @@ class _ScopeSheetState extends State<_ScopeSheet> {
             child: Text(
               s.searchScopeTitle,
               style: AppTypography.amharicSubheading.copyWith(
-                fontSize: 16, color: AppColors.textOnParchment),
+                fontSize: 16, color: c.textOnParchment),
             ),
           ),
           const SizedBox(height: 12),
@@ -541,16 +544,16 @@ class _ScopeSheetState extends State<_ScopeSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                const Expanded(child: Divider(color: AppColors.borderSubtle)),
+                Expanded(child: Divider(color: c.borderSubtle)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     s.searchOrPickBook,
                     style: AppTypography.amharicCaption.copyWith(
-                      fontSize: 11, color: AppColors.textCaption),
+                      fontSize: 11, color: c.textCaption),
                   ),
                 ),
-                const Expanded(child: Divider(color: AppColors.borderSubtle)),
+                Expanded(child: Divider(color: c.borderSubtle)),
               ],
             ),
           ),
@@ -561,9 +564,9 @@ class _ScopeSheetState extends State<_ScopeSheet> {
               future: _booksFuture,
               builder: (ctx, snap) {
                 if (!snap.hasData) {
-                  return const Center(
+                  return Center(
                     child: CircularProgressIndicator(
-                        color: AppColors.primary, strokeWidth: 2));
+                        color: context.colors.primary, strokeWidth: 2));
                 }
                 final books = snap.data!;
                 return ListView.builder(
@@ -605,6 +608,7 @@ class _ScopeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -619,7 +623,7 @@ class _ScopeOption extends StatelessWidget {
                     label,
                     style: AppTypography.amharicBody.copyWith(
                       fontSize: 14,
-                      color: selected ? AppColors.primary : AppColors.textBody,
+                      color: selected ? c.primary : c.textBody,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
@@ -627,14 +631,13 @@ class _ScopeOption extends StatelessWidget {
                     Text(
                       sublabel!,
                       style: AppTypography.amharicCaption.copyWith(
-                        fontSize: 11, color: AppColors.textCaption),
+                        fontSize: 11, color: c.textCaption),
                     ),
                 ],
               ),
             ),
             if (selected)
-              const Icon(Icons.check_rounded,
-                  size: 18, color: AppColors.primary),
+              Icon(Icons.check_rounded, size: 18, color: c.primary),
           ],
         ),
       ),
@@ -650,16 +653,17 @@ class _IdleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.menu_book_rounded, size: 64, color: AppColors.borderSubtle),
+          Icon(Icons.menu_book_rounded, size: 64, color: c.borderSubtle),
           const SizedBox(height: 16),
           Text(
             s.searchPrompt,
             style: AppTypography.amharicBody.copyWith(
-              fontSize: 15, color: AppColors.textCaption),
+              fontSize: 15, color: c.textCaption),
           ),
         ],
       ),
@@ -672,9 +676,9 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
-          color: AppColors.primary, strokeWidth: 2.5),
+          color: context.colors.primary, strokeWidth: 2.5),
     );
   }
 }
@@ -685,16 +689,17 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off_rounded, size: 56, color: AppColors.borderSubtle),
+          Icon(Icons.search_off_rounded, size: 56, color: c.borderSubtle),
           const SizedBox(height: 12),
           Text(
             s.searchNoResults,
             style: AppTypography.amharicBody.copyWith(
-              fontSize: 15, color: AppColors.textCaption),
+              fontSize: 15, color: c.textCaption),
           ),
         ],
       ),
@@ -732,15 +737,15 @@ class _ResultsList extends StatelessWidget {
           child: Text(
             s.searchResultCount(hits.length),
             style: AppTypography.amharicCaption.copyWith(
-              fontSize: 12, color: AppColors.textMuted),
+              fontSize: 12, color: context.colors.textMuted),
           ),
         ),
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.only(bottom: 24),
             itemCount: hits.length,
-            separatorBuilder: (_, _) =>
-                const Divider(height: 1, color: AppColors.borderSubtle,
+            separatorBuilder: (context, _) =>
+                Divider(height: 1, color: context.colors.borderSubtle,
                     indent: 16, endIndent: 16),
             itemBuilder: (ctx, i) => _ResultTile(
               hit:     hits[i],
@@ -789,14 +794,15 @@ class _ResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final baseStyle = AppTypography.amharicBody.copyWith(
       fontSize: 14,
-      color: AppColors.textBody,
+      color: c.textBody,
       height: 1.75,
     );
     final hlStyle = baseStyle.copyWith(
-      backgroundColor: AppColors.accent.withValues(alpha: 0.5),
-      color: AppColors.textOnParchment,
+      backgroundColor: c.accent.withValues(alpha: 0.5),
+      color: c.textOnParchment,
       fontWeight: FontWeight.w700,
     );
 
@@ -824,7 +830,7 @@ class _ResultTile extends StatelessWidget {
                     _ref(),
                     style: AppTypography.amharicLabel.copyWith(
                       fontSize: 12,
-                      color: AppColors.primary,
+                      color: c.primary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -841,7 +847,7 @@ class _ResultTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Icon(Icons.bookmark_border_rounded,
-                size: 18, color: AppColors.textCaption),
+                size: 18, color: c.textCaption),
           ],
         ),
       ),

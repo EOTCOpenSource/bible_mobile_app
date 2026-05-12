@@ -36,6 +36,7 @@ class ReadingPlansSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
+    final c = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -48,7 +49,7 @@ class ReadingPlansSection extends StatelessWidget {
               Text(
                 s.readingPlansTitle,
                 style: AppTypography.amharicSubheading.copyWith(
-                  color: AppColors.textOnParchment,
+                  color: c.textOnParchment,
                 ),
               ),
               const Spacer(),
@@ -57,7 +58,7 @@ class ReadingPlansSection extends StatelessWidget {
                 child: Text(
                   s.viewAll,
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.primary,
+                    color: c.primary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -135,9 +136,9 @@ class _ReadingPlanCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               AppIcons.ethiopianCross,
-              style: TextStyle(color: AppColors.accent, fontSize: 16),
+              style: TextStyle(color: context.colors.accent, fontSize: 16),
             ),
           ),
           const Spacer(),
@@ -166,7 +167,7 @@ class _ReadingPlanCard extends StatelessWidget {
               value: progress,
               minHeight: 4,
               backgroundColor: Colors.white.withValues(alpha: 0.25),
-              valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+              valueColor: AlwaysStoppedAnimation(context.colors.accent),
             ),
           ),
         ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/annotations/annotation_models.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import 'saved_common.dart';
 
 class HighlightsTab extends StatefulWidget {
@@ -134,7 +134,7 @@ class _HighlightsTabState extends State<HighlightsTab> {
             ?.bookEntry;
 
     return ColoredBox(
-      color: AppColors.surfaceDim,
+      color: context.colors.surfaceDim,
       child: Column(
         children: [
           SingleChildScrollView(
@@ -160,7 +160,7 @@ class _HighlightsTabState extends State<HighlightsTab> {
                   width: 1,
                   height: 24,
                   margin: const EdgeInsets.symmetric(horizontal: 10),
-                  color: AppColors.borderSubtle,
+                  color: context.colors.borderSubtle,
                 ),
                 SavedFilterChip(
                   label: 'ሁሉም',
@@ -217,7 +217,7 @@ class _HighlightsTabState extends State<HighlightsTab> {
                 ? const AnnotationEmptyState(tab: 0)
                 : RefreshIndicator(
                     onRefresh: widget.onRefresh,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                       itemCount: items.length,
@@ -250,6 +250,7 @@ class _ColorDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -259,15 +260,14 @@ class _ColorDot extends StatelessWidget {
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color ?? AppColors.surfaceDim,
+          color: color ?? c.surfaceDim,
           border: Border.all(
-            color: selected ? AppColors.primary : Colors.transparent,
+            color: selected ? c.primary : Colors.transparent,
             width: 2.5,
           ),
         ),
         child: color == null
-            ? const Icon(Icons.done_all_rounded,
-                size: 16, color: AppColors.textMuted)
+            ? Icon(Icons.done_all_rounded, size: 16, color: c.textMuted)
             : selected
                 ? const Icon(Icons.check_rounded,
                     size: 14, color: Colors.black54)

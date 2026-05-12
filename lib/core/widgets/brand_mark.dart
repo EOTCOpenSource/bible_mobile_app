@@ -57,8 +57,9 @@ class TestamentBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final isOld = testament.toLowerCase() == 'old';
-    final bg = isOld ? AppColors.oldTestament : AppColors.newTestament;
+    final bg = isOld ? c.oldTestament : c.newTestament;
     final label = isOld ? 'OT' : 'NT';
 
     return Container(
@@ -70,7 +71,7 @@ class TestamentBadge extends StatelessWidget {
       child: Text(
         label,
         style: AppTypography.englishCaption.copyWith(
-          color: AppColors.textOnDark,
+          color: c.textOnDark,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
         ),
@@ -87,6 +88,7 @@ class LiturgicalDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Row(
       children: [
         Expanded(child: Divider(color: color, thickness: 1)),
@@ -94,7 +96,7 @@ class LiturgicalDivider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             AppIcons.ethiopianCross,
-            style: TextStyle(color: AppColors.accentDeep, fontSize: 14),
+            style: TextStyle(color: c.accentDeep, fontSize: 14),
           ),
         ),
         Expanded(child: Divider(color: color, thickness: 1)),

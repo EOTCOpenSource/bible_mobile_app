@@ -55,7 +55,7 @@ class VerseActionBar extends StatelessWidget {
           _ActionBtn(
             icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_add_outlined,
             label: s.verseBookmark,
-            textColor: isBookmarked ? AppColors.primary : textColor,
+            textColor: isBookmarked ? context.colors.primary : textColor,
             onTap: onBookmark,
           ),
           _ActionBtn(
@@ -68,7 +68,7 @@ class VerseActionBar extends StatelessWidget {
           _ActionBtn(
             icon: hasNote ? Icons.sticky_note_2_rounded : Icons.sticky_note_2_outlined,
             label: s.verseNote,
-            textColor: hasNote ? AppColors.accentDeep : textColor,
+            textColor: hasNote ? context.colors.accentDeep : textColor,
             onTap: onNote,
           ),
           _ActionBtn(

@@ -22,8 +22,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: c.surface,
       body: IndexedStack(
         index: _selectedIndex,
         children: [

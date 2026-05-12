@@ -11,6 +11,7 @@ class HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Row(
@@ -23,7 +24,7 @@ class HomeHeader extends StatelessWidget {
                 Text(
                   dateLabel,
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -31,7 +32,7 @@ class HomeHeader extends StatelessWidget {
                 Text(
                   s.welcomeGreeting,
                   style: AppTypography.amharicHeading.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -53,18 +54,19 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       width: 50,
       height: 50,
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
+      decoration: BoxDecoration(
+        color: c.primary,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
       child: Text(
         letter,
         style: AppTypography.amharicSubheading.copyWith(
-          color: AppColors.textOnDark,
+          color: c.textOnDark,
           fontSize: 20,
         ),
       ),

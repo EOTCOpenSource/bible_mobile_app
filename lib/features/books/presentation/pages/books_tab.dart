@@ -125,8 +125,8 @@ class _BooksTabState extends State<BooksTab>
           _BooksTabBar(controller: _tabController, s: s),
           const SizedBox(height: 4),
           if (_loading)
-            const Expanded(
-              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            Expanded(
+              child: Center(child: CircularProgressIndicator(color: context.colors.primary)),
             )
           else
             Expanded(
@@ -189,6 +189,7 @@ class _BooksHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final numStr = useGeez ? toGeez(total) : '$total';
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 8, 0),
@@ -202,20 +203,20 @@ class _BooksHeader extends StatelessWidget {
                 Text(
                   s.booksTitle,
                   style: AppTypography.amharicHeading.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                   ),
                 ),
                 Text(
                   s.booksSubtitle(numStr),
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                   ),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
+            icon: Icon(Icons.search_rounded, color: c.textMuted),
             onPressed: onSearchTap,
           ),
         ],
@@ -234,22 +235,23 @@ class _BooksTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         height: 44,
         decoration: BoxDecoration(
-          color: AppColors.surfaceDim,
+          color: c.surfaceDim,
           borderRadius: BorderRadius.circular(12),
         ),
         child: TabBar(
           controller: controller,
           indicator: BoxDecoration(
-            color: AppColors.primary,
+            color: c.primary,
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.3),
+                color: c.primary.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -258,7 +260,7 @@ class _BooksTabBar extends StatelessWidget {
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
-          unselectedLabelColor: AppColors.textMuted,
+          unselectedLabelColor: c.textMuted,
           labelStyle: AppTypography.amharicLabel.copyWith(fontSize: 13),
           unselectedLabelStyle: AppTypography.amharicLabel.copyWith(fontSize: 13),
           tabs: [
@@ -320,15 +322,15 @@ class _BookListTab extends StatelessWidget {
                   child: Text(
                     s.booksFilterAll,
                     style: AppTypography.amharicCaption.copyWith(
-                      color: AppColors.textCaption,
+                      color: context.colors.textCaption,
                     ),
                   ),
                 )
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                   itemCount: books.length,
-                  separatorBuilder: (context, i) => const Divider(
-                    color: AppColors.borderSubtle,
+                  separatorBuilder: (context, i) => Divider(
+                    color: context.colors.borderSubtle,
                     height: 1,
                     indent: 58,
                   ),
@@ -360,23 +362,24 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surfaceDim,
+          color: selected ? c.primary : c.surfaceDim,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.borderSubtle,
+            color: selected ? c.primary : c.borderSubtle,
           ),
         ),
         child: Text(
           label,
           style: AppTypography.amharicLabel.copyWith(
             fontSize: 13,
-            color: selected ? Colors.white : AppColors.textMuted,
+            color: selected ? Colors.white : c.textMuted,
           ),
         ),
       ),
@@ -401,9 +404,10 @@ class _BookRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final isAmharic = s is AmStrings;
     final badgeColor =
-        book.isOldTestament ? AppColors.primary : AppColors.newTestament;
+        book.isOldTestament ? c.primary : c.newTestament;
     final chCount = book.chapterCount;
     final chStr =
         chCount == null ? null : (useGeez ? toGeez(chCount) : '$chCount');
@@ -445,7 +449,7 @@ class _BookRow extends StatelessWidget {
                   Text(
                     isAmharic ? book.bookNameAm : book.bookNameEn,
                     style: AppTypography.amharicLabel.copyWith(
-                      color: AppColors.textOnParchment,
+                      color: c.textOnParchment,
                       fontSize: 15,
                     ),
                   ),
@@ -453,7 +457,7 @@ class _BookRow extends StatelessWidget {
                   Text(
                     isAmharic ? book.bookNameEn : book.bookNameAm,
                     style: AppTypography.englishLabel.copyWith(
-                      color: AppColors.textMuted,
+                      color: c.textMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -465,14 +469,14 @@ class _BookRow extends StatelessWidget {
               Text(
                 '$chStr ${s.booksChapterSuffix}',
                 style: AppTypography.amharicCaption.copyWith(
-                  color: AppColors.textCaption,
+                  color: c.textCaption,
                   fontSize: 11,
                 ),
               ),
             const SizedBox(width: 4),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textCaption,
+              color: c.textCaption,
               size: 18,
             ),
           ],

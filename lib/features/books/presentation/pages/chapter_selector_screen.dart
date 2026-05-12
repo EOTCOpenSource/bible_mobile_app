@@ -3,7 +3,7 @@ import 'package:kenat/kenat.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
@@ -60,8 +60,9 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
     final isAmharic = s is AmStrings;
     final total    = _book?.chapters.length ?? (widget.entry.chapterCount ?? 0);
 
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.surfaceDim,
+      backgroundColor: c.surfaceDim,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,8 +80,8 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
               ),
             ),
             if (_loading)
-              const Expanded(
-                child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              Expanded(
+                child: Center(child: CircularProgressIndicator(color: c.primary)),
               )
             else ...[
               _BookInfoCard(
@@ -146,6 +147,7 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final breadcrumb =
         '${s.booksTitle} · ${entry.isOldTestament ? s.booksOldTestament : s.booksNewTestament}';
     final title = isAmharic ? entry.bookNameAm : entry.bookNameEn;
@@ -157,7 +159,7 @@ class _TopBar extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-            color: AppColors.textMuted,
+            color: c.textMuted,
             onPressed: () => Navigator.pop(context),
           ),
           Expanded(
@@ -167,14 +169,14 @@ class _TopBar extends StatelessWidget {
                 Text(
                   breadcrumb,
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                     fontSize: 11,
                   ),
                 ),
                 Text(
                   title,
                   style: AppTypography.amharicHeading.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -182,7 +184,7 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+            icon: Icon(Icons.search_rounded, size: 20, color: c.textMuted),
             onPressed: onSearch,
           ),
         ],
@@ -211,8 +213,8 @@ class _BookInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor =
-        entry.isOldTestament ? AppColors.primary : AppColors.newTestament;
+    final c = context.colors;
+    final baseColor = entry.isOldTestament ? c.primary : c.newTestament;
     final shortName = isAmharic ? entry.bookShortNameAm : entry.bookShortNameEn;
     final altName   = isAmharic ? entry.bookNameEn : entry.bookNameAm;
     final testTag   = entry.isOldTestament ? 'OT' : 'NT';
@@ -257,11 +259,11 @@ class _BookInfoCard extends StatelessWidget {
                 children: [
                   Text(
                     shortName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppTypography.shiromeda,
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.accent,
+                      color: c.accent,
                       height: 1.1,
                     ),
                     textAlign: TextAlign.center,
@@ -335,8 +337,7 @@ class _BookInfoCard extends StatelessWidget {
                       value: progress,
                       minHeight: 4,
                       backgroundColor: Colors.white.withValues(alpha: 0.2),
-                      valueColor:
-                          const AlwaysStoppedAnimation(AppColors.accent),
+                      valueColor: AlwaysStoppedAnimation(c.accent),
                     ),
                   ),
                 ],
@@ -367,6 +368,7 @@ class _ContinueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final chStr = useGeez ? toGeez(lastChapterIdx + 1) : '${lastChapterIdx + 1}';
     final vStr  = useGeez ? toGeez(lastVerseNum)       : '$lastVerseNum';
 
@@ -375,9 +377,9 @@ class _ContinueCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: c.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: c.borderSubtle),
           boxShadow: const [
             BoxShadow(
                 color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2)),
@@ -390,12 +392,11 @@ class _ContinueCard extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: c.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.menu_book_rounded,
-                  color: AppColors.primary, size: 18),
+              child: Icon(Icons.menu_book_rounded, color: c.primary, size: 18),
             ),
             const SizedBox(width: 12),
             // Position label
@@ -406,7 +407,7 @@ class _ContinueCard extends StatelessWidget {
                   Text(
                     s.chapSelectorLastRead,
                     style: AppTypography.amharicCaption.copyWith(
-                      color: AppColors.textMuted,
+                      color: c.textMuted,
                       fontSize: 11,
                     ),
                   ),
@@ -414,7 +415,7 @@ class _ContinueCard extends StatelessWidget {
                   Text(
                     '${s.chapterAbbr} $chStr  ·  ${s.chapSelectorVerseLabel} $vStr',
                     style: AppTypography.amharicLabel.copyWith(
-                      color: AppColors.textOnParchment,
+                      color: c.textOnParchment,
                       fontSize: 14,
                     ),
                   ),
@@ -429,7 +430,7 @@ class _ContinueCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: c.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -464,24 +465,25 @@ class _LegendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          _LegendDot(color: AppColors.primary, label: s.legendCurrent),
+          _LegendDot(color: c.primary, label: s.legendCurrent),
           const SizedBox(width: 14),
-          _LegendDot(color: AppColors.borderSubtle, label: s.legendUnread, border: true),
+          _LegendDot(color: c.borderSubtle, label: s.legendUnread, border: true),
           const SizedBox(width: 14),
           _LegendIcon(
             icon: Icons.bookmark_rounded,
-            color: AppColors.accentDark,
+            color: c.accentDark,
             label: s.legendBookmark,
           ),
           const Spacer(),
           Text(
             s.chapSelectorChapNosLabel,
             style: AppTypography.englishLabel.copyWith(
-              color: AppColors.textCaption,
+              color: c.textCaption,
               fontSize: 10,
             ),
           ),
@@ -515,7 +517,7 @@ class _LegendDot extends StatelessWidget {
         Text(
           label,
           style: AppTypography.amharicCaption.copyWith(
-            color: AppColors.textMuted,
+            color: context.colors.textMuted,
             fontSize: 10,
           ),
         ),
@@ -540,7 +542,7 @@ class _LegendIcon extends StatelessWidget {
         Text(
           label,
           style: AppTypography.amharicCaption.copyWith(
-            color: AppColors.textMuted,
+            color: context.colors.textMuted,
             fontSize: 10,
           ),
         ),
@@ -569,22 +571,23 @@ class _ChapterCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final Color bgColor;
     final Color numColor;
     final Color borderColor;
 
     if (isCurrent) {
-      bgColor     = AppColors.primary;
+      bgColor     = c.primary;
       numColor    = Colors.white;
-      borderColor = AppColors.primary;
+      borderColor = c.primary;
     } else if (isRead) {
-      bgColor     = AppColors.parchment;
-      numColor    = AppColors.textOnParchment;
-      borderColor = AppColors.parchmentDark;
+      bgColor     = c.parchment;
+      numColor    = c.textOnParchment;
+      borderColor = c.parchmentDark;
     } else {
-      bgColor     = Colors.white;
-      numColor    = AppColors.textOnParchment;
-      borderColor = AppColors.borderSubtle;
+      bgColor     = c.surface;
+      numColor    = c.textOnParchment;
+      borderColor = c.borderSubtle;
     }
 
     final geezLabel   = toGeez(chapterNum);
@@ -601,7 +604,7 @@ class _ChapterCell extends StatelessWidget {
           boxShadow: isCurrent
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: c.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
@@ -644,7 +647,7 @@ class _ChapterCell extends StatelessWidget {
                 child: Icon(
                   Icons.bookmark_rounded,
                   size: 10,
-                  color: isCurrent ? AppColors.accent : AppColors.accentDark,
+                  color: isCurrent ? c.accent : c.accentDark,
                 ),
               ),
           ],

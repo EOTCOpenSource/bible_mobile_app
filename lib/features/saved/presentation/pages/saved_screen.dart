@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/annotations/annotation_models.dart';
 import '../../../../core/services/repository_provider.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
@@ -166,6 +166,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +180,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 Text(
                   'ያቀቡት',
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                     fontSize: 12,
                     letterSpacing: 0.4,
                   ),
@@ -188,7 +189,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 Text(
                   'ስብስቤ',
                   style: AppTypography.amharicHeading.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                   ),
                 ),
               ],
@@ -225,14 +226,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Divider(color: AppColors.borderSubtle, height: 1),
+          Divider(color: c.borderSubtle, height: 1),
 
           // ── Tab content ───────────────────────────────────────────────────
           Expanded(
             child: _loading
-                ? const Center(
+                ? Center(
                     child:
-                        CircularProgressIndicator(color: AppColors.primary))
+                        CircularProgressIndicator(color: c.primary))
                 : IndexedStack(
                     index: _tab,
                     children: [
@@ -277,6 +278,7 @@ class _TabLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -290,8 +292,7 @@ class _TabLabel extends StatelessWidget {
                 label,
                 style: AppTypography.amharicLabel.copyWith(
                   fontSize: 14,
-                  color:
-                      active ? AppColors.textOnParchment : AppColors.textMuted,
+                  color: active ? c.textOnParchment : c.textMuted,
                   fontWeight: active ? FontWeight.w700 : FontWeight.w400,
                 ),
               ),
@@ -301,7 +302,7 @@ class _TabLabel extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: active ? AppColors.primary : AppColors.surfaceDim,
+                    color: active ? c.primary : c.surfaceDim,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -309,7 +310,7 @@ class _TabLabel extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: active ? Colors.white : AppColors.textMuted,
+                      color: active ? Colors.white : c.textMuted,
                     ),
                   ),
                 ),
@@ -321,7 +322,7 @@ class _TabLabel extends StatelessWidget {
             height: 2.5,
             width: active ? 40 : 0,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: c.primary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),

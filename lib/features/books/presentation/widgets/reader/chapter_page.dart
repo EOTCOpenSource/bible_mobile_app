@@ -146,7 +146,7 @@ class ChapterHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF2C2420)
-                      : AppColors.parchmentDark,
+                      : context.colors.parchmentDark,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: accentColor.withValues(alpha: 0.4),
@@ -363,7 +363,7 @@ class SectionView extends StatelessWidget {
                     child: Icon(
                       Icons.sticky_note_2_rounded,
                       size: 13,
-                      color: AppColors.accentDeep,
+                      color: context.colors.accentDeep,
                     ),
                   ),
               ],

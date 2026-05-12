@@ -64,7 +64,7 @@ class ChapterNavBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: surfaceColor,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.borderSubtle),
+                  border: Border.all(color: context.colors.borderSubtle),
                 ),
                 child: Text(
                   '${_ch(currentChapter)}  ·  $total',

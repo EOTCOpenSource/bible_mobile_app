@@ -331,7 +331,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               child: _loading || _book == null
                   ? Center(
                       child: CircularProgressIndicator(
-                        color: isDark ? AppColors.accent : AppColors.primary,
+                        color: isDark ? context.colors.accent : context.colors.primary,
                       ),
                     )
                   : GestureDetector(

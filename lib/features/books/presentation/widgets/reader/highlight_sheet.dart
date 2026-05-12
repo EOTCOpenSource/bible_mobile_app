@@ -99,7 +99,7 @@ class _ColorCircle extends StatelessWidget {
           color: color ?? Colors.transparent,
           border: Border.all(
             color: isSelected
-                ? AppColors.primary
+                ? context.colors.primary
                 : (color == null
                     ? textColor.withValues(alpha: 0.3)
                     : Colors.transparent),

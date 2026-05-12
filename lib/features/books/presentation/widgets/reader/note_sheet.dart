@@ -72,7 +72,7 @@ class _NoteSheetState extends State<NoteSheet> {
               decoration: BoxDecoration(
                 color: widget.surfaceColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderSubtle),
+                border: Border.all(color: context.colors.borderSubtle),
               ),
               child: TextField(
                 controller: _ctrl,
@@ -105,7 +105,7 @@ class _NoteSheetState extends State<NoteSheet> {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: widget.textColor,
-                      side: const BorderSide(color: AppColors.borderSubtle),
+                      side: BorderSide(color: context.colors.borderSubtle),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -123,7 +123,7 @@ class _NoteSheetState extends State<NoteSheet> {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.colors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),

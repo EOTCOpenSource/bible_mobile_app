@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+export 'app_color_scheme.dart';
+
 abstract final class AppColors {
   // ── Primary – Deep Burgundy ──────────────────────────────────────────────
   static const Color primary      = Color(0xFF6B1F2A);

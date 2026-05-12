@@ -37,14 +37,15 @@ class ReadingStreakCard extends StatelessWidget {
       return name.length <= 3 ? name : name.substring(0, 3);
     }
 
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: c.surface,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: c.borderSubtle),
           boxShadow: const [
             BoxShadow(color: Color(0x08000000), blurRadius: 12, offset: Offset(0, 4)),
           ],
@@ -61,7 +62,7 @@ class ReadingStreakCard extends StatelessWidget {
                 Text(
                   streakDisplay,
                   style: AppTypography.amharicSubheading.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                     fontSize: 17,
                   ),
                 ),
@@ -69,7 +70,7 @@ class ReadingStreakCard extends StatelessWidget {
                 Text(
                   s.streakDaysSuffix,
                   style: AppTypography.amharicSubheading.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                     fontSize: 17,
                   ),
                 ),
@@ -77,7 +78,7 @@ class ReadingStreakCard extends StatelessWidget {
                 Text(
                   s.streakConsecutiveLabel,
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                   ),
                 ),
               ],
@@ -97,19 +98,19 @@ class ReadingStreakCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: isToday
-                            ? AppColors.primary
+                            ? c.primary
                             : done == true
-                                ? AppColors.primaryLight
-                                : AppColors.borderSubtle,
+                                ? c.primaryLight
+                                : c.borderSubtle,
                         border: isToday
-                            ? Border.all(color: AppColors.accent, width: 2)
+                            ? Border.all(color: c.accent, width: 2)
                             : null,
                       ),
                       alignment: Alignment.center,
                       child: done == true
                           ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
                           : isToday
-                              ? const Icon(Icons.star_rounded, size: 12, color: AppColors.accent)
+                              ? Icon(Icons.star_rounded, size: 12, color: c.accent)
                               : null,
                     ),
                     const SizedBox(height: 4),
@@ -117,7 +118,7 @@ class ReadingStreakCard extends StatelessWidget {
                       dayAbbr(i),
                       style: AppTypography.amharicCaption.copyWith(
                         fontSize: 9,
-                        color: AppColors.textCaption,
+                        color: c.textCaption,
                       ),
                     ),
                   ],
@@ -125,7 +126,7 @@ class ReadingStreakCard extends StatelessWidget {
               }),
             ),
             const SizedBox(height: 14),
-            const Divider(color: AppColors.borderSubtle, height: 1),
+            Divider(color: c.borderSubtle, height: 1),
             const SizedBox(height: 10),
             // ── Row 3: hint + CTA ──────────────────────────────────────────
             Row(
@@ -133,7 +134,7 @@ class ReadingStreakCard extends StatelessWidget {
                 Text(
                   s.streakReadTodayHint,
                   style: AppTypography.amharicCaption.copyWith(
-                    color: AppColors.textMuted,
+                    color: c.textMuted,
                   ),
                 ),
                 const Spacer(),

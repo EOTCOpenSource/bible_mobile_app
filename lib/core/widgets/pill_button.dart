@@ -10,18 +10,19 @@ class PillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.09),
+          color: c.primary.withValues(alpha: 0.09),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: AppTypography.amharicCaption.copyWith(
-            color: AppColors.primary,
+            color: c.primary,
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),

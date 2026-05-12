@@ -61,16 +61,17 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
         final verseText = result?.text ?? '';
         final reference = result != null ? _formatRef(result, useGeez) : '';
 
+        final c = context.colors;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: c.primary,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
+                  color: c.primary.withValues(alpha: 0.35),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -86,13 +87,13 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.18),
+                        color: c.accent.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         s.dailyVerseTag,
                         style: AppTypography.amharicCaption.copyWith(
-                          color: AppColors.accent,
+                          color: c.accent,
                           fontWeight: FontWeight.w700,
                           fontSize: 11,
                         ),
@@ -102,7 +103,7 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                     Text(
                       AppIcons.ethiopianCross,
                       style: TextStyle(
-                        color: AppColors.accent.withValues(alpha: 0.55),
+                        color: c.accent.withValues(alpha: 0.55),
                         fontSize: 20,
                       ),
                     ),
@@ -118,7 +119,7 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                           key: const ValueKey('verse'),
                           verseText,
                           style: AppTypography.amharicVerse.copyWith(
-                            color: AppColors.textOnDark,
+                            color: c.textOnDark,
                             height: 1.9,
                             fontSize: 18,
                           ),
@@ -138,13 +139,13 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                           Text(
                             reference,
                             style: AppTypography.amharicLabel.copyWith(
-                              color: AppColors.accent.withValues(alpha: 0.9),
+                              color: c.accent.withValues(alpha: 0.9),
                               fontSize: 13,
                               decoration: result != null
                                   ? TextDecoration.underline
                                   : null,
                               decorationColor:
-                                  AppColors.accent.withValues(alpha: 0.6),
+                                  c.accent.withValues(alpha: 0.6),
                             ),
                           ),
                           if (result != null) ...[
@@ -152,7 +153,7 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                             Icon(
                               Icons.open_in_new_rounded,
                               size: 11,
-                              color: AppColors.accent.withValues(alpha: 0.7),
+                              color: c.accent.withValues(alpha: 0.7),
                             ),
                           ],
                         ],
@@ -218,7 +219,7 @@ class _IconAction extends StatelessWidget {
         customBorder: const CircleBorder(),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Icon(icon, size: 18, color: AppColors.textOnDark),
+          child: Icon(icon, size: 18, color: context.colors.textOnDark),
         ),
       ),
     );

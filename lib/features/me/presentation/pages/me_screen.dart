@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'reading_settings_page.dart';
 
@@ -127,6 +127,7 @@ class _MeAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
@@ -136,13 +137,13 @@ class _MeAppBar extends StatelessWidget {
           Text(
             s.meTitle,
             style: AppTypography.amharicHeading.copyWith(
-              color: AppColors.textOnParchment,
+              color: c.textOnParchment,
             ),
           ),
           const Spacer(),
           Text(
             'Settings',
-            style: AppTypography.englishLabel.copyWith(color: AppColors.textMuted),
+            style: AppTypography.englishLabel.copyWith(color: c.textMuted),
           ),
         ],
       ),
@@ -162,14 +163,16 @@ class _ProfileCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
         onTap: () {},
-        child: Container(
+        child: Builder(builder: (context) {
+          final c = context.colors;
+          return Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: c.primary,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.28),
+                color: c.primary.withValues(alpha: 0.28),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -182,18 +185,18 @@ class _ProfileCard extends StatelessWidget {
               Container(
                 width: 52,
                 height: 52,
-                decoration: const BoxDecoration(
-                  color: AppColors.accent,
+                decoration: BoxDecoration(
+                  color: c.accent,
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Text(
+                child: Text(
                   'ን',
                   style: TextStyle(
                     fontFamily: AppTypography.shiromeda,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: c.primary,
                   ),
                 ),
               ),
@@ -225,13 +228,13 @@ class _ProfileCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.accent,
+                        color: c.accent,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         s.meProfileEditBadge,
                         style: AppTypography.amharicCaption.copyWith(
-                          color: AppColors.primary,
+                          color: c.primary,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                         ),
@@ -248,7 +251,8 @@ class _ProfileCard extends StatelessWidget {
               ),
             ],
           ),
-        ),
+        );
+        }),
       ),
     );
   }
@@ -269,6 +273,7 @@ class _SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -278,16 +283,16 @@ class _SettingsSection extends StatelessWidget {
             children: [
               Text(
                 amLabel,
-                style: AppTypography.amharicLabel.copyWith(color: AppColors.textMuted),
+                style: AppTypography.amharicLabel.copyWith(color: c.textMuted),
               ),
               Text(
                 ' · ',
-                style: AppTypography.englishLabel.copyWith(color: AppColors.textMuted),
+                style: AppTypography.englishLabel.copyWith(color: c.textMuted),
               ),
               Text(
                 enLabel,
                 style: AppTypography.englishLabel.copyWith(
-                  color: AppColors.textCaption,
+                  color: c.textCaption,
                   letterSpacing: 1.4,
                   fontSize: 10,
                 ),
@@ -298,26 +303,26 @@ class _SettingsSection extends StatelessWidget {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: c.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderSubtle),
+            border: Border.all(color: c.borderSubtle),
           ),
           clipBehavior: Clip.hardEdge,
           child: Column(
-            children: _separated(rows),
+            children: _separated(rows, c.borderSubtle),
           ),
         ),
       ],
     );
   }
 
-  static List<Widget> _separated(List<Widget> rows) {
+  static List<Widget> _separated(List<Widget> rows, Color dividerColor) {
     final result = <Widget>[];
     for (var i = 0; i < rows.length; i++) {
       result.add(rows[i]);
       if (i < rows.length - 1) {
-        result.add(const Divider(
-          color: AppColors.borderSubtle,
+        result.add(Divider(
+          color: dividerColor,
           height: 1,
           indent: 16,
         ));
@@ -339,6 +344,7 @@ class _ArrowRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return InkWell(
       onTap: onTap ?? () {},
       child: Padding(
@@ -352,7 +358,7 @@ class _ArrowRow extends StatelessWidget {
                   Text(
                     label,
                     style: AppTypography.amharicLabel.copyWith(
-                      color: AppColors.textOnParchment,
+                      color: c.textOnParchment,
                     ),
                   ),
                   if (hint != null) ...[
@@ -360,7 +366,7 @@ class _ArrowRow extends StatelessWidget {
                     Text(
                       hint!,
                       style: AppTypography.amharicCaption.copyWith(
-                        color: AppColors.textMuted,
+                        color: c.textMuted,
                       ),
                     ),
                   ],
@@ -371,14 +377,14 @@ class _ArrowRow extends StatelessWidget {
               Text(
                 value!,
                 style: AppTypography.amharicCaption.copyWith(
-                  color: AppColors.textMuted,
+                  color: c.textMuted,
                 ),
               ),
               const SizedBox(width: 4),
             ],
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textCaption,
+              color: c.textCaption,
               size: 20,
             ),
           ],
@@ -403,6 +409,7 @@ class _ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
       child: Row(
@@ -414,7 +421,7 @@ class _ToggleRow extends StatelessWidget {
                 Text(
                   label,
                   style: AppTypography.amharicLabel.copyWith(
-                    color: AppColors.textOnParchment,
+                    color: c.textOnParchment,
                   ),
                 ),
                 if (hint != null) ...[
@@ -422,7 +429,7 @@ class _ToggleRow extends StatelessWidget {
                   Text(
                     hint!,
                     style: AppTypography.amharicCaption.copyWith(
-                      color: AppColors.textMuted,
+                      color: c.textMuted,
                     ),
                   ),
                 ],
@@ -432,8 +439,8 @@ class _ToggleRow extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: AppColors.primary,
-            activeTrackColor: AppColors.primaryLight.withValues(alpha: 0.4),
+            activeThumbColor: c.primary,
+            activeTrackColor: c.primaryLight.withValues(alpha: 0.4),
           ),
         ],
       ),
@@ -454,6 +461,7 @@ class _ActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
@@ -462,7 +470,7 @@ class _ActionRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTypography.amharicLabel.copyWith(
-                color: AppColors.textOnParchment,
+                color: c.textOnParchment,
               ),
             ),
           ),
@@ -471,14 +479,14 @@ class _ActionRow extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: c.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary, width: 0.8),
+                border: Border.all(color: c.primary, width: 0.8),
               ),
               child: Text(
                 actionLabel,
                 style: AppTypography.amharicCaption.copyWith(
-                  color: AppColors.primary,
+                  color: c.primary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -500,6 +508,7 @@ class _LanguageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -507,7 +516,7 @@ class _LanguageRow extends StatelessWidget {
           Text(
             s.settingLanguage,
             style: AppTypography.amharicLabel.copyWith(
-              color: AppColors.textOnParchment,
+              color: c.textOnParchment,
             ),
           ),
           const Spacer(),
@@ -541,23 +550,24 @@ class _LangChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : Colors.transparent,
+          color: selected ? c.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.borderSubtle,
+            color: selected ? c.primary : c.borderSubtle,
             width: 1.2,
           ),
         ),
         child: Text(
           label,
           style: AppTypography.amharicCaption.copyWith(
-            color: selected ? Colors.white : AppColors.textMuted,
+            color: selected ? Colors.white : c.textMuted,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
           ),
         ),

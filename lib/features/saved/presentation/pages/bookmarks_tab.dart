@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import 'saved_common.dart';
 
 class BookmarksTab extends StatefulWidget {
@@ -124,7 +124,7 @@ class _BookmarksTabState extends State<BookmarksTab> {
             ?.bookEntry;
 
     return ColoredBox(
-      color: AppColors.surfaceDim,
+      color: context.colors.surfaceDim,
       child: Column(
         children: [
           SingleChildScrollView(
@@ -187,7 +187,7 @@ class _BookmarksTabState extends State<BookmarksTab> {
                 ? const AnnotationEmptyState(tab: 1)
                 : RefreshIndicator(
                     onRefresh: widget.onRefresh,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                       itemCount: items.length,

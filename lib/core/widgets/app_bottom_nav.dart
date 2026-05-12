@@ -26,11 +26,12 @@ class AppBottomNav extends StatelessWidget {
     final s = L10n.of(context);
     final labels = [s.navHome, s.navBooks, s.navSearch, s.navSaved, s.navMe];
 
+    final c = context.colors;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.borderSubtle, width: 1)),
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: c.surface,
+        border: Border(top: BorderSide(color: c.borderSubtle, width: 1)),
+        boxShadow: const [
           BoxShadow(color: Color(0x0F000000), blurRadius: 12, offset: Offset(0, -4)),
         ],
       ),
@@ -46,7 +47,7 @@ class AppBottomNav extends StatelessWidget {
                 child: InkWell(
                   onTap: () => onTap(i),
                   highlightColor: Colors.transparent,
-                  splashColor: AppColors.primary.withValues(alpha: 0.06),
+                  splashColor: c.primary.withValues(alpha: 0.06),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -56,7 +57,7 @@ class AppBottomNav extends StatelessWidget {
                           isActive ? activeIcon : inactiveIcon,
                           key: ValueKey(isActive),
                           size: 24,
-                          color: isActive ? AppColors.primary : AppColors.textCaption,
+                          color: isActive ? c.primary : c.textCaption,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -64,7 +65,7 @@ class AppBottomNav extends StatelessWidget {
                         labels[i],
                         style: AppTypography.amharicCaption.copyWith(
                           fontSize: 10,
-                          color: isActive ? AppColors.primary : AppColors.textCaption,
+                          color: isActive ? c.primary : c.textCaption,
                           fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
                         ),
                       ),
