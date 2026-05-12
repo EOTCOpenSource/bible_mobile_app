@@ -66,76 +66,68 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Fixed header ─────────────────────────────────────────────
             _TopBar(
-              entry:      widget.entry,
-              s:          s,
-              isAmharic:  isAmharic,
-              onSearch:   () => Navigator.push(
+              entry:     widget.entry,
+              s:         s,
+              isAmharic: isAmharic,
+              onSearch:  () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => SearchTab(initialBook: widget.entry),
                 ),
               ),
             ),
-            Expanded(
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                  : CustomScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: _BookInfoCard(
-                            entry: widget.entry,
-                            totalChapters: total,
-                            progress: _progress,
-                            s: s,
-                            useGeez: useGeez,
-                            isAmharic: isAmharic,
-                          ),
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                        SliverToBoxAdapter(
-                          child: _ContinueCard(
-                            s: s,
-                            useGeez: useGeez,
-                            lastChapterIdx: _lastChapterIdx,
-                            lastVerseNum: _lastVerseNum,
-                            onContinue: () => _openChapter(_lastChapterIdx),
-                          ),
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 14)),
-                        SliverToBoxAdapter(child: _LegendRow(s: s)),
-                        const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverGrid(
-                            delegate: SliverChildBuilderDelegate(
-                              (ctx, i) {
-                                final chNum = _book!.chapters[i].chapterNumber;
-                                return _ChapterCell(
-                                  chapterNum: chNum,
-                                  isCurrent:    i == _lastChapterIdx,
-                                  isRead:       i < _lastChapterIdx,
-                                  isBookmarked: false,
-                                  useGeez: useGeez,
-                                  onTap: () => _openChapter(i),
-                                );
-                              },
-                              childCount: _book!.chapters.length,
-                            ),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 5,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
-                              childAspectRatio: 0.82,
-                            ),
-                          ),
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                      ],
-                    ),
-            ),
+            if (_loading)
+              const Expanded(
+                child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              )
+            else ...[
+              _BookInfoCard(
+                entry:         widget.entry,
+                totalChapters: total,
+                progress:      _progress,
+                s:             s,
+                useGeez:       useGeez,
+                isAmharic:     isAmharic,
+              ),
+              const SizedBox(height: 10),
+              _ContinueCard(
+                s:              s,
+                useGeez:        useGeez,
+                lastChapterIdx: _lastChapterIdx,
+                lastVerseNum:   _lastVerseNum,
+                onContinue:     () => _openChapter(_lastChapterIdx),
+              ),
+              const SizedBox(height: 14),
+              _LegendRow(s: s),
+              const SizedBox(height: 10),
+              // ── Scrollable chapter grid ──────────────────────────────
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                  physics: const BouncingScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount:  5,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 0.82,
+                  ),
+                  itemCount: _book!.chapters.length,
+                  itemBuilder: (ctx, i) {
+                    final chNum = _book!.chapters[i].chapterNumber;
+                    return _ChapterCell(
+                      chapterNum:   chNum,
+                      isCurrent:    i == _lastChapterIdx,
+                      isRead:       i < _lastChapterIdx,
+                      isBookmarked: false,
+                      useGeez:      useGeez,
+                      onTap:        () => _openChapter(i),
+                    );
+                  },
+                ),
+              ),
+            ],
           ],
         ),
       ),
