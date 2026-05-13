@@ -29,6 +29,7 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
 
   int _lastChapterIdx = 0;
   int _lastVerseNum = 1;
+  int _nextChapterIdx = -1;
   Set<int> _readChapters = {};
   double _bookProgress = 0;
 
@@ -70,6 +71,7 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
       _loading = false;
       _lastChapterIdx = p.lastChapterIdx;
       _lastVerseNum = p.lastVerseNum;
+      _nextChapterIdx = p.nextChapterIdx;
       _readChapters = p.readChapters;
       _bookProgress = p.bookProgress;
     });
@@ -100,13 +102,28 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
     setState(() {
       _lastChapterIdx = p.lastChapterIdx;
       _lastVerseNum = p.lastVerseNum;
+      _nextChapterIdx = p.nextChapterIdx;
       _readChapters = p.readChapters;
       _bookProgress = p.bookProgress;
     });
   }
 
-  ({int lastChapterIdx, int lastVerseNum, Set<int> readChapters, double bookProgress})
-      _deriveProgress(Book book, ReadingPosition? pos, Set<int> readChapters) {
+  /// First chapter index (in [book.chapters] order) not in [readChapters], or
+  /// `-1` when every chapter is already marked read (no "next" highlight).
+  int _indexOfNextUnreadChapter(Book book, Set<int> readChapters) {
+    for (var i = 0; i < book.chapters.length; i++) {
+      if (!readChapters.contains(book.chapters[i].chapterNumber)) return i;
+    }
+    return -1;
+  }
+
+  ({
+    int lastChapterIdx,
+    int lastVerseNum,
+    int nextChapterIdx,
+    Set<int> readChapters,
+    double bookProgress,
+  }) _deriveProgress(Book book, ReadingPosition? pos, Set<int> readChapters) {
     var lastIdx = 0;
     var lastVerse = 1;
     if (pos != null && pos.bookId == widget.entry.bookNameEn) {
@@ -119,10 +136,12 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
     final total = book.chapters.length;
     final readCount = readChapters.length;
     final progress = total <= 0 ? 0.0 : (readCount / total).clamp(0.0, 1.0);
+    final nextIdx = _indexOfNextUnreadChapter(book, readChapters);
 
     return (
       lastChapterIdx: lastIdx,
       lastVerseNum: lastVerse,
+      nextChapterIdx: nextIdx,
       readChapters: readChapters,
       bookProgress: progress,
     );
@@ -205,14 +224,14 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
                     crossAxisCount:  5,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
-                    childAspectRatio: 0.82,
+                    childAspectRatio: 0.88,
                   ),
                   itemCount: _book!.chapters.length,
                   itemBuilder: (ctx, i) {
                     final chNum = _book!.chapters[i].chapterNumber;
                     return _ChapterCell(
                       chapterNum:   chNum,
-                      isCurrent:    i == _lastChapterIdx,
+                      isNext:       _nextChapterIdx >= 0 && i == _nextChapterIdx,
                       isRead:       _readChapters.contains(chNum),
                       isBookmarked: false,
                       useGeez:      useGeez,
@@ -563,10 +582,20 @@ class _LegendRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          _LegendDot(color: c.primary, label: s.legendCurrent),
-          const SizedBox(width: 14),
-          _LegendDot(color: c.borderSubtle, label: s.legendUnread, border: true),
-          const SizedBox(width: 14),
+          _LegendDot(color: c.primary, label: s.legendNextChapter),
+          const SizedBox(width: 10),
+          _LegendIcon(
+            icon: Icons.menu_book_rounded,
+            color: c.primary,
+            label: s.chapSelectorProgressSuffix,
+          ),
+          const SizedBox(width: 10),
+          _LegendIcon(
+            icon: Icons.book_rounded,
+            color: c.textMuted,
+            label: s.legendUnread,
+          ),
+          const SizedBox(width: 10),
           _LegendIcon(
             icon: Icons.bookmark_rounded,
             color: c.accentDark,
@@ -587,10 +616,9 @@ class _LegendRow extends StatelessWidget {
 }
 
 class _LegendDot extends StatelessWidget {
-  const _LegendDot({required this.color, required this.label, this.border = false});
+  const _LegendDot({required this.color, required this.label});
   final Color color;
   final String label;
-  final bool border;
 
   @override
   Widget build(BuildContext context) {
@@ -601,9 +629,8 @@ class _LegendDot extends StatelessWidget {
           width: 11,
           height: 11,
           decoration: BoxDecoration(
-            color: border ? Colors.transparent : color,
+            color: color,
             shape: BoxShape.circle,
-            border: border ? Border.all(color: color, width: 1.5) : null,
           ),
         ),
         const SizedBox(width: 5),
@@ -649,14 +676,14 @@ class _LegendIcon extends StatelessWidget {
 class _ChapterCell extends StatelessWidget {
   const _ChapterCell({
     required this.chapterNum,
-    required this.isCurrent,
+    required this.isNext,
     required this.isRead,
     required this.isBookmarked,
     required this.useGeez,
     required this.onTap,
   });
   final int chapterNum;
-  final bool isCurrent;
+  final bool isNext;
   final bool isRead;
   final bool isBookmarked;
   final bool useGeez;
@@ -669,7 +696,7 @@ class _ChapterCell extends StatelessWidget {
     final Color numColor;
     final Color borderColor;
 
-    if (isCurrent) {
+    if (isNext) {
       bgColor     = c.primary;
       numColor    = Colors.white;
       borderColor = c.primary;
@@ -683,8 +710,29 @@ class _ChapterCell extends StatelessWidget {
       borderColor = c.borderSubtle;
     }
 
-    final geezLabel   = toGeez(chapterNum);
-    final arabicLabel = '$chapterNum';
+    final bookIconColor = isNext
+        ? Colors.white.withValues(alpha: 0.88)
+        : isRead
+            ? c.primary.withValues(alpha: 0.85)
+            : c.textMuted.withValues(alpha: 0.75);
+
+    final chapterLabel = useGeez ? toGeez(chapterNum) : '$chapterNum';
+    final TextStyle numberStyle = useGeez
+        ? TextStyle(
+            fontFamily: AppTypography.shiromeda,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: numColor,
+            height: 1.05,
+          )
+        : TextStyle(
+            fontFamily: AppTypography.nokiaPureheadline,
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
+            color: numColor,
+            height: 1.0,
+            letterSpacing: 0.2,
+          );
 
     return GestureDetector(
       onTap: onTap,
@@ -692,12 +740,12 @@ class _ChapterCell extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: borderColor, width: 1),
-          boxShadow: isCurrent
+          boxShadow: isNext
               ? [
                   BoxShadow(
-                    color: c.primary.withValues(alpha: 0.3),
+                    color: c.primary.withValues(alpha: 0.28),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
@@ -705,32 +753,29 @@ class _ChapterCell extends StatelessWidget {
               : null,
         ),
         child: Stack(
+          clipBehavior: Clip.none,
           children: [
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    geezLabel,
-                    style: TextStyle(
-                      fontFamily: AppTypography.shiromeda,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                      color: numColor,
-                      height: 1.0,
-                    ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 2, 16, 14),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    chapterLabel,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: numberStyle,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    arabicLabel,
-                    style: TextStyle(
-                      fontFamily: AppTypography.nokiaPureheadline,
-                      fontSize: 9,
-                      color: numColor.withValues(alpha: 0.55),
-                      height: 1.0,
-                    ),
-                  ),
-                ],
+                ),
+              ),
+            ),
+            Positioned(
+              right: 4,
+              bottom: 4,
+              child: Icon(
+                isRead ? Icons.menu_book_rounded : Icons.book_rounded,
+                size: 12,
+                color: bookIconColor,
               ),
             ),
             if (isBookmarked)
@@ -740,7 +785,7 @@ class _ChapterCell extends StatelessWidget {
                 child: Icon(
                   Icons.bookmark_rounded,
                   size: 10,
-                  color: isCurrent ? c.accent : c.accentDark,
+                  color: isNext ? c.accent : c.accentDark,
                 ),
               ),
           ],

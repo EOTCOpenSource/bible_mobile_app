@@ -141,11 +141,13 @@ class AmStrings extends AppStrings {
   @override
   String get chapSelectorVerseLabel => 'ቁጥር';
   @override
-  String get chapSelectorProgressSuffix => 'አንብብ';
+  String get chapSelectorProgressSuffix => 'የተነበበየተነበበ';
   @override
   String get chapSelectorChapNosLabel => 'ምዕራፍ ቁጥሮ';
   @override
   String get legendCurrent => 'አሁን';
+  @override
+  String get legendNextChapter => 'ቀጣይ';
   @override
   String get legendUnread => 'ያልተነበበ';
   @override

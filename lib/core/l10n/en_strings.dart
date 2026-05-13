@@ -85,6 +85,7 @@ class EnStrings extends AppStrings {
   @override String get chapSelectorProgressSuffix => 'read';
   @override String get chapSelectorChapNosLabel   => 'Chapter Nos.';
   @override String get legendCurrent              => 'Now';
+  @override String get legendNextChapter           => 'Next';
   @override String get legendUnread               => 'Unread';
   @override String get legendBookmark             => 'Bookmarked';
 

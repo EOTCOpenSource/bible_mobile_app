@@ -92,6 +92,8 @@ abstract class AppStrings {
   String get chapSelectorProgressSuffix; // "ተነቧል" / "read"
   String get chapSelectorChapNosLabel;   // "ምዕራፍ ቁጥሮች" / "Chapter Nos."
   String get legendCurrent;              // "አሁን" / "Now"
+  /// Highlight for the next chapter to read (first unread in order).
+  String get legendNextChapter;
   String get legendUnread;               // "ያልተነበበ" / "Unread"
   String get legendBookmark;             // "የተመዘገበ" / "Bookmarked"
 
