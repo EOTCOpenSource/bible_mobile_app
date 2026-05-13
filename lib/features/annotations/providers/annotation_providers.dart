@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/annotations/annotation_models.dart';
 import '../../../core/storage/app_database.dart';
+import '../../../core/storage/app_database_provider.dart';
 
-// ── DB singleton ──────────────────────────────────────────────────────────────
-
-final annotationDbProvider = Provider<AppDatabase>((_) => AppDatabase());
+export '../../../core/storage/app_database_provider.dart'
+    show appDatabaseProvider, annotationDbProvider;
 
 // ── Chapter key ───────────────────────────────────────────────────────────────
 

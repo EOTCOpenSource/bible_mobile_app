@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../books/presentation/pages/reader_screen.dart';
+import '../../../books/providers/reading_progress_providers.dart';
 
-class ContinueReadingSection extends StatelessWidget {
-  const ContinueReadingSection({super.key});
+class ContinueReadingSection extends ConsumerWidget {
+  const ContinueReadingSection({super.key, required this.onOpenBooksTab});
 
-  static const _progressPercent = 40; // placeholder until data layer is wired
+  final VoidCallback onOpenBooksTab;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = L10n.of(context);
     final c = context.colors;
+    final asyncSnap = ref.watch(continueReadingSnapshotProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -28,18 +33,54 @@ class ContinueReadingSection extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                s.completedPercent(_progressPercent),
-                style: AppTypography.englishCaption.copyWith(
-                  color: c.primary,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0,
+              asyncSnap.when(
+                data: (snap) => Text(
+                  s.completedPercent(snap?.progressPercent ?? 0),
+                  style: AppTypography.englishCaption.copyWith(
+                    color: c.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                ),
+                loading: () => Text(
+                  s.completedPercent(0),
+                  style: AppTypography.englishCaption.copyWith(
+                    color: c.textMuted,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                ),
+                error: (Object error, StackTrace stackTrace) => Text(
+                  s.completedPercent(0),
+                  style: AppTypography.englishCaption.copyWith(
+                    color: c.textMuted,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          const _ContinueReadingCard(),
+          asyncSnap.when(
+            data: (snap) => snap == null
+                ? _EmptyContinueCard(
+                    colors: c,
+                    s: s,
+                    onOpenBooks: onOpenBooksTab,
+                  )
+                : _ContinueReadingCard(
+                    snap: snap,
+                    colors: c,
+                    s: s,
+                  ),
+            loading: () => const _ContinueCardSkeleton(),
+            error: (Object error, StackTrace stackTrace) => _EmptyContinueCard(
+              colors: c,
+              s: s,
+              onOpenBooks: onOpenBooksTab,
+            ),
+          ),
         ],
       ),
     );
@@ -47,70 +88,194 @@ class ContinueReadingSection extends StatelessWidget {
 }
 
 class _ContinueReadingCard extends StatelessWidget {
-  const _ContinueReadingCard();
+  const _ContinueReadingCard({
+    required this.snap,
+    required this.colors,
+    required this.s,
+  });
+
+  final ContinueReadingSnapshot snap;
+  final AppColorScheme colors;
+  final AppStrings s;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    final pct = (snap.progressPercent / 100).clamp(0.0, 1.0);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => ReaderScreen(
+                entry: snap.entry,
+                initialChapterNumber: snap.position.chapter,
+                initialVerse: snap.position.verse,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: c.borderSubtle),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const _ClosedBookCover(),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      snap.entry.bookNameAm,
+                      style: AppTypography.amharicLabel.copyWith(
+                        color: c.textOnParchment,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${snap.entry.bookNameEn} · ${s.chapterAbbr} ${snap.position.chapter}',
+                      style: AppTypography.englishCaption.copyWith(
+                        color: c.textMuted,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: pct,
+                        minHeight: 6,
+                        backgroundColor: c.parchmentDark,
+                        valueColor: AlwaysStoppedAnimation(c.primary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: c.primary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: c.primary,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyContinueCard extends StatelessWidget {
+  const _EmptyContinueCard({
+    required this.colors,
+    required this.s,
+    required this.onOpenBooks,
+  });
+
+  final AppColorScheme colors;
+  final AppStrings s;
+  final VoidCallback onOpenBooks;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onOpenBooks,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: c.borderSubtle),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const _ClosedBookCover(),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.streakReadTodayHint,
+                      style: AppTypography.amharicLabel.copyWith(
+                        color: c.textOnParchment,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      s.booksTitle,
+                      style: AppTypography.englishCaption.copyWith(
+                        color: c.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: c.primary, size: 22),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContinueCardSkeleton extends StatelessWidget {
+  const _ContinueCardSkeleton();
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     return Container(
-      padding: const EdgeInsets.all(14),
+      height: 112,
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: c.borderSubtle),
-        boxShadow: const [
-          BoxShadow(color: Color(0x08000000), blurRadius: 12, offset: Offset(0, 4)),
-        ],
       ),
-      child: Row(
-        children: [
-          const _ClosedBookCover(),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'መጽሐፈ ነገሥት ቀዳማዊ',
-                  style: AppTypography.amharicLabel.copyWith(
-                    color: c.textOnParchment,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '1 Kings · Chapter 8',
-                  style: AppTypography.englishCaption.copyWith(
-                    color: c.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: 0.40,
-                    minHeight: 6,
-                    backgroundColor: c.parchmentDark,
-                    valueColor: AlwaysStoppedAnimation(c.primary),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: c.primary.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.chevron_right_rounded,
-              color: c.primary,
-              size: 22,
-            ),
-          ),
-        ],
+      alignment: Alignment.center,
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2, color: c.primary),
       ),
     );
   }
@@ -167,7 +332,6 @@ class _ClosedBookCover extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Spine lighting (inset feel)
               Positioned(
                 left: 0,
                 top: 0,
@@ -191,7 +355,6 @@ class _ClosedBookCover extends StatelessWidget {
                   ),
                 ),
               ),
-              // Spine crease
               Positioned(
                 left: 5,
                 top: 0,
@@ -210,7 +373,6 @@ class _ClosedBookCover extends StatelessWidget {
                   ),
                 ),
               ),
-              // Gold foil inlay
               Positioned(
                 left: 9,
                 top: 4,
@@ -231,7 +393,6 @@ class _ClosedBookCover extends StatelessWidget {
                   ),
                 ),
               ),
-              // Cross — replace with your asset / icon later
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4),
@@ -259,7 +420,6 @@ class _SimpleGoldCrossPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    // Map from 24×32 viewBox
     final sx = w / 24;
     final sy = h / 32;
     final stroke = 3 * ((sx + sy) / 2).clamp(1.8, 3.2);

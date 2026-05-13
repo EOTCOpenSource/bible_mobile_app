@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,8 @@ import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
+import '../../data/reading_constants.dart';
+import '../../providers/reading_progress_providers.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -26,18 +30,23 @@ class ReaderScreen extends ConsumerStatefulWidget {
     super.key,
     required this.entry,
     this.initialChapter = 0,
+    this.initialChapterNumber,
     this.initialVerse,
   });
 
   final BookIndexEntry entry;
+  /// Page index in [Book.chapters] (0-based).
   final int initialChapter;
+  /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
+  final int? initialChapterNumber;
   final int? initialVerse;
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
 }
 
-class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+class _ReaderScreenState extends ConsumerState<ReaderScreen>
+    with WidgetsBindingObserver {
   Book? _book;
   bool _loading = true;
   late final PageController _pageCtrl;
@@ -46,9 +55,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   String? _selectedKey;
   final GlobalKey _spotlightKey = GlobalKey();
 
+  Timer? _dwellTimer;
+  int? _dwellChapterNumber;
+  /// Page index used only to spotlight [initialVerse] on first open.
+  int? _spotlightChapterPageIndex;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentChapter = widget.initialChapter;
     _pageCtrl = PageController(initialPage: widget.initialChapter);
   }
@@ -60,26 +75,110 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _dwellTimer?.cancel();
+      _persistReadingPosition();
+    } else if (state == AppLifecycleState.resumed) {
+      _persistReadingPosition();
+      _scheduleDwellTimer();
+    }
+  }
+
+  @override
   void dispose() {
+    _dwellTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _persistReadingPosition();
     _pageCtrl.dispose();
     super.dispose();
+  }
+
+  void _persistReadingPosition() {
+    if (_book == null) return;
+    final ProviderContainer container;
+    try {
+      container = ProviderScope.containerOf(context);
+    } on Object catch (_) {
+      return;
+    }
+    final verse = _selectedVerseNum;
+    unawaited(
+      container.read(readingProgressRepositoryProvider).saveReadingPosition(
+            bookId: widget.entry.bookNameEn,
+            chapter: _currentChapterNumber,
+            verse: verse,
+          ),
+    );
+  }
+
+  void _scheduleDwellTimer() {
+    _dwellTimer?.cancel();
+    if (_book == null || _loading) return;
+    final chNum = _currentChapterNumber;
+    _dwellChapterNumber = chNum;
+    _dwellTimer = Timer(
+      const Duration(seconds: kReadingDwellQualifySeconds),
+      () async {
+        if (!mounted || _book == null) return;
+        if (_currentChapterNumber != _dwellChapterNumber) return;
+        // Capture the root container here; do not use [ref] after awaits — the
+        // reader may be popped while [recordQualifiedChapterRead] runs, which
+        // invalidates this Consumer's [ref] before [invalidate] is called.
+        final ProviderContainer container;
+        try {
+          container = ProviderScope.containerOf(context);
+        } on Object catch (_) {
+          return;
+        }
+        final bookId = widget.entry.bookNameEn;
+        await container.read(readingProgressRepositoryProvider).recordQualifiedChapterRead(
+              bookId: bookId,
+              chapter: chNum,
+            );
+        container.invalidate(continueReadingSnapshotProvider);
+        container.invalidate(readingStreakStateProvider);
+      },
+    );
   }
 
   Future<void> _loadBook() async {
     final book =
         await BibleRepositoryProvider.of(context).loadBook(widget.entry);
     if (!mounted) return;
+
+    var pageIdx = widget.initialChapter.clamp(0, book.chapters.length - 1);
+    if (widget.initialChapterNumber != null) {
+      final i = book.chapters
+          .indexWhere((c) => c.chapterNumber == widget.initialChapterNumber);
+      if (i >= 0) pageIdx = i;
+    }
+
     setState(() {
       _book = book;
+      _currentChapter = pageIdx;
       _loading = false;
+      _spotlightChapterPageIndex =
+          widget.initialVerse != null ? pageIdx : null;
     });
-    _autoSelectInitialVerse();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_pageCtrl.hasClients) return;
+      if (_pageCtrl.page?.round() != pageIdx) {
+        _pageCtrl.jumpToPage(pageIdx);
+      }
+    });
+
+    _persistReadingPosition();
+    _scheduleDwellTimer();
+    _autoSelectInitialVerse(pageIdx);
   }
 
-  void _autoSelectInitialVerse() {
+  void _autoSelectInitialVerse(int chapterPageIndex) {
     final targetVerse = widget.initialVerse;
     if (targetVerse == null || _book == null) return;
-    final chIdx = widget.initialChapter.clamp(0, _book!.chapters.length - 1);
+    final chIdx = chapterPageIndex.clamp(0, _book!.chapters.length - 1);
     final chapter = _book!.chapters[chIdx];
     for (var sIdx = 0; sIdx < chapter.sections.length; sIdx++) {
       if (chapter.sections[sIdx].verses.any((v) => v.verseNumber == targetVerse)) {
@@ -111,8 +210,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  void _selectVerse(String key) =>
-      setState(() => _selectedKey = _selectedKey == key ? null : key);
+  void _selectVerse(String key) {
+    setState(() => _selectedKey = _selectedKey == key ? null : key);
+    _persistReadingPosition();
+  }
 
   void _deselect() => setState(() => _selectedKey = null);
 
@@ -342,8 +443,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                           PageView.builder(
                             controller: _pageCtrl,
                             itemCount: _book!.chapters.length,
-                            onPageChanged: (i) =>
-                                setState(() => _currentChapter = i),
+                            onPageChanged: (i) {
+                              setState(() => _currentChapter = i);
+                              _persistReadingPosition();
+                              _scheduleDwellTimer();
+                            },
                             itemBuilder: (ctx, i) {
                               // Each page watches its own chapter's annotations
                               final pageChapterNum =
@@ -375,11 +479,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                 annotations: pageAnnotations,
                                 spotlightVerseNum: (widget.initialVerse !=
                                             null &&
-                                        i == widget.initialChapter)
+                                        i == _spotlightChapterPageIndex)
                                     ? widget.initialVerse
                                     : null,
                                 spotlightKey: (widget.initialVerse != null &&
-                                        i == widget.initialChapter)
+                                        i == _spotlightChapterPageIndex)
                                     ? _spotlightKey
                                     : null,
                               );

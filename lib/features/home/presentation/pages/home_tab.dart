@@ -8,7 +8,9 @@ import '../widgets/continue_reading_section.dart';
 import '../widgets/reading_plans_section.dart';
 
 class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
+  const HomeTab({super.key, required this.onSwitchToBooks});
+
+  final VoidCallback onSwitchToBooks;
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +27,18 @@ class HomeTab extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(child: HomeHeader(dateLabel: dateLabel)),
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
-          SliverToBoxAdapter(child: ReadingStreakCard(todayWeekday: todayWeekday)),
+          SliverToBoxAdapter(
+            child: ReadingStreakCard(
+              todayWeekday: todayWeekday,
+              onReadToday: onSwitchToBooks,
+            ),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 14)),
           const SliverToBoxAdapter(child: DailyVerseCard()),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          const SliverToBoxAdapter(child: ContinueReadingSection()),
+          SliverToBoxAdapter(
+            child: ContinueReadingSection(onOpenBooksTab: onSwitchToBooks),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
           const SliverToBoxAdapter(child: ReadingPlansSection()),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),

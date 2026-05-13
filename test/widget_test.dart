@@ -1,9 +1,24 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bibleflutter/core/services/bible_repository_provider.dart';
+import 'package:bibleflutter/core/services/repository_provider.dart';
+import 'package:bibleflutter/features/books/data/repositories/bible_repository.dart';
 import 'package:bibleflutter/main.dart';
 
 void main() {
   testWidgets('App renders without error', (WidgetTester tester) async {
-    await tester.pumpWidget(const BibleApp());
+    final bibleRepository = BibleRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bibleRepositoryProvider.overrideWithValue(bibleRepository),
+        ],
+        child: BibleRepositoryProvider(
+          repository: bibleRepository,
+          child: const BibleApp(),
+        ),
+      ),
+    );
     expect(find.byType(BibleApp), findsOneWidget);
   });
 }

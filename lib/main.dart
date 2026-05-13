@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/l10n.dart';
+import 'core/services/bible_repository_provider.dart';
 import 'core/services/repository_provider.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
@@ -9,9 +10,16 @@ import 'features/home/presentation/pages/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final bibleRepository = BibleRepository();
   runApp(
-    const ProviderScope(
-      child: BibleApp(),
+    ProviderScope(
+      overrides: [
+        bibleRepositoryProvider.overrideWithValue(bibleRepository),
+      ],
+      child: BibleRepositoryProvider(
+        repository: bibleRepository,
+        child: const BibleApp(),
+      ),
     ),
   );
 }

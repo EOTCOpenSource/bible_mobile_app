@@ -1,36 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kenat/kenat.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/pill_button.dart';
+import '../../../books/data/reading_date.dart';
+import '../../../books/providers/reading_progress_providers.dart';
 
-class ReadingStreakCard extends StatelessWidget {
-  const ReadingStreakCard({super.key, required this.todayWeekday});
+class ReadingStreakCard extends ConsumerWidget {
+  const ReadingStreakCard({
+    super.key,
+    required this.todayWeekday,
+    required this.onReadToday,
+  });
 
   /// Raw value from Kenat.getWeekday(): 0 = Sunday … 6 = Saturday
   final int todayWeekday;
+  final VoidCallback onReadToday;
 
   // Remap to Monday-first display index (0 = Mon … 6 = Sun)
-  int get _todayIndex => (todayWeekday + 6) % 7;
-
-  // true = done, null = today, false = future
-  List<bool?> get _status => List.generate(
-        7,
-        (i) => i < _todayIndex ? true : i == _todayIndex ? null : false,
-      );
-
-  static const _streakCount = 12; // placeholder until user data is wired
+  int _todayIndex() => (todayWeekday + 6) % 7;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = L10n.of(context);
     final useGeez = Settings.of(context).useGeezNumbers;
-    final streakDisplay = useGeez ? toGeez(_streakCount) : '$_streakCount';
-    final status = _status;
+    final streakAsync = ref.watch(readingStreakStateProvider);
+    final streakCount = streakAsync.value?.currentStreak ?? 0;
+    final qualifiedToday = streakAsync.value?.lastQualifiedDate ==
+        ReadingDate.todayIso();
+
+    final streakDisplay =
+        useGeez ? toGeez(streakCount) : '$streakCount';
+
+    final todayIdx = _todayIndex();
+    final status = List<bool?>.generate(7, (i) {
+      if (i < todayIdx) return true;
+      if (i > todayIdx) return false;
+      return qualifiedToday ? true : null;
+    });
+
     final isAm = s is AmStrings;
-    // Monday-first display index i → Kenat Sunday-first index via (i+1)%7
     final dayNames = isAm ? DaysOfWeek.amharic : DaysOfWeek.english;
     String dayAbbr(int i) {
       final name = dayNames[(i + 1) % 7];
@@ -53,7 +65,6 @@ class ReadingStreakCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Row 1: flame + streak count ───────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -84,12 +95,11 @@ class ReadingStreakCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            // ── Row 2: day circles ─────────────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(7, (i) {
                 final done = status[i];
-                final isToday = done == null;
+                final isToday = i == todayIdx;
                 return Column(
                   children: [
                     Container(
@@ -102,14 +112,14 @@ class ReadingStreakCard extends StatelessWidget {
                             : done == true
                                 ? c.primaryLight
                                 : c.borderSubtle,
-                        border: isToday
+                        border: isToday && !qualifiedToday
                             ? Border.all(color: c.accent, width: 2)
                             : null,
                       ),
                       alignment: Alignment.center,
                       child: done == true
                           ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
-                          : isToday
+                          : isToday && !qualifiedToday
                               ? Icon(Icons.star_rounded, size: 12, color: c.accent)
                               : null,
                     ),
@@ -128,7 +138,6 @@ class ReadingStreakCard extends StatelessWidget {
             const SizedBox(height: 14),
             Divider(color: c.borderSubtle, height: 1),
             const SizedBox(height: 10),
-            // ── Row 3: hint + CTA ──────────────────────────────────────────
             Row(
               children: [
                 Text(
@@ -138,7 +147,7 @@ class ReadingStreakCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                PillButton(label: s.streakReadTodayBtn, onTap: () {}),
+                PillButton(label: s.streakReadTodayBtn, onTap: onReadToday),
               ],
             ),
           ],

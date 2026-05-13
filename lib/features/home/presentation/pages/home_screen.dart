@@ -28,7 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          const HomeTab(),
+          HomeTab(
+            onSwitchToBooks: () => setState(() => _selectedIndex = 1),
+          ),
           BooksTab(
             onSearchTap: (scope) => Navigator.push(
               context,

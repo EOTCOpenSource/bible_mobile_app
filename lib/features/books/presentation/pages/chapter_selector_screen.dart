@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kenat/kenat.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
@@ -7,50 +8,97 @@ import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
+import '../../providers/reading_progress_providers.dart';
 import 'reader_screen.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 
-class ChapterSelectorScreen extends StatefulWidget {
+class ChapterSelectorScreen extends ConsumerStatefulWidget {
   const ChapterSelectorScreen({super.key, required this.entry});
   final BookIndexEntry entry;
 
   @override
-  State<ChapterSelectorScreen> createState() => _ChapterSelectorScreenState();
+  ConsumerState<ChapterSelectorScreen> createState() =>
+      _ChapterSelectorScreenState();
 }
 
-class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
+class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
   Book? _book;
   bool _loading = true;
   bool _initialized = false;
 
-  // Placeholder progress — will come from persistence layer later
-  static const _lastChapterIdx = 0;
-  static const _lastVerseNum   = 1;
-  // In real app: Set<int> _readChapters, Set<int> _bookmarkedChapters
+  int _lastChapterIdx = 0;
+  int _lastVerseNum = 1;
+  Set<int> _readChapters = {};
+  double _bookProgress = 0;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialized) { _initialized = true; _loadBook(); }
+    if (!_initialized) {
+      _initialized = true;
+      _loadBook();
+    }
   }
 
   Future<void> _loadBook() async {
-    final book = await BibleRepositoryProvider.of(context).loadBook(widget.entry);
-    if (mounted) setState(() { _book = book; _loading = false; });
+    // Resolve repo via [ProviderContainer] before any await. If the user pops
+    // this route while awaits are in flight, this [Consumer]'s [ref] is invalid
+    // even when [mounted] is still true — same class of bug as Reader dwell.
+    final ProviderContainer container;
+    try {
+      container = ProviderScope.containerOf(context);
+    } on Object catch (_) {
+      return;
+    }
+    final repo = container.read(readingProgressRepositoryProvider);
+
+    final book =
+        await BibleRepositoryProvider.of(context).loadBook(widget.entry);
+    if (!mounted) return;
+
+    final pos = await repo.getReadingPosition();
+    if (!mounted) return;
+
+    final readSet =
+        await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
+    if (!mounted) return;
+
+    var lastIdx = 0;
+    var lastVerse = 1;
+    if (pos != null && pos.bookId == widget.entry.bookNameEn) {
+      final i =
+          book.chapters.indexWhere((c) => c.chapterNumber == pos.chapter);
+      if (i >= 0) lastIdx = i;
+      lastVerse = pos.verse ?? 1;
+    }
+
+    final total = book.chapters.length;
+    final readCount = readSet.length;
+    final progress = total <= 0 ? 0.0 : (readCount / total).clamp(0.0, 1.0);
+
+    setState(() {
+      _book = book;
+      _loading = false;
+      _lastChapterIdx = lastIdx;
+      _lastVerseNum = lastVerse;
+      _readChapters = readSet;
+      _bookProgress = progress;
+    });
   }
 
   void _openChapter(int idx) {
-    Navigator.push(
+    if (_book == null) return;
+    final chNum = _book!.chapters[idx].chapterNumber;
+    Navigator.push<void>(
       context,
-      MaterialPageRoute(
-        builder: (_) => ReaderScreen(entry: widget.entry, initialChapter: idx),
+      MaterialPageRoute<void>(
+        builder: (_) => ReaderScreen(
+          entry: widget.entry,
+          initialChapter: idx,
+          initialChapterNumber: chNum,
+        ),
       ),
     );
-  }
-
-  double get _progress {
-    final total = _book?.chapters.length ?? 1;
-    return (_lastChapterIdx / total).clamp(0.0, 1.0);
   }
 
   @override
@@ -87,7 +135,7 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
               _BookInfoCard(
                 entry:         widget.entry,
                 totalChapters: total,
-                progress:      _progress,
+                progress:      _bookProgress,
                 s:             s,
                 useGeez:       useGeez,
                 isAmharic:     isAmharic,
@@ -120,7 +168,7 @@ class _ChapterSelectorScreenState extends State<ChapterSelectorScreen> {
                     return _ChapterCell(
                       chapterNum:   chNum,
                       isCurrent:    i == _lastChapterIdx,
-                      isRead:       i < _lastChapterIdx,
+                      isRead:       _readChapters.contains(chNum),
                       isBookmarked: false,
                       useGeez:      useGeez,
                       onTap:        () => _openChapter(i),

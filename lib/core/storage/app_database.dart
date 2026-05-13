@@ -5,7 +5,7 @@ import '../annotations/annotation_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 1;
+  static const _version = 2;
 
   Database? _db;
 
@@ -21,7 +21,63 @@ class AppDatabase {
     }
     final dir = await getDatabasesPath();
     final path = p.join(dir, _dbName);
-    return openDatabase(path, version: _version, onCreate: _onCreate);
+    return openDatabase(
+      path,
+      version: _version,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _createReadingTables(db);
+    }
+  }
+
+  /// Reading progress + streak (v2). Used by [onCreate] and migration.
+  Future<void> _createReadingTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reading_position (
+        id           INTEGER PRIMARY KEY CHECK (id = 1),
+        book_id      TEXT    NOT NULL,
+        chapter      INTEGER NOT NULL,
+        verse        INTEGER,
+        updated_at   INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS chapter_read (
+        book_id         TEXT    NOT NULL,
+        chapter         INTEGER NOT NULL,
+        first_read_at   INTEGER NOT NULL,
+        PRIMARY KEY (book_id, chapter)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reading_streak (
+        id                    INTEGER PRIMARY KEY CHECK (id = 1),
+        last_qualified_date   TEXT,
+        current_streak        INTEGER NOT NULL DEFAULT 0,
+        current_streak_start  TEXT,
+        longest_streak        INTEGER NOT NULL DEFAULT 0,
+        longest_streak_start  TEXT,
+        longest_streak_end    TEXT
+      )
+    ''');
+    await db.insert(
+      'reading_streak',
+      {
+        'id': 1,
+        'last_qualified_date': null,
+        'current_streak': 0,
+        'current_streak_start': null,
+        'longest_streak': 0,
+        'longest_streak_start': null,
+        'longest_streak_end': null,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
   }
 
   Future<void> _onCreate(Database db, int _) async {
@@ -74,6 +130,115 @@ class AppDatabase {
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
+    await _createReadingTables(db);
+  }
+
+  // ── Reading position / progress / streak ───────────────────────────────────
+
+  Future<Map<String, Object?>?> getReadingPositionRow() async {
+    final db = await database;
+    final rows = await db.query('reading_position', where: 'id = ?', whereArgs: [1]);
+    if (rows.isEmpty) return null;
+    return rows.first;
+  }
+
+  Future<void> upsertReadingPosition({
+    required String bookId,
+    required int chapter,
+    int? verse,
+  }) async {
+    final db = await database;
+    await db.insert(
+      'reading_position',
+      {
+        'id': 1,
+        'book_id': bookId,
+        'chapter': chapter,
+        'verse': verse,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> insertChapterReadIfAbsent({
+    required String bookId,
+    required int chapter,
+  }) async {
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await db.rawInsert(
+      '''
+      INSERT OR IGNORE INTO chapter_read (book_id, chapter, first_read_at)
+      VALUES (?, ?, ?)
+      ''',
+      [bookId, chapter, now],
+    );
+  }
+
+  Future<int> countChaptersReadForBook(String bookId) async {
+    final db = await database;
+    final r = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM chapter_read WHERE book_id = ?',
+      [bookId],
+    );
+    final n = r.first['c'] as int?;
+    return n ?? 0;
+  }
+
+  Future<List<int>> listReadChaptersForBook(String bookId) async {
+    final db = await database;
+    final rows = await db.query(
+      'chapter_read',
+      columns: ['chapter'],
+      where: 'book_id = ?',
+      whereArgs: [bookId],
+    );
+    final nums = rows.map((m) => m['chapter'] as int).toList()..sort();
+    return nums;
+  }
+
+  Future<Map<String, Object?>> getReadingStreakRow() async {
+    final db = await database;
+    final rows = await db.query('reading_streak', where: 'id = ?', whereArgs: [1]);
+    if (rows.isEmpty) {
+      await db.insert('reading_streak', {
+        'id': 1,
+        'last_qualified_date': null,
+        'current_streak': 0,
+        'current_streak_start': null,
+        'longest_streak': 0,
+        'longest_streak_start': null,
+        'longest_streak_end': null,
+      });
+      return (await db.query('reading_streak', where: 'id = ?', whereArgs: [1]))
+          .first;
+    }
+    return rows.first;
+  }
+
+  Future<void> updateReadingStreakRow({
+    String? lastQualifiedDate,
+    required int currentStreak,
+    String? currentStreakStart,
+    required int longestStreak,
+    String? longestStreakStart,
+    String? longestStreakEnd,
+  }) async {
+    final db = await database;
+    await db.update(
+      'reading_streak',
+      {
+        'last_qualified_date': lastQualifiedDate,
+        'current_streak': currentStreak,
+        'current_streak_start': currentStreakStart,
+        'longest_streak': longestStreak,
+        'longest_streak_start': longestStreakStart,
+        'longest_streak_end': longestStreakEnd,
+      },
+      where: 'id = ?',
+      whereArgs: [1],
+    );
   }
 
   // ── Bookmarks ──────────────────────────────────────────────────────────────
