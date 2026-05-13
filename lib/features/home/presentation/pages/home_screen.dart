@@ -25,7 +25,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final immersive = ref.watch(readerImmersiveModeProvider);
+    // Gate reader-specific states on the books tab being active. The nested
+    // Navigator inside BooksTab keeps ReaderScreen alive even when another tab
+    // is selected, so the providers stay true — clamp them here so other tabs
+    // always get a normal white bottom nav.
+    final onBooksTab = _selectedIndex == 1;
+    final immersive = ref.watch(readerImmersiveModeProvider) && onBooksTab;
+    final bottomNavMatchReader =
+        ref.watch(readerBottomNavMatchReaderProvider) && onBooksTab;
     return Scaffold(
       backgroundColor: c.surface,
       body: IndexedStack(
@@ -55,6 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ? const SizedBox.shrink()
             : AppBottomNav(
                 selectedIndex: _selectedIndex,
+                matchReaderShellColors: bottomNavMatchReader,
                 onTap: (i) => setState(() {
                   if (i == 3) _savedKey++;
                   _selectedIndex = i;

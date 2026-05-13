@@ -79,6 +79,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _riverpodContainer = ProviderScope.containerOf(context);
+    // Defer: updating [readerBottomNavMatchReaderProvider] rebuilds [HomeScreen]
+    // while this route is mounting; doing it synchronously here can throw.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _setReaderBottomNavMatchReader(true);
+    });
     if (_book == null && _loading) _loadBook();
   }
 
@@ -102,12 +108,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     } on Object catch (_) {}
   }
 
+  void _setReaderBottomNavMatchReader(bool match) {
+    final c = _riverpodContainer;
+    if (c == null) return;
+    try {
+      c.read(readerBottomNavMatchReaderProvider.notifier).state = match;
+    } on Object catch (_) {}
+  }
+
   @override
   void dispose() {
     _dwellTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _persistReadingPosition();
     _setReaderImmersiveProvider(false);
+    _setReaderBottomNavMatchReader(false);
     _pageCtrl.dispose();
     super.dispose();
   }
