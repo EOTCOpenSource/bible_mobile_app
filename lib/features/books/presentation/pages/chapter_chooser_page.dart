@@ -10,19 +10,19 @@ import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../../data/reading_models.dart';
 import '../../providers/reading_progress_providers.dart';
-import 'reader_screen.dart';
+import 'book_reader_page.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 
-class ChapterSelectorScreen extends ConsumerStatefulWidget {
-  const ChapterSelectorScreen({super.key, required this.entry});
+class ChapterChooserPage extends ConsumerStatefulWidget {
+  const ChapterChooserPage({super.key, required this.entry});
   final BookIndexEntry entry;
 
   @override
-  ConsumerState<ChapterSelectorScreen> createState() =>
-      _ChapterSelectorScreenState();
+  ConsumerState<ChapterChooserPage> createState() =>
+      _ChapterChooserPageState();
 }
 
-class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
+class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   Book? _book;
   bool _loading = true;
   bool _initialized = false;
@@ -167,10 +167,10 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s        = L10n.of(context);
-    final useGeez  = Settings.of(context).useGeezNumbers;
+    final s = L10n.of(context);
+    final useGeez = Settings.of(context).useGeezNumbers;
     final isAmharic = s is AmStrings;
-    final total    = _book?.chapters.length ?? (widget.entry.chapterCount ?? 0);
+    final total = _book?.chapters.length ?? (widget.entry.chapterCount ?? 0);
 
     final c = context.colors;
     return Scaffold(
@@ -179,12 +179,11 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Fixed header ─────────────────────────────────────────────
             _TopBar(
-              entry:     widget.entry,
-              s:         s,
+              entry: widget.entry,
+              s: s,
               isAmharic: isAmharic,
-              onSearch:  () => Navigator.push(
+              onSearch: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => SearchTab(initialBook: widget.entry),
@@ -197,31 +196,30 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
               )
             else ...[
               _BookInfoCard(
-                entry:         widget.entry,
+                entry: widget.entry,
                 totalChapters: total,
-                progress:      _bookProgress,
-                s:             s,
-                useGeez:       useGeez,
-                isAmharic:     isAmharic,
+                progress: _bookProgress,
+                s: s,
+                useGeez: useGeez,
+                isAmharic: isAmharic,
               ),
               const SizedBox(height: 10),
               _ContinueCard(
-                s:              s,
-                useGeez:        useGeez,
+                s: s,
+                useGeez: useGeez,
                 lastChapterIdx: _lastChapterIdx,
-                lastVerseNum:   _lastVerseNum,
-                onContinue:     () => _openChapter(_lastChapterIdx),
+                lastVerseNum: _lastVerseNum,
+                onContinue: () => _openChapter(_lastChapterIdx),
               ),
               const SizedBox(height: 14),
               _LegendRow(s: s),
               const SizedBox(height: 10),
-              // ── Scrollable chapter grid ──────────────────────────────
               Expanded(
                 child: GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                   physics: const BouncingScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:  5,
+                    crossAxisCount: 5,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                     childAspectRatio: 0.88,
@@ -230,12 +228,12 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
                   itemBuilder: (ctx, i) {
                     final chNum = _book!.chapters[i].chapterNumber;
                     return _ChapterCell(
-                      chapterNum:   chNum,
-                      isNext:       _nextChapterIdx >= 0 && i == _nextChapterIdx,
-                      isRead:       _readChapters.contains(chNum),
+                      chapterNum: chNum,
+                      isNext: _nextChapterIdx >= 0 && i == _nextChapterIdx,
+                      isRead: _readChapters.contains(chNum),
                       isBookmarked: false,
-                      useGeez:      useGeez,
-                      onTap:        () => _openChapter(i),
+                      useGeez: useGeez,
+                      onTap: () => _openChapter(i),
                     );
                   },
                 ),
@@ -251,7 +249,12 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
 // ── Top bar ───────────────────────────────────────────────────────────────────
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.entry, required this.s, required this.isAmharic, this.onSearch});
+  const _TopBar({
+    required this.entry,
+    required this.s,
+    required this.isAmharic,
+    this.onSearch,
+  });
   final BookIndexEntry entry;
   final AppStrings s;
   final bool isAmharic;
@@ -305,7 +308,7 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-// ── Book info card ────────────────────────────────────────────────────────────
+// ── Book info card ───────────────────────────────────────────────────────────
 
 class _BookInfoCard extends StatelessWidget {
   const _BookInfoCard({
@@ -328,11 +331,11 @@ class _BookInfoCard extends StatelessWidget {
     final c = context.colors;
     final baseColor = entry.isOldTestament ? c.primary : c.newTestament;
     final shortName = isAmharic ? entry.bookShortNameAm : entry.bookShortNameEn;
-    final altName   = isAmharic ? entry.bookNameEn : entry.bookNameAm;
-    final testTag   = entry.isOldTestament ? 'OT' : 'NT';
-    final chapStr   = useGeez ? toGeez(totalChapters) : '$totalChapters';
-    final pctVal    = (progress * 100).round();
-    final pctStr    = useGeez ? toGeez(pctVal) : '$pctVal';
+    final altName = isAmharic ? entry.bookNameEn : entry.bookNameAm;
+    final testTag = entry.isOldTestament ? 'OT' : 'NT';
+    final chapStr = useGeez ? toGeez(totalChapters) : '$totalChapters';
+    final pctVal = (progress * 100).round();
+    final pctStr = useGeez ? toGeez(pctVal) : '$pctVal';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -356,7 +359,6 @@ class _BookInfoCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left badge
             Container(
               width: 66,
               height: 76,
@@ -398,12 +400,10 @@ class _BookInfoCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            // Right info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tag chip
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -422,7 +422,6 @@ class _BookInfoCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // Alternate-language name
                   Text(
                     altName,
                     style: AppTypography.amharicLabel.copyWith(
@@ -433,7 +432,6 @@ class _BookInfoCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  // Chapter count + progress %
                   Text(
                     '$chapStr ${s.chapterAbbr} · $pctStr% ${s.chapSelectorProgressSuffix}',
                     style: AppTypography.amharicCaption.copyWith(
@@ -442,7 +440,6 @@ class _BookInfoCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // Progress bar
                   ClipRRect(
                     borderRadius: BorderRadius.circular(3),
                     child: LinearProgressIndicator(
@@ -481,8 +478,9 @@ class _ContinueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final chStr = useGeez ? toGeez(lastChapterIdx + 1) : '${lastChapterIdx + 1}';
-    final vStr  = useGeez ? toGeez(lastVerseNum)       : '$lastVerseNum';
+    final chStr =
+        useGeez ? toGeez(lastChapterIdx + 1) : '${lastChapterIdx + 1}';
+    final vStr = useGeez ? toGeez(lastVerseNum) : '$lastVerseNum';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -499,7 +497,6 @@ class _ContinueCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Book icon
             Container(
               width: 38,
               height: 38,
@@ -511,7 +508,6 @@ class _ContinueCard extends StatelessWidget {
               child: Icon(Icons.menu_book_rounded, color: c.primary, size: 18),
             ),
             const SizedBox(width: 12),
-            // Position label
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -535,7 +531,6 @@ class _ContinueCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Continue button
             GestureDetector(
               onTap: onContinue,
               child: Container(
@@ -569,7 +564,7 @@ class _ContinueCard extends StatelessWidget {
   }
 }
 
-// ── Legend row ────────────────────────────────────────────────────────────────
+// ── Legend row ───────────────────────────────────────────────────────────────
 
 class _LegendRow extends StatelessWidget {
   const _LegendRow({required this.s});
@@ -647,7 +642,11 @@ class _LegendDot extends StatelessWidget {
 }
 
 class _LegendIcon extends StatelessWidget {
-  const _LegendIcon({required this.icon, required this.color, required this.label});
+  const _LegendIcon({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
   final IconData icon;
   final Color color;
   final String label;
@@ -671,7 +670,7 @@ class _LegendIcon extends StatelessWidget {
   }
 }
 
-// ── Chapter cell ──────────────────────────────────────────────────────────────
+// ── Chapter cell ─────────────────────────────────────────────────────────────
 
 class _ChapterCell extends StatelessWidget {
   const _ChapterCell({
@@ -697,16 +696,16 @@ class _ChapterCell extends StatelessWidget {
     final Color borderColor;
 
     if (isNext) {
-      bgColor     = c.primary;
-      numColor    = Colors.white;
+      bgColor = c.primary;
+      numColor = Colors.white;
       borderColor = c.primary;
     } else if (isRead) {
-      bgColor     = c.parchment;
-      numColor    = c.textOnParchment;
+      bgColor = c.parchment;
+      numColor = c.textOnParchment;
       borderColor = c.parchmentDark;
     } else {
-      bgColor     = c.surface;
-      numColor    = c.textOnParchment;
+      bgColor = c.surface;
+      numColor = c.textOnParchment;
       borderColor = c.borderSubtle;
     }
 
