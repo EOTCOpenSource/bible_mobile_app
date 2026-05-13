@@ -8,6 +8,7 @@ import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
+import '../../data/reading_models.dart';
 import '../../providers/reading_progress_providers.dart';
 import 'reader_screen.dart';
 import '../../../search/presentation/pages/search_tab.dart';
@@ -63,6 +64,49 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
         await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
     if (!mounted) return;
 
+    final p = _deriveProgress(book, pos, readSet);
+    setState(() {
+      _book = book;
+      _loading = false;
+      _lastChapterIdx = p.lastChapterIdx;
+      _lastVerseNum = p.lastVerseNum;
+      _readChapters = p.readChapters;
+      _bookProgress = p.bookProgress;
+    });
+  }
+
+  /// Re-query DB for resume position + chapter read set (e.g. after returning
+  /// from [ReaderScreen]) so the grid updates without leaving this screen.
+  Future<void> _refreshChapterReadingUi() async {
+    final book = _book;
+    if (book == null) return;
+
+    final ProviderContainer container;
+    try {
+      container = ProviderScope.containerOf(context);
+    } on Object catch (_) {
+      return;
+    }
+    final repo = container.read(readingProgressRepositoryProvider);
+
+    final pos = await repo.getReadingPosition();
+    if (!mounted) return;
+
+    final readSet =
+        await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
+    if (!mounted) return;
+
+    final p = _deriveProgress(book, pos, readSet);
+    setState(() {
+      _lastChapterIdx = p.lastChapterIdx;
+      _lastVerseNum = p.lastVerseNum;
+      _readChapters = p.readChapters;
+      _bookProgress = p.bookProgress;
+    });
+  }
+
+  ({int lastChapterIdx, int lastVerseNum, Set<int> readChapters, double bookProgress})
+      _deriveProgress(Book book, ReadingPosition? pos, Set<int> readChapters) {
     var lastIdx = 0;
     var lastVerse = 1;
     if (pos != null && pos.bookId == widget.entry.bookNameEn) {
@@ -73,17 +117,15 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
     }
 
     final total = book.chapters.length;
-    final readCount = readSet.length;
+    final readCount = readChapters.length;
     final progress = total <= 0 ? 0.0 : (readCount / total).clamp(0.0, 1.0);
 
-    setState(() {
-      _book = book;
-      _loading = false;
-      _lastChapterIdx = lastIdx;
-      _lastVerseNum = lastVerse;
-      _readChapters = readSet;
-      _bookProgress = progress;
-    });
+    return (
+      lastChapterIdx: lastIdx,
+      lastVerseNum: lastVerse,
+      readChapters: readChapters,
+      bookProgress: progress,
+    );
   }
 
   void _openChapter(int idx) {
@@ -98,7 +140,10 @@ class _ChapterSelectorScreenState extends ConsumerState<ChapterSelectorScreen> {
           initialChapterNumber: chNum,
         ),
       ),
-    );
+    ).then((_) async {
+      if (!mounted) return;
+      await _refreshChapterReadingUi();
+    });
   }
 
   @override
