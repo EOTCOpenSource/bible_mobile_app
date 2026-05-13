@@ -28,6 +28,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   bool _initialized = false;
 
   int _lastChapterIdx = 0;
+  int _lastChapterNum = 1;
   int _lastVerseNum = 1;
   int _nextChapterIdx = -1;
   Set<int> _readChapters = {};
@@ -70,6 +71,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
       _book = book;
       _loading = false;
       _lastChapterIdx = p.lastChapterIdx;
+      _lastChapterNum = p.lastChapterNum;
       _lastVerseNum = p.lastVerseNum;
       _nextChapterIdx = p.nextChapterIdx;
       _readChapters = p.readChapters;
@@ -101,6 +103,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     final p = _deriveProgress(book, pos, readSet);
     setState(() {
       _lastChapterIdx = p.lastChapterIdx;
+      _lastChapterNum = p.lastChapterNum;
       _lastVerseNum = p.lastVerseNum;
       _nextChapterIdx = p.nextChapterIdx;
       _readChapters = p.readChapters;
@@ -119,6 +122,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
 
   ({
     int lastChapterIdx,
+    int lastChapterNum,
     int lastVerseNum,
     int nextChapterIdx,
     Set<int> readChapters,
@@ -133,6 +137,9 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
       lastVerse = pos.verse ?? 1;
     }
 
+    final lastNum = (lastIdx < book.chapters.length)
+        ? book.chapters[lastIdx].chapterNumber
+        : lastIdx + 1;
     final total = book.chapters.length;
     final readCount = readChapters.length;
     final progress = total <= 0 ? 0.0 : (readCount / total).clamp(0.0, 1.0);
@@ -140,6 +147,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
 
     return (
       lastChapterIdx: lastIdx,
+      lastChapterNum: lastNum,
       lastVerseNum: lastVerse,
       nextChapterIdx: nextIdx,
       readChapters: readChapters,
@@ -148,8 +156,9 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   }
 
   void _openChapter(int idx) {
-    if (_book == null) return;
-    final chNum = _book!.chapters[idx].chapterNumber;
+    final book = _book;
+    if (book == null || idx < 0 || idx >= book.chapters.length) return;
+    final chNum = book.chapters[idx].chapterNumber;
     Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
@@ -207,7 +216,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
               _ContinueCard(
                 s: s,
                 useGeez: useGeez,
-                lastChapterIdx: _lastChapterIdx,
+                lastChapterNum: _lastChapterNum,
                 lastVerseNum: _lastVerseNum,
                 onContinue: () => _openChapter(_lastChapterIdx),
               ),
@@ -465,21 +474,20 @@ class _ContinueCard extends StatelessWidget {
   const _ContinueCard({
     required this.s,
     required this.useGeez,
-    required this.lastChapterIdx,
+    required this.lastChapterNum,
     required this.lastVerseNum,
     required this.onContinue,
   });
   final AppStrings s;
   final bool useGeez;
-  final int lastChapterIdx;
+  final int lastChapterNum;
   final int lastVerseNum;
   final VoidCallback onContinue;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final chStr =
-        useGeez ? toGeez(lastChapterIdx + 1) : '${lastChapterIdx + 1}';
+    final chStr = useGeez ? toGeez(lastChapterNum) : '$lastChapterNum';
     final vStr = useGeez ? toGeez(lastVerseNum) : '$lastVerseNum';
 
     return Padding(

@@ -121,8 +121,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _dwellTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _persistReadingPosition();
-    _setReaderImmersiveProvider(false);
-    _setReaderBottomNavMatchReader(false);
+    // Reset immersive/color providers while ref is still valid (before super.dispose).
+    // _riverpodContainer is only for timer callbacks that may fire after dispose.
+    try {
+      ref.read(readerImmersiveModeProvider.notifier).state = false;
+      ref.read(readerBottomNavMatchReaderProvider.notifier).state = false;
+    } catch (_) {}
     _pageCtrl.dispose();
     super.dispose();
   }
@@ -289,8 +293,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     return parts.length == 3 ? int.tryParse(parts[2]) : null;
   }
 
-  int get _currentChapterNumber =>
-      _book?.chapters[_currentChapter].chapterNumber ?? 1;
+  int get _currentChapterNumber {
+    final book = _book;
+    if (book == null || _currentChapter >= book.chapters.length) return 1;
+    return book.chapters[_currentChapter].chapterNumber;
+  }
 
   ChapterKey get _chapterKey =>
       (bookId: widget.entry.bookNameEn, chapter: _currentChapterNumber);

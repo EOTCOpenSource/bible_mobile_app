@@ -29,13 +29,12 @@ class BibleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BibleRepositoryProvider(
-      repository: BibleRepository(),
-      child: Settings(
-        child: L10n(
-          initialLanguage: AppLanguage.amharic,
-          child: const _BibleMaterialApp(),
-        ),
+    // BibleRepositoryProvider is already provided by main() with the same
+    // instance that's registered in ProviderScope — don't create a second one.
+    return Settings(
+      child: L10n(
+        initialLanguage: AppLanguage.amharic,
+        child: const _BibleMaterialApp(),
       ),
     );
   }

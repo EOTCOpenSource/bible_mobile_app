@@ -18,7 +18,7 @@ class _BooksTabState extends State<BooksTab> {
       GlobalKey<NavigatorState>();
 
   void _openChapterChooser(BookIndexEntry entry) {
-    _booksNavigatorKey.currentState!.push(
+    _booksNavigatorKey.currentState?.push(
       MaterialPageRoute<void>(
         builder: (_) => ChapterChooserPage(entry: entry),
       ),
