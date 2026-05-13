@@ -457,10 +457,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         _book != null &&
         _currentChapter < _book!.chapters.length;
 
-    return Consumer(
-      builder: (context, ref, _) {
-        final annotationsAsync =
-            ref.watch(chapterAnnotationsProvider(_chapterKey));
+    return PopScope(
+      onPopInvokedWithResult: (bool didPop, _) {
+        if (didPop) _setReaderChromeVisible(true);
+      },
+      child: Consumer(
+        builder: (context, ref, _) {
+          final annotationsAsync =
+              ref.watch(chapterAnnotationsProvider(_chapterKey));
         final annotations =
             annotationsAsync.value ?? ChapterAnnotations.empty;
 
@@ -662,7 +666,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         ),
       ),
     );
-      },
+        },
+      ),
     );
   }
 }
