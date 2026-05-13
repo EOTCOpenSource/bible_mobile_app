@@ -27,6 +27,8 @@ class BooksTab extends StatefulWidget {
 
 class _BooksTabState extends State<BooksTab>
     with SingleTickerProviderStateMixin {
+  final GlobalKey<NavigatorState> _booksNavigatorKey =
+      GlobalKey<NavigatorState>();
   late final TabController _tabController;
   List<BookIndexEntry> _books = [];
   bool _loading = true;
@@ -95,8 +97,7 @@ class _BooksTabState extends State<BooksTab>
   }
 
   void _openBook(BookIndexEntry entry) {
-    Navigator.push(
-      context,
+    _booksNavigatorKey.currentState!.push(
       MaterialPageRoute(builder: (_) => ChapterSelectorScreen(entry: entry)),
     );
   }
@@ -106,73 +107,85 @@ class _BooksTabState extends State<BooksTab>
     final s = L10n.of(context);
     final useGeez = Settings.of(context).useGeezNumbers;
 
-    return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _BooksHeader(
-            s:           s,
-            total:       _books.isEmpty ? 81 : _books.length,
-            useGeez:     useGeez,
-            onSearchTap: widget.onSearchTap == null ? null : () {
-              final scope = _tabController.index == 0
-                  ? SearchScope.oldTestament
-                  : SearchScope.newTestament;
-              widget.onSearchTap!(scope);
-            },
-          ),
-          const SizedBox(height: 10),
-          _BooksTabBar(controller: _tabController, s: s),
-          const SizedBox(height: 4),
-          if (_loading)
-            Expanded(
-              child: Center(child: CircularProgressIndicator(color: context.colors.primary)),
-            )
-          else
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _BookListTab(
-                    filterLabels: [
-                      s.booksFilterAll,
-                      s.booksFilterLaw,
-                      s.booksFilterHistory,
-                      s.booksFilterWisdom,
-                      s.booksFilterProphets,
-                      s.booksFilterOther,
-                    ],
-                    selectedFilter: _otFilter.index,
-                    onFilterChanged: (i) =>
-                        setState(() => _otFilter = _OTFilter.values[i]),
-                    books: _filteredOT,
-                    s: s,
-                    useGeez: useGeez,
-                    onBookTap: _openBook,
-                  ),
-                  _BookListTab(
-                    filterLabels: [
-                      s.booksFilterAll,
-                      s.booksFilterGospels,
-                      s.booksFilterActs,
-                      s.booksFilterPauline,
-                      s.booksFilterGeneral,
-                      s.booksFilterRevelation,
-                      s.booksFilterOther,
-                    ],
-                    selectedFilter: _ntFilter.index,
-                    onFilterChanged: (i) =>
-                        setState(() => _ntFilter = _NTFilter.values[i]),
-                    books: _filteredNT,
-                    s: s,
-                    useGeez: useGeez,
-                    onBookTap: _openBook,
-                  ),
-                ],
+    return Navigator(
+      key: _booksNavigatorKey,
+      onGenerateRoute: (RouteSettings settings) {
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (routeContext) => SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _BooksHeader(
+                      s:           s,
+                      total:       _books.isEmpty ? 81 : _books.length,
+                      useGeez:     useGeez,
+                      onSearchTap: widget.onSearchTap == null ? null : () {
+                        final scope = _tabController.index == 0
+                            ? SearchScope.oldTestament
+                            : SearchScope.newTestament;
+                        widget.onSearchTap!(scope);
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _BooksTabBar(controller: _tabController, s: s),
+                    const SizedBox(height: 4),
+                    if (_loading)
+                      Expanded(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: routeContext.colors.primary,
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _BookListTab(
+                              filterLabels: [
+                                s.booksFilterAll,
+                                s.booksFilterLaw,
+                                s.booksFilterHistory,
+                                s.booksFilterWisdom,
+                                s.booksFilterProphets,
+                                s.booksFilterOther,
+                              ],
+                              selectedFilter: _otFilter.index,
+                              onFilterChanged: (i) => setState(
+                                  () => _otFilter = _OTFilter.values[i]),
+                              books: _filteredOT,
+                              s: s,
+                              useGeez: useGeez,
+                              onBookTap: _openBook,
+                            ),
+                            _BookListTab(
+                              filterLabels: [
+                                s.booksFilterAll,
+                                s.booksFilterGospels,
+                                s.booksFilterActs,
+                                s.booksFilterPauline,
+                                s.booksFilterGeneral,
+                                s.booksFilterRevelation,
+                                s.booksFilterOther,
+                              ],
+                              selectedFilter: _ntFilter.index,
+                              onFilterChanged: (i) => setState(
+                                  () => _ntFilter = _NTFilter.values[i]),
+                              books: _filteredNT,
+                              s: s,
+                              useGeez: useGeez,
+                              onBookTap: _openBook,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
