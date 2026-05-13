@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
 import '../../../../../core/l10n/app_strings.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 
 class ChapterNavBar extends StatelessWidget {
@@ -9,11 +8,9 @@ class ChapterNavBar extends StatelessWidget {
     super.key,
     required this.currentChapter,
     required this.totalChapters,
-    required this.isDark,
     required this.useGeez,
     required this.s,
     required this.bgColor,
-    required this.surfaceColor,
     required this.textColor,
     required this.mutedColor,
     required this.onPrev,
@@ -22,11 +19,9 @@ class ChapterNavBar extends StatelessWidget {
 
   final int currentChapter;
   final int totalChapters;
-  final bool isDark;
   final bool useGeez;
   final AppStrings s;
   final Color bgColor;
-  final Color surfaceColor;
   final Color textColor;
   final Color mutedColor;
   final VoidCallback onPrev;
@@ -62,9 +57,11 @@ class ChapterNavBar extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                 decoration: BoxDecoration(
-                  color: surfaceColor,
+                  color: bgColor,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: context.colors.borderSubtle),
+                  border: Border.all(
+                    color: mutedColor.withValues(alpha: 0.35),
+                  ),
                 ),
                 child: Text(
                   '${_ch(currentChapter)}  ·  $total',

@@ -12,6 +12,7 @@ import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../../data/reading_constants.dart';
 import '../../providers/reading_progress_providers.dart';
+import '../../providers/reader_immersive_provider.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -60,6 +61,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   /// Page index used only to spotlight [initialVerse] on first open.
   int? _spotlightChapterPageIndex;
 
+  /// Toolbar, breadcrumb, chapter footer, and home bottom nav follow this.
+  bool _readerChromeVisible = true;
+
+  /// Root container for updates that must not use [ref] after dispose (immersive flag).
+  ProviderContainer? _riverpodContainer;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +78,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _riverpodContainer = ProviderScope.containerOf(context);
     if (_book == null && _loading) _loadBook();
   }
 
@@ -86,13 +94,50 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     }
   }
 
+  void _setReaderImmersiveProvider(bool immersive) {
+    final c = _riverpodContainer;
+    if (c == null) return;
+    try {
+      c.read(readerImmersiveModeProvider.notifier).state = immersive;
+    } on Object catch (_) {}
+  }
+
   @override
   void dispose() {
     _dwellTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _persistReadingPosition();
+    _setReaderImmersiveProvider(false);
     _pageCtrl.dispose();
     super.dispose();
+  }
+
+  void _setReaderChromeVisible(bool visible) {
+    if (!mounted) return;
+    if (_readerChromeVisible == visible) return;
+    setState(() => _readerChromeVisible = visible);
+    _setReaderImmersiveProvider(!visible);
+  }
+
+  /// Vertical chapter scroll: hide chrome while reading down; show at top or
+  /// on a strong upward fling.
+  bool _onChapterScroll(ScrollNotification n) {
+    if (_loading || _book == null) return false;
+    if (n.metrics.axis != Axis.vertical) return false;
+
+    if (n is ScrollUpdateNotification) {
+      final pixels = n.metrics.pixels;
+      final delta = n.scrollDelta ?? 0.0;
+
+      if (pixels <= 16) {
+        _setReaderChromeVisible(true);
+      } else if (delta > 3 && pixels > 28) {
+        _setReaderChromeVisible(false);
+      } else if (delta < -22) {
+        _setReaderChromeVisible(true);
+      }
+    }
+    return false;
   }
 
   void _persistReadingPosition() {
@@ -306,19 +351,23 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         textColor: textColor,
         onColorSelected: (color) {
           Navigator.pop(ctx);
-          ref.read(chapterAnnotationsProvider(_chapterKey).notifier).setHighlight(
+          final c = _riverpodContainer;
+          if (c == null) return;
+          c.read(chapterAnnotationsProvider(_chapterKey).notifier).setHighlight(
                 verseStart: verseNum,
                 bookNumber: widget.entry.bookNumber,
                 color: color,
               );
-          _deselect();
+          if (mounted) _deselect();
         },
         onRemove: () {
           Navigator.pop(ctx);
-          ref
+          final c = _riverpodContainer;
+          if (c == null) return;
+          c
               .read(chapterAnnotationsProvider(_chapterKey).notifier)
               .removeHighlight(verseNum);
-          _deselect();
+          if (mounted) _deselect();
         },
       ),
     );
@@ -350,12 +399,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         textColor: textColor,
         mutedColor: mutedColor,
         onSave: (content) {
-          ref.read(chapterAnnotationsProvider(_chapterKey).notifier).saveNote(
+          final c = _riverpodContainer;
+          if (c == null) return;
+          c.read(chapterAnnotationsProvider(_chapterKey).notifier).saveNote(
                 verseStart: verseNum,
                 bookNumber: widget.entry.bookNumber,
                 content: content,
               );
-          _deselect();
+          if (mounted) _deselect();
         },
       ),
     );
@@ -384,49 +435,62 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         _book != null &&
         _currentChapter < _book!.chapters.length;
 
-    // Watch annotations for the current chapter
-    final annotationsAsync =
-        ref.watch(chapterAnnotationsProvider(_chapterKey));
-    final annotations = annotationsAsync.value ?? ChapterAnnotations.empty;
+    return Consumer(
+      builder: (context, ref, _) {
+        final annotationsAsync =
+            ref.watch(chapterAnnotationsProvider(_chapterKey));
+        final annotations =
+            annotationsAsync.value ?? ChapterAnnotations.empty;
 
-    // Derive action bar state for the selected verse
-    final verseNum = _selectedVerseNum;
-    final isBookmarked = verseNum != null && annotations.isBookmarked(verseNum);
-    final highlightColor =
-        verseNum != null ? annotations.highlightColor(verseNum) : null;
-    final hasNote =
-        verseNum != null && annotations.noteFor(verseNum) != null;
+        final verseNum = _selectedVerseNum;
+        final isBookmarked =
+            verseNum != null && annotations.isBookmarked(verseNum);
+        final highlightColor =
+            verseNum != null ? annotations.highlightColor(verseNum) : null;
+        final hasNote =
+            verseNum != null && annotations.noteFor(verseNum) != null;
 
-    return Scaffold(
+        return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Toolbar ──────────────────────────────────────────────────────
-            ReaderToolbar(
-              entry: widget.entry,
-              currentChapter: _currentChapter,
-              useGeez: useGeez,
-              isAmharic: isAm,
-              bgColor: bgColor,
-              textColor: textColor,
-              mutedColor: mutedColor,
-              s: s,
-              onBack: () => Navigator.pop(context),
-              onFontSettings: () => _showFontSheet(context, settings),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: _readerChromeVisible
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ReaderToolbar(
+                          entry: widget.entry,
+                          currentChapter: _currentChapter,
+                          useGeez: useGeez,
+                          isAmharic: isAm,
+                          bgColor: bgColor,
+                          textColor: textColor,
+                          mutedColor: mutedColor,
+                          s: s,
+                          onBack: () => Navigator.pop(context),
+                          onFontSettings: () =>
+                              _showFontSheet(context, settings),
+                        ),
+                        if (chapterReady)
+                          ReaderBreadcrumb(
+                            entry: widget.entry,
+                            chapter: _book!.chapters[_currentChapter],
+                            useGeez: useGeez,
+                            isAmharic: isAm,
+                            s: s,
+                            bgColor: bgColor,
+                            accentColor: accentColor,
+                            mutedColor: mutedColor,
+                          ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
-            // ── Breadcrumb ───────────────────────────────────────────────────
-            if (chapterReady)
-              ReaderBreadcrumb(
-                entry: widget.entry,
-                chapter: _book!.chapters[_currentChapter],
-                useGeez: useGeez,
-                isAmharic: isAm,
-                s: s,
-                bgColor: bgColor,
-                accentColor: accentColor,
-                mutedColor: mutedColor,
-              ),
             // ── Pages ────────────────────────────────────────────────────────
             Expanded(
               child: _loading || _book == null
@@ -435,60 +499,69 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                         color: isDark ? context.colors.accent : context.colors.primary,
                       ),
                     )
-                  : GestureDetector(
-                      onTap: _deselect,
-                      behavior: HitTestBehavior.translucent,
-                      child: Stack(
-                        children: [
-                          PageView.builder(
-                            controller: _pageCtrl,
-                            itemCount: _book!.chapters.length,
-                            onPageChanged: (i) {
-                              setState(() => _currentChapter = i);
-                              _persistReadingPosition();
-                              _scheduleDwellTimer();
-                            },
-                            itemBuilder: (ctx, i) {
-                              // Each page watches its own chapter's annotations
-                              final pageChapterNum =
-                                  _book!.chapters[i].chapterNumber;
-                              final pageKey = (
-                                bookId: widget.entry.bookNameEn,
-                                chapter: pageChapterNum
-                              );
-                              final pageAnnotations = ref
-                                      .watch(chapterAnnotationsProvider(pageKey))
-                                      .value ??
-                                  ChapterAnnotations.empty;
-
-                              return ReaderChapterPage(
-                                entry: widget.entry,
-                                chapter: _book!.chapters[i],
-                                isDark: isDark,
-                                fontSize: settings.fontSize,
-                                fontFamily: bodyFont,
-                                titleFontFamily: titleFont,
-                                textColor: textColor,
-                                mutedColor: mutedColor,
-                                accentColor: accentColor,
-                                useGeez: useGeez,
-                                isAmharic: isAm,
-                                isSelectedFn: _isSelected,
-                                onVerseTap: _selectVerse,
-                                verseKeyFn: _verseKey,
-                                annotations: pageAnnotations,
-                                spotlightVerseNum: (widget.initialVerse !=
-                                            null &&
-                                        i == _spotlightChapterPageIndex)
-                                    ? widget.initialVerse
-                                    : null,
-                                spotlightKey: (widget.initialVerse != null &&
-                                        i == _spotlightChapterPageIndex)
-                                    ? _spotlightKey
-                                    : null,
-                              );
-                            },
-                          ),
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: _onChapterScroll,
+                      child: GestureDetector(
+                        onTap: _deselect,
+                        behavior: HitTestBehavior.translucent,
+                        child: Stack(
+                          children: [
+                            PageView.builder(
+                              controller: _pageCtrl,
+                              itemCount: _book!.chapters.length,
+                              onPageChanged: (i) {
+                                setState(() => _currentChapter = i);
+                                _setReaderChromeVisible(true);
+                                _persistReadingPosition();
+                                _scheduleDwellTimer();
+                              },
+                              itemBuilder: (ctx, i) {
+                                final pageChapterNum =
+                                    _book!.chapters[i].chapterNumber;
+                                final pageKey = (
+                                  bookId: widget.entry.bookNameEn,
+                                  chapter: pageChapterNum
+                                );
+                                return Consumer(
+                                  builder: (ctx2, pageRef, _) {
+                                    final pageAnnotations = pageRef
+                                            .watch(
+                                                chapterAnnotationsProvider(
+                                                    pageKey))
+                                            .value ??
+                                        ChapterAnnotations.empty;
+                                    return ReaderChapterPage(
+                                      entry: widget.entry,
+                                      chapter: _book!.chapters[i],
+                                      isDark: isDark,
+                                      fontSize: settings.fontSize,
+                                      fontFamily: bodyFont,
+                                      titleFontFamily: titleFont,
+                                      textColor: textColor,
+                                      mutedColor: mutedColor,
+                                      accentColor: accentColor,
+                                      useGeez: useGeez,
+                                      isAmharic: isAm,
+                                      isSelectedFn: _isSelected,
+                                      onVerseTap: _selectVerse,
+                                      verseKeyFn: _verseKey,
+                                      annotations: pageAnnotations,
+                                      spotlightVerseNum: (widget.initialVerse !=
+                                                  null &&
+                                              i == _spotlightChapterPageIndex)
+                                          ? widget.initialVerse
+                                          : null,
+                                      spotlightKey:
+                                          (widget.initialVerse != null &&
+                                                  i ==
+                                                      _spotlightChapterPageIndex)
+                                              ? _spotlightKey
+                                              : null,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                           // Verse action bar
                           AnimatedSlide(
                             offset: _selectedKey != null
@@ -508,7 +581,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 hasNote: hasNote,
                                 onBookmark: () {
                                   if (verseNum == null) return;
-                                  ref
+                                  final c = _riverpodContainer;
+                                  if (c == null) return;
+                                  c
                                       .read(chapterAnnotationsProvider(
                                               _chapterKey)
                                           .notifier)
@@ -547,17 +622,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                         ],
                       ),
                     ),
+                  ),
             ),
-            // ── Chapter nav ──────────────────────────────────────────────────
             if (!_loading && _book != null)
               ChapterNavBar(
                 currentChapter: _currentChapter,
                 totalChapters: _book!.chapters.length,
-                isDark: isDark,
                 useGeez: useGeez,
                 s: s,
                 bgColor: bgColor,
-                surfaceColor: surfaceColor,
                 textColor: textColor,
                 mutedColor: mutedColor,
                 onPrev: () => _goToChapter(_currentChapter - 1),
@@ -566,6 +639,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           ],
         ),
       ),
+    );
+      },
     );
   }
 }

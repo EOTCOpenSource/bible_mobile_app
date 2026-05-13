@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 
 /// All 9 available fonts — indices match between the two lists.
@@ -26,8 +27,8 @@ const List<String> readerFontNames = [
   'Nokia Pure',
 ];
 
-const Color readerDarkBg      = Color(0xFF151210);
-const Color readerDarkSurface = Color(0xFF231E1B);
-const Color readerDarkText    = Color(0xFFF5EBE0);
-const Color readerDarkMuted   = Color(0xFF9E8878);
-const Color readerDarkAccent  = Color(0xFFD4A853);
+const Color readerDarkBg      = AppColors.readerShellDarkBg;
+const Color readerDarkSurface = AppColors.readerShellDarkSurface;
+const Color readerDarkText    = AppColors.readerShellDarkText;
+const Color readerDarkMuted   = AppColors.readerShellDarkMuted;
+const Color readerDarkAccent  = AppColors.readerShellDarkAccent;

@@ -52,6 +52,9 @@ class ReaderChapterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Index 0 → ChapterHeader, index i+1 → section[i]
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
       padding: const EdgeInsets.only(bottom: 80),
       itemCount: chapter.sections.length + 1,
       itemBuilder: (ctx, i) {

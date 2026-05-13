@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
+import '../settings/app_settings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -14,26 +15,52 @@ class AppBottomNav extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   static const _icons = [
-    (Icons.home_rounded,      Icons.home_outlined),
+    (Icons.home_rounded, Icons.home_outlined),
     (Icons.menu_book_rounded, Icons.menu_book_outlined),
-    (Icons.search_rounded,    Icons.search_rounded),
-    (Icons.bookmark_rounded,  Icons.bookmark_border_rounded),
-    (Icons.person_rounded,    Icons.person_outline_rounded),
+    (Icons.search_rounded, Icons.search_rounded),
+    (Icons.bookmark_rounded, Icons.bookmark_border_rounded),
+    (Icons.person_rounded, Icons.person_outline_rounded),
   ];
 
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final labels = [s.navHome, s.navBooks, s.navSearch, s.navSaved, s.navMe];
+    final readerNight = Settings.of(context).isDarkReader;
 
-    final c = context.colors;
+    final Color barBg;
+    final Color borderColor;
+    final Color activeColor;
+    final Color inactiveColor;
+    final List<BoxShadow> shadows;
+
+    if (readerNight) {
+      barBg = AppColors.readerShellDarkBg;
+      borderColor = AppColors.readerShellDarkMuted.withValues(alpha: 0.35);
+      activeColor = AppColors.readerShellDarkAccent;
+      inactiveColor = AppColors.readerShellDarkMuted;
+      shadows = [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.35),
+          blurRadius: 16,
+          offset: const Offset(0, -4),
+        ),
+      ];
+    } else {
+      barBg = AppColors.parchment;
+      borderColor = AppColors.borderSubtle;
+      activeColor = AppColors.accentDeep;
+      inactiveColor = AppColors.textCaption;
+      shadows = const [
+        BoxShadow(color: Color(0x14000000), blurRadius: 12, offset: Offset(0, -4)),
+      ];
+    }
+
     return Container(
       decoration: BoxDecoration(
-        color: c.surface,
-        border: Border(top: BorderSide(color: c.borderSubtle, width: 1)),
-        boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), blurRadius: 12, offset: Offset(0, -4)),
-        ],
+        color: barBg,
+        border: Border(top: BorderSide(color: borderColor, width: 1)),
+        boxShadow: shadows,
       ),
       child: SafeArea(
         top: false,
@@ -47,7 +74,7 @@ class AppBottomNav extends StatelessWidget {
                 child: InkWell(
                   onTap: () => onTap(i),
                   highlightColor: Colors.transparent,
-                  splashColor: c.primary.withValues(alpha: 0.06),
+                  splashColor: activeColor.withValues(alpha: 0.12),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -57,7 +84,7 @@ class AppBottomNav extends StatelessWidget {
                           isActive ? activeIcon : inactiveIcon,
                           key: ValueKey(isActive),
                           size: 24,
-                          color: isActive ? c.primary : c.textCaption,
+                          color: isActive ? activeColor : inactiveColor,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -65,8 +92,9 @@ class AppBottomNav extends StatelessWidget {
                         labels[i],
                         style: AppTypography.amharicCaption.copyWith(
                           fontSize: 10,
-                          color: isActive ? c.primary : c.textCaption,
-                          fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                          color: isActive ? activeColor : inactiveColor,
+                          fontWeight:
+                              isActive ? FontWeight.w700 : FontWeight.w400,
                         ),
                       ),
                     ],

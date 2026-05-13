@@ -34,6 +34,13 @@ abstract final class AppColors {
   static const Color oldTestament = Color(0xFF6B1F2A); // burgundy
   static const Color newTestament = Color(0xFF1F3D6B); // deep navy
 
+  // ── Reader shell (bottom nav, etc. — matches reader scaffold) ────────────
+  static const Color readerShellDarkBg      = Color(0xFF151210);
+  static const Color readerShellDarkSurface = Color(0xFF231E1B);
+  static const Color readerShellDarkText    = Color(0xFFF5EBE0);
+  static const Color readerShellDarkMuted   = Color(0xFF9E8878);
+  static const Color readerShellDarkAccent  = Color(0xFFD4A853);
+
   // ── Scrim / overlay ──────────────────────────────────────────────────────
   static const Color scrim = Color(0xCC2C1810);
 }
