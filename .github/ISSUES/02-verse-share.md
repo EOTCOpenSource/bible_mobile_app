@@ -35,8 +35,8 @@ The copy action already builds a well-formatted string including the verse text,
 
 ```dart
 // Current copy text shape (from _selectedVerseText):
-// ርኵሱም መንፈስ አንፈራገጠውና በታላቅ ድምፅ ጮኾ ከእርሱ ወጣ።
-// የማርቆስ ወንጌል 1:26 (https://80-weahadu.vercel.app/openinapp/mark1_26)
+// በየዓመቱ የሚሆነው ሥራውም በፊቱ ነው፥ ፍጥረቱም ሁሉ ለእርሱ ይገዛሉ። አይለወጡምም፥ ነገር ግን አምላክ እንደ ሠራው ሁሉ እንዲህ ይደረጋል።
+// መጽሐፈ ሄኖክ 1:19 (https://80-weahadu.vercel.app/openinapp/enoch1_19)
 
 onShare: () async {
   final text = _selectedVerseText(settings);
