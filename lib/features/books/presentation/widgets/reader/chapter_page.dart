@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
 import '../../../../../core/annotations/annotation_models.dart';
@@ -28,6 +29,7 @@ class ReaderChapterPage extends StatelessWidget {
     required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
+    this.continuousReading = false,
   });
 
   final BookIndexEntry entry;
@@ -47,6 +49,7 @@ class ReaderChapterPage extends StatelessWidget {
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
   final ChapterAnnotations annotations;
+  final bool continuousReading;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +94,7 @@ class ReaderChapterPage extends StatelessWidget {
           annotations:      annotations,
           spotlightVerseNum: spotlightVerseNum,
           spotlightKey:     spotlightKey,
+          continuousReading: continuousReading,
         );
       },
     );
@@ -254,6 +258,7 @@ class SectionView extends StatelessWidget {
     required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
+    this.continuousReading = false,
   });
 
   final Section section;
@@ -272,43 +277,41 @@ class SectionView extends StatelessWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
+  final bool continuousReading;
 
   @override
   Widget build(BuildContext context) {
     // Section 0 title is shown in ChapterHeader; skip it here
     final showTitle = secIdx > 0 && section.title.trim().isNotEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (showTitle) ...[
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Text(
-                section.title,
-                style: TextStyle(
-                  fontFamily: titleFontFamily,
-                  fontSize: fontSize - 2,
-                  color: accentColor,
-                  fontWeight: FontWeight.w400,
-                  height: 1.6,
-                ),
-              ),
+    final List<Widget> verseChildren = continuousReading
+        ? [
+            _ContinuousSection(
+              section:          section,
+              secIdx:           secIdx,
+              chapter:          chapter,
+              fontSize:         fontSize,
+              fontFamily:       fontFamily,
+              textColor:        textColor,
+              accentColor:      accentColor,
+              isDark:           isDark,
+              useGeez:          useGeez,
+              isSelectedFn:     isSelectedFn,
+              onVerseTap:       onVerseTap,
+              verseKeyFn:       verseKeyFn,
+              annotations:      annotations,
+              spotlightVerseNum: spotlightVerseNum,
+              spotlightKey:     spotlightKey,
             ),
-          ] else
-            const SizedBox(height: 8),
-          // Inline verse: ‹number› text
-          ...section.verses.map((verse) {
-            final key           = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final selected      = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final isSpotlight   = spotlightVerseNum == verse.verseNumber;
-            final numStr        = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
-            final hlColor       = annotations.highlightColor(verse.verseNumber);
-            final isBookmarked  = annotations.isBookmarked(verse.verseNumber);
-            final hasNote       = annotations.noteFor(verse.verseNumber) != null;
+          ]
+        : section.verses.map((verse) {
+            final key          = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
+            final selected     = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
+            final isSpotlight  = spotlightVerseNum == verse.verseNumber;
+            final numStr       = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
+            final hlColor      = annotations.highlightColor(verse.verseNumber);
+            final isBookmarked = annotations.isBookmarked(verse.verseNumber);
+            final hasNote      = annotations.noteFor(verse.verseNumber) != null;
 
             final bgColor = selected
                 ? (hlColor?.withValues(alpha: 0.5) ??
@@ -324,15 +327,12 @@ class SectionView extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     margin: const EdgeInsets.only(bottom: 2),
-                    padding: EdgeInsets.fromLTRB(
-                        isBookmarked ? 3 : 6, 4, 6, 4),
+                    padding: EdgeInsets.fromLTRB(isBookmarked ? 3 : 6, 4, 6, 4),
                     decoration: BoxDecoration(
                       color: bgColor,
                       borderRadius: BorderRadius.circular(6),
                       border: isBookmarked
-                          ? Border(
-                              left: BorderSide(color: accentColor, width: 3),
-                            )
+                          ? Border(left: BorderSide(color: accentColor, width: 3))
                           : null,
                     ),
                     child: RichText(
@@ -376,16 +376,200 @@ class SectionView extends StatelessWidget {
             );
 
             if (isSpotlight) {
-              verseWidget = _SpotlightWrapper(
-                accentColor: accentColor,
-                child: verseWidget,
-              );
+              verseWidget = _SpotlightWrapper(accentColor: accentColor, child: verseWidget);
             }
 
             return verseWidget;
-          }),
+          }).toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (showTitle) ...[
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                section.title,
+                style: TextStyle(
+                  fontFamily: titleFontFamily,
+                  fontSize: fontSize - 2,
+                  color: accentColor,
+                  fontWeight: FontWeight.w400,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ] else
+            const SizedBox(height: 8),
+          ...verseChildren,
         ],
       ),
+    );
+  }
+}
+
+// ── Continuous reading section ────────────────────────────────────────────────
+
+class _ContinuousSection extends StatefulWidget {
+  const _ContinuousSection({
+    required this.section,
+    required this.secIdx,
+    required this.chapter,
+    required this.fontSize,
+    required this.fontFamily,
+    required this.textColor,
+    required this.accentColor,
+    required this.isDark,
+    required this.useGeez,
+    required this.isSelectedFn,
+    required this.onVerseTap,
+    required this.verseKeyFn,
+    required this.annotations,
+    this.spotlightVerseNum,
+    this.spotlightKey,
+  });
+
+  final Section section;
+  final int secIdx;
+  final Chapter chapter;
+  final double fontSize;
+  final String fontFamily;
+  final Color textColor;
+  final Color accentColor;
+  final bool isDark;
+  final bool useGeez;
+  final bool Function(int, int, int) isSelectedFn;
+  final ValueChanged<String> onVerseTap;
+  final String Function(int, int, int) verseKeyFn;
+  final ChapterAnnotations annotations;
+  final int? spotlightVerseNum;
+  final GlobalKey? spotlightKey;
+
+  @override
+  State<_ContinuousSection> createState() => _ContinuousSectionState();
+}
+
+class _ContinuousSectionState extends State<_ContinuousSection> {
+  final Map<int, TapGestureRecognizer> _recs = {};
+
+  void _syncRecognizers() {
+    final verseNums = widget.section.verses.map((v) => v.verseNumber).toSet();
+    for (final vn in _recs.keys.toList()) {
+      if (!verseNums.contains(vn)) _recs.remove(vn)!.dispose();
+    }
+    for (final vn in verseNums) {
+      _recs.putIfAbsent(vn, () => TapGestureRecognizer());
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _syncRecognizers();
+  }
+
+  @override
+  void didUpdateWidget(_ContinuousSection old) {
+    super.didUpdateWidget(old);
+    _syncRecognizers();
+  }
+
+  @override
+  void dispose() {
+    for (final r in _recs.values) {
+      r.dispose();
+    }
+    super.dispose();
+  }
+
+  bool get _sectionHasSpotlight =>
+      widget.spotlightVerseNum != null &&
+      widget.section.verses.any((v) => v.verseNumber == widget.spotlightVerseNum);
+
+  @override
+  Widget build(BuildContext context) {
+    final spans = <InlineSpan>[];
+
+    for (final verse in widget.section.verses) {
+      final key = widget.verseKeyFn(
+          widget.chapter.chapterNumber, widget.secIdx, verse.verseNumber);
+      final selected = widget.isSelectedFn(
+          widget.chapter.chapterNumber, widget.secIdx, verse.verseNumber);
+      final hlColor = widget.annotations.highlightColor(verse.verseNumber);
+      final isBookmarked = widget.annotations.isBookmarked(verse.verseNumber);
+      final hasNote = widget.annotations.noteFor(verse.verseNumber) != null;
+      final numStr = widget.useGeez
+          ? toGeez(verse.verseNumber)
+          : '${verse.verseNumber}';
+
+      final rec = _recs[verse.verseNumber]!;
+      rec.onTap = () => widget.onVerseTap(key);
+
+      final bgColor = selected
+          ? (hlColor?.withValues(alpha: 0.5) ??
+              widget.accentColor.withValues(alpha: widget.isDark ? 0.18 : 0.15))
+          : hlColor?.withValues(alpha: 0.28);
+
+      // Bookmark marker replaces the left border used in verse-per-line mode
+      if (isBookmarked) {
+        spans.add(TextSpan(
+          text: '▸',
+          style: TextStyle(
+            fontSize: widget.fontSize * 0.6,
+            color: widget.accentColor,
+            fontWeight: FontWeight.w700,
+          ),
+        ));
+      }
+
+      // Verse number
+      spans.add(TextSpan(
+        text: '$numStr ',
+        style: TextStyle(
+          fontFamily: AppTypography.nokiaPureheadline,
+          fontSize: widget.fontSize * 0.62,
+          fontWeight: FontWeight.w700,
+          color: widget.accentColor,
+        ),
+      ));
+
+      // Verse text — tappable
+      spans.add(TextSpan(
+        text: verse.text,
+        recognizer: rec,
+        style: TextStyle(
+          fontFamily: widget.fontFamily,
+          fontSize: widget.fontSize,
+          height: 1.85,
+          color: widget.textColor,
+          backgroundColor: bgColor,
+        ),
+      ));
+
+      // Note indicator inline after verse text
+      if (hasNote) {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.top,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 2),
+            child: Icon(
+              Icons.sticky_note_2_rounded,
+              size: 11,
+              color: context.colors.accentDeep,
+            ),
+          ),
+        ));
+      }
+
+      spans.add(const TextSpan(text: ' '));
+    }
+
+    return RichText(
+      key: _sectionHasSpotlight ? widget.spotlightKey : null,
+      text: TextSpan(children: spans),
     );
   }
 }

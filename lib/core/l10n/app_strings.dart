@@ -105,6 +105,7 @@ abstract class AppStrings {
   String get readingSettingsNightMode;
   String get readingSettingsPreview;
   String get readingSettingsReset;
+  String get readingSettingsContinuous;
 
   // ── Search ───────────────────────────────────────────────────────────────
   String get searchHint;

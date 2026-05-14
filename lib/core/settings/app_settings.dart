@@ -7,6 +7,7 @@ class AppSettings {
     this.titleFontIndex = 0,
     this.fontSize = 17.0,
     this.isDarkReader = false,
+    this.continuousReading = false,
   });
 
   final bool useGeezNumbers;
@@ -23,12 +24,16 @@ class AppSettings {
   /// App + reader dark theme (Settings “night mode”).
   final bool isDarkReader;
 
+  /// When true, verses flow as a paragraph instead of one verse per line.
+  final bool continuousReading;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
     int? titleFontIndex,
     double? fontSize,
     bool? isDarkReader,
+    bool? continuousReading,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -36,6 +41,7 @@ class AppSettings {
         titleFontIndex: titleFontIndex ?? this.titleFontIndex,
         fontSize: fontSize ?? this.fontSize,
         isDarkReader: isDarkReader ?? this.isDarkReader,
+        continuousReading: continuousReading ?? this.continuousReading,
       );
 
   @override
@@ -45,7 +51,8 @@ class AppSettings {
       other.bodyFontIndex == bodyFontIndex &&
       other.titleFontIndex == titleFontIndex &&
       other.fontSize == fontSize &&
-      other.isDarkReader == isDarkReader;
+      other.isDarkReader == isDarkReader &&
+      other.continuousReading == continuousReading;
 
   @override
   int get hashCode => Object.hash(
@@ -54,6 +61,7 @@ class AppSettings {
         titleFontIndex,
         fontSize,
         isDarkReader,
+        continuousReading,
       );
 }
 

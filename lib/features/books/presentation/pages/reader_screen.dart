@@ -339,14 +339,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => ReaderFontSheet(
-        settings: settings,
         textColor: textColor,
         mutedColor: mutedColor,
         accentColor: accentColor,
-        onSizeChange: (v) =>
-            Settings.update(ctx, settings.copyWith(fontSize: v)),
-        onFontChange: (i) =>
-            Settings.update(ctx, settings.copyWith(bodyFontIndex: i)),
       ),
     );
   }
@@ -574,6 +569,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       onVerseTap: _selectVerse,
                                       verseKeyFn: _verseKey,
                                       annotations: pageAnnotations,
+                                      continuousReading: settings.continuousReading,
                                       spotlightVerseNum: (widget.initialVerse !=
                                                   null &&
                                               i == _spotlightChapterPageIndex)

@@ -72,6 +72,20 @@ class ReadingSettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
+          // ── Continuous reading toggle ─────────────────────────────────────
+          _SettingRow(
+            label: s.readingSettingsContinuous,
+            textColor: textColor,
+            mutedColor: mutedColor,
+            accentColor: accentColor,
+            value: settings.continuousReading,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(continuousReading: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
           // ── Font size slider ──────────────────────────────────────────────
           SectionLabel(
             label: s.readingSettingsFontSize,
@@ -231,6 +245,45 @@ class _PreviewCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SettingRow extends StatelessWidget {
+  const _SettingRow({
+    required this.label,
+    required this.textColor,
+    required this.mutedColor,
+    required this.accentColor,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final Color textColor;
+  final Color mutedColor;
+  final Color accentColor;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            label,
+            style: AppTypography.amharicLabel.copyWith(color: textColor),
+          ),
+        ),
+        const Spacer(),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: accentColor,
+        ),
+      ],
     );
   }
 }

@@ -168,6 +168,8 @@ class AmStrings extends AppStrings {
   String get readingSettingsPreview => 'ቅድመ ዕይታ';
   @override
   String get readingSettingsReset => 'ዳግም ጀምር';
+  @override
+  String get readingSettingsContinuous => 'ተያያዥ ንባብ';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override

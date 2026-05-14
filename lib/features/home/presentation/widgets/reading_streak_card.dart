@@ -36,10 +36,20 @@ class ReadingStreakCard extends ConsumerWidget {
         useGeez ? toGeez(streakCount) : '$streakCount';
 
     final todayIdx = _todayIndex();
+    final today = ReadingDate.todayLocal();
+    final streakState = streakAsync.value;
+    final streakStart = ReadingDate.tryParseIsoDate(streakState?.currentStreakStart);
+    final lastQualified = ReadingDate.tryParseIsoDate(streakState?.lastQualifiedDate);
+
     final status = List<bool?>.generate(7, (i) {
-      if (i < todayIdx) return true;
-      if (i > todayIdx) return false;
-      return qualifiedToday ? true : null;
+      final daysFromToday = i - todayIdx;
+      if (daysFromToday > 0) return false;
+      if (daysFromToday == 0) return qualifiedToday ? true : null;
+      final slotDate = today.add(Duration(days: daysFromToday));
+      if (streakStart == null || lastQualified == null) return false;
+      return !slotDate.isBefore(streakStart) && !slotDate.isAfter(lastQualified)
+          ? true
+          : false;
     });
 
     final isAm = s is AmStrings;

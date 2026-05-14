@@ -96,7 +96,8 @@ class EnStrings extends AppStrings {
   @override String get readingSettingsFontSize  => 'Font Size';
   @override String get readingSettingsNightMode => 'Night Mode';
   @override String get readingSettingsPreview   => 'Preview';
-  @override String get readingSettingsReset     => 'Reset';
+  @override String get readingSettingsReset          => 'Reset';
+  @override String get readingSettingsContinuous     => 'Continuous reading';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override String get searchHint         => 'Search the scriptures...';

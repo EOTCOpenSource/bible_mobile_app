@@ -1,35 +1,29 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/settings/app_settings.dart';
+import '../../../../../core/theme/app_typography.dart';
 import 'constants.dart';
 import 'font_settings_widgets.dart';
 
-/// Compact bottom-sheet for quick font/size tweaks.
-/// Uses global [AppSettings] — same data the full ReadingSettingsPage modifies.
+/// Compact bottom-sheet for quick font/size/layout tweaks.
+/// Reads [Settings] live so all controls stay in sync while the sheet is open.
 class ReaderFontSheet extends StatelessWidget {
   const ReaderFontSheet({
     super.key,
-    required this.settings,
     required this.textColor,
     required this.mutedColor,
     required this.accentColor,
-    required this.onSizeChange,
-    required this.onFontChange,
   });
 
-  final AppSettings settings;
   final Color textColor;
   final Color mutedColor;
   final Color accentColor;
-  final ValueChanged<double> onSizeChange;
-  final ValueChanged<int> onFontChange;
 
   @override
   Widget build(BuildContext context) {
-    final s = L10n.of(context);
-    final isDark = settings.isDarkReader;
-    
-    // Use a solid color for dropdowns to prevent "black backdrop" glitches
+    final s        = L10n.of(context);
+    final settings = Settings.of(context);          // live — rebuilds on change
+    final isDark   = settings.isDarkReader;
     final dropdownSurface = isDark ? readerDarkSurface : Colors.white;
 
     return Padding(
@@ -51,17 +45,38 @@ class ReaderFontSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
+          // Layout mode toggle
+          Row(
+            children: [
+              Text(
+                s.readingSettingsContinuous,
+                style: AppTypography.amharicLabel.copyWith(color: textColor),
+              ),
+              const Spacer(),
+              Switch(
+                value: settings.continuousReading,
+                onChanged: (v) => Settings.update(
+                  context,
+                  settings.copyWith(continuousReading: v),
+                ),
+                activeThumbColor: accentColor,
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
           // Font size slider
           FontSizeSlider(
             fontSize: settings.fontSize,
             accentColor: accentColor,
             mutedColor: mutedColor,
             textColor: textColor,
-            onChanged: onSizeChange,
+            onChanged: (v) =>
+                Settings.update(context, settings.copyWith(fontSize: v)),
           ),
           const SizedBox(height: 20),
 
-          // Body Font Dropdown
+          // Body font dropdown
           SectionLabel(
             label: s.readingSettingsBodyFont,
             textColor: textColor,
@@ -74,11 +89,12 @@ class ReaderFontSheet extends StatelessWidget {
             textColor: textColor,
             mutedColor: mutedColor,
             surfaceColor: dropdownSurface,
-            onSelect: onFontChange,
+            onSelect: (i) =>
+                Settings.update(context, settings.copyWith(bodyFontIndex: i)),
           ),
           const SizedBox(height: 16),
 
-          // Title Font Dropdown
+          // Title font dropdown
           SectionLabel(
             label: s.readingSettingsTitleFont,
             textColor: textColor,
@@ -91,10 +107,8 @@ class ReaderFontSheet extends StatelessWidget {
             textColor: textColor,
             mutedColor: mutedColor,
             surfaceColor: dropdownSurface,
-            onSelect: (i) => Settings.update(
-              context,
-              settings.copyWith(titleFontIndex: i),
-            ),
+            onSelect: (i) =>
+                Settings.update(context, settings.copyWith(titleFontIndex: i)),
           ),
         ],
       ),
