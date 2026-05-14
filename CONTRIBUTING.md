@@ -38,7 +38,7 @@ flutter analyze
 flutter test
 ```
 
-See [`CLAUDE.md`](CLAUDE.md) for a full architecture reference including the state management pattern, folder structure, and Bible data layer.
+The project uses a feature-first folder layout under `lib/features/` with shared code in `lib/core/`.
 
 ---
 
@@ -55,7 +55,7 @@ See [`CLAUDE.md`](CLAUDE.md) for a full architecture reference including the sta
 ## Code Style
 
 - Follow the conventions in the existing codebase
-- No third-party state management — use `InheritedWidget`/`InheritedNotifier` as established (`Settings`, `L10n`, `BibleRepositoryProvider`)
+- State management uses `InheritedWidget`/`InheritedNotifier` for global app state (`Settings`, `L10n`, `BibleRepositoryProvider`) and Riverpod for feature-level state (reading progress, annotations, immersive mode) — follow whichever pattern fits the scope of your change
 - No comments that describe *what* the code does — only add a comment when the *why* is non-obvious
 - No new `*.md` documentation files inside `lib/` — keep docs at the repo root
 
