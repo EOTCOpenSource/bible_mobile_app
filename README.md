@@ -86,8 +86,6 @@ assets/
   fonts/          # Nine Ethiopic/Latin font families
 ```
 
-See [`CLAUDE.md`](CLAUDE.md) for a full architecture reference.
-
 ---
 
 ## License
