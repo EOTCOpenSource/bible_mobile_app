@@ -56,6 +56,9 @@ class ReaderChapterPage extends StatelessWidget {
         parent: BouncingScrollPhysics(),
       ),
       padding: const EdgeInsets.only(bottom: 80),
+      // Pre-build all sections when navigating to a specific verse so that
+      // _spotlightKey.currentContext is non-null and ensureVisible can scroll to it.
+      cacheExtent: spotlightVerseNum != null ? 30000 : null,
       itemCount: chapter.sections.length + 1,
       itemBuilder: (ctx, i) {
         if (i == 0) {

@@ -13,6 +13,7 @@ import '../../data/models/book_index_entry.dart';
 import '../../data/reading_constants.dart';
 import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
+import '../../../../core/deep_links/deep_link_uri.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -315,7 +316,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           _book!.chapters.firstWhere((c) => c.chapterNumber == chNum);
       final section = chapter.sections[secIdx];
       final verse = section.verses.firstWhere((v) => v.verseNumber == vNum);
-      return '${widget.entry.bookNameAm} $chNum:${verse.verseNumber}\n${verse.text}';
+      final deepLink = verseDeepLinkUri(widget.entry, chNum, verse.verseNumber);
+      return '${widget.entry.bookNameAm} $chNum:${verse.verseNumber}\n${verse.text}\n\n$deepLink';
     } catch (_) {
       return null;
     }

@@ -1,11 +1,16 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/deep_links/deep_link_uri.dart';
 import 'core/l10n/l10n.dart';
 import 'core/services/bible_repository_provider.dart';
 import 'core/services/repository_provider.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/books/data/repositories/bible_repository.dart';
+import 'features/books/presentation/pages/reader_screen.dart';
 import 'features/home/presentation/pages/home_screen.dart';
 
 void main() async {
@@ -41,13 +46,77 @@ class BibleApp extends StatelessWidget {
 }
 
 /// [MaterialApp] must read [Settings] so night mode updates the whole UI (not only the reader).
-class _BibleMaterialApp extends StatelessWidget {
+class _BibleMaterialApp extends StatefulWidget {
   const _BibleMaterialApp();
+
+  @override
+  State<_BibleMaterialApp> createState() => _BibleMaterialAppState();
+}
+
+class _BibleMaterialAppState extends State<_BibleMaterialApp> {
+  static final _navigatorKey = GlobalKey<NavigatorState>();
+
+  BibleRepository? _repo;
+  StreamSubscription<Uri>? _linkSub;
+  bool _deepLinksInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _repo = BibleRepositoryProvider.of(context);
+    if (!_deepLinksInitialized) {
+      _deepLinksInitialized = true;
+      unawaited(_initDeepLinks());
+    }
+  }
+
+  Future<void> _initDeepLinks() async {
+    final appLinks = AppLinks();
+    final initial = await appLinks.getInitialLink();
+    if (initial != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _handleUri(initial));
+    }
+    _linkSub = appLinks.uriLinkStream.listen(_handleUri);
+  }
+
+  Future<void> _handleUri(Uri uri) async {
+    final repo = _repo;
+    if (repo == null) return;
+    final index = await repo.loadIndex();
+    final target = parseDeepLink(uri, index);
+    // All context/navigator access deferred to next frame to avoid async-gap lint.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (target == null) {
+        final ctx = _navigatorKey.currentContext;
+        if (ctx != null) {
+          ScaffoldMessenger.maybeOf(ctx)
+              ?.showSnackBar(const SnackBar(content: Text('Verse link not found')));
+        }
+        return;
+      }
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => ReaderScreen(
+            entry: target.entry,
+            initialChapterNumber: target.chapter,
+            initialVerse: target.verse,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _linkSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final settings = Settings.of(context);
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'መጽሐፍ ቅዱስ',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
