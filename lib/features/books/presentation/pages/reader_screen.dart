@@ -21,6 +21,7 @@ import '../widgets/reader/chapter_page.dart';
 import '../widgets/reader/font_sheet.dart';
 import '../widgets/reader/highlight_sheet.dart';
 import '../widgets/reader/note_sheet.dart';
+import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
@@ -431,6 +432,77 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Note view sheet ───────────────────────────────────────────────────────
+
+  void _showNoteView(String verseKey, ChapterAnnotations annotations) {
+    if (_book == null) return;
+    final parts = verseKey.split(':');
+    if (parts.length != 3) return;
+    final chNum = int.tryParse(parts[0]);
+    final vNum  = int.tryParse(parts[2]);
+    if (chNum == null || vNum == null) return;
+
+    final note = annotations.noteFor(vNum);
+    if (note == null) return;
+
+    String? verseText;
+    try {
+      final chapter = _book!.chapters.firstWhere((ch) => ch.chapterNumber == chNum);
+      outer:
+      for (final sec in chapter.sections) {
+        for (final v in sec.verses) {
+          if (v.verseNumber == vNum) { verseText = v.text; break outer; }
+        }
+      }
+    } catch (_) {}
+    if (verseText == null) return;
+
+    final settings     = Settings.of(context);
+    final isDark       = settings.isDarkReader;
+    final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+    final textColor    = isDark ? readerDarkText    : AppColors.textOnParchment;
+    final mutedColor   = isDark ? readerDarkMuted   : AppColors.textMuted;
+    final accentColor  = isDark ? readerDarkAccent  : AppColors.accentDeep;
+    final bodyFont     = readerFonts[settings.bodyFontIndex];
+
+    final chNumDisplay = settings.useGeezNumbers
+        ? ''
+        : '$chNum';
+    final vNumDisplay = settings.useGeezNumbers
+        ? ''
+        : '$vNum';
+    final reference =
+        '${widget.entry.bookNameAm} $chNumDisplay:$vNumDisplay';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => NoteViewSheet(
+        reference:   reference,
+        verseText:   verseText!,
+        noteContent: note.content,
+        bodyFont:    bodyFont,
+        textColor:   textColor,
+        mutedColor:  mutedColor,
+        accentColor: accentColor,
+        onEdit: () {
+          Navigator.pop(context);
+          if (!mounted) return;
+          setState(() => _selectedKey = verseKey);
+          final chKey = (bookId: widget.entry.bookNameEn, chapter: chNum);
+          final liveAnnotations =
+              _riverpodContainer?.read(chapterAnnotationsProvider(chKey)).value ??
+              ChapterAnnotations.empty;
+          _showNoteSheet(context, Settings.of(context), liveAnnotations);
+        },
+      ),
+    );
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
@@ -570,6 +642,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       verseKeyFn: _verseKey,
                                       annotations: pageAnnotations,
                                       continuousReading: settings.continuousReading,
+                                      onNoteTap: (key, ann) => _showNoteView(key, ann),
                                       spotlightVerseNum: (widget.initialVerse !=
                                                   null &&
                                               i == _spotlightChapterPageIndex)

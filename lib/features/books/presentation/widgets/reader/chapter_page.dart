@@ -30,6 +30,7 @@ class ReaderChapterPage extends StatelessWidget {
     this.spotlightVerseNum,
     this.spotlightKey,
     this.continuousReading = false,
+    this.onNoteTap,
   });
 
   final BookIndexEntry entry;
@@ -50,6 +51,7 @@ class ReaderChapterPage extends StatelessWidget {
   final GlobalKey? spotlightKey;
   final ChapterAnnotations annotations;
   final bool continuousReading;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +97,7 @@ class ReaderChapterPage extends StatelessWidget {
           spotlightVerseNum: spotlightVerseNum,
           spotlightKey:     spotlightKey,
           continuousReading: continuousReading,
+          onNoteTap:        onNoteTap,
         );
       },
     );
@@ -259,6 +262,7 @@ class SectionView extends StatelessWidget {
     this.spotlightVerseNum,
     this.spotlightKey,
     this.continuousReading = false,
+    this.onNoteTap,
   });
 
   final Section section;
@@ -278,6 +282,7 @@ class SectionView extends StatelessWidget {
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
   final bool continuousReading;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +307,7 @@ class SectionView extends StatelessWidget {
               annotations:      annotations,
               spotlightVerseNum: spotlightVerseNum,
               spotlightKey:     spotlightKey,
+              onNoteTap:        onNoteTap,
             ),
           ]
         : section.verses.map((verse) {
@@ -364,12 +370,19 @@ class SectionView extends StatelessWidget {
                 ),
                 if (hasNote)
                   Positioned(
-                    right: 2,
-                    top: 2,
-                    child: Icon(
-                      Icons.sticky_note_2_rounded,
-                      size: 13,
-                      color: context.colors.accentDeep,
+                    right: 0,
+                    top: 0,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onNoteTap?.call(key, annotations),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.sticky_note_2_rounded,
+                          size: 13,
+                          color: context.colors.accentDeep,
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -430,6 +443,7 @@ class _ContinuousSection extends StatefulWidget {
     required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
+    this.onNoteTap,
   });
 
   final Section section;
@@ -447,6 +461,7 @@ class _ContinuousSection extends StatefulWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
 
   @override
   State<_ContinuousSection> createState() => _ContinuousSectionState();
@@ -513,28 +528,39 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
               widget.accentColor.withValues(alpha: widget.isDark ? 0.18 : 0.15))
           : hlColor?.withValues(alpha: 0.28);
 
-      // Bookmark marker replaces the left border used in verse-per-line mode
+      // Verse number — pill with accent background when bookmarked, plain otherwise
       if (isBookmarked) {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Container(
+            margin: const EdgeInsets.only(right: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+            decoration: BoxDecoration(
+              color: widget.accentColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              numStr,
+              style: TextStyle(
+                fontFamily: AppTypography.nokiaPureheadline,
+                fontSize: widget.fontSize * 0.58,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ));
+      } else {
         spans.add(TextSpan(
-          text: '▸',
+          text: '$numStr ',
           style: TextStyle(
-            fontSize: widget.fontSize * 0.6,
-            color: widget.accentColor,
+            fontFamily: AppTypography.nokiaPureheadline,
+            fontSize: widget.fontSize * 0.62,
             fontWeight: FontWeight.w700,
+            color: widget.accentColor,
           ),
         ));
       }
-
-      // Verse number
-      spans.add(TextSpan(
-        text: '$numStr ',
-        style: TextStyle(
-          fontFamily: AppTypography.nokiaPureheadline,
-          fontSize: widget.fontSize * 0.62,
-          fontWeight: FontWeight.w700,
-          color: widget.accentColor,
-        ),
-      ));
 
       // Verse text — tappable
       spans.add(TextSpan(
@@ -549,16 +575,19 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
         ),
       ));
 
-      // Note indicator inline after verse text
+      // Note indicator — tappable inline icon
       if (hasNote) {
         spans.add(WidgetSpan(
           alignment: PlaceholderAlignment.top,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 2),
-            child: Icon(
-              Icons.sticky_note_2_rounded,
-              size: 11,
-              color: context.colors.accentDeep,
+          child: GestureDetector(
+            onTap: () => widget.onNoteTap?.call(key, widget.annotations),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 2),
+              child: Icon(
+                Icons.sticky_note_2_rounded,
+                size: 11,
+                color: context.colors.accentDeep,
+              ),
             ),
           ),
         ));
