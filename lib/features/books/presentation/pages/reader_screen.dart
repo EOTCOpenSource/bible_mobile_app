@@ -317,7 +317,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       final section = chapter.sections[secIdx];
       final verse = section.verses.firstWhere((v) => v.verseNumber == vNum);
       final deepLink = verseDeepLinkUri(widget.entry, chNum, verse.verseNumber);
-      return '${widget.entry.bookNameAm} $chNum:${verse.verseNumber}\n${verse.text}\n\n$deepLink';
+      return '${verse.text}\n${widget.entry.bookNameAm} $chNum:${verse.verseNumber} ($deepLink)';
     } catch (_) {
       return null;
     }
