@@ -252,15 +252,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           _selectedKey = _verseKey(chapter.chapterNumber, sIdx, targetVerse);
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          final ctx = _spotlightKey.currentContext;
-          if (ctx != null) {
-            Scrollable.ensureVisible(
-              ctx,
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.easeInOut,
-              alignment: 0.3,
-            );
-          }
+          // Wait one extra frame so any page jump has time to render the
+          // target chapter before we try to scroll within it.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final ctx = _spotlightKey.currentContext;
+            if (ctx != null) {
+              Scrollable.ensureVisible(
+                ctx,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                alignment: 0.3,
+              );
+            }
+          });
         });
         break;
       }
@@ -318,7 +323,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       final section = chapter.sections[secIdx];
       final verse = section.verses.firstWhere((v) => v.verseNumber == vNum);
       final deepLink = verseDeepLinkUri(widget.entry, chNum, verse.verseNumber);
-      return '${verse.text}\n${widget.entry.bookNameAm} $chNum:${verse.verseNumber} ($deepLink)';
+      return '${verse.text}\n${widget.entry.bookNameAm} $chNum:${verse.verseNumber}\n$deepLink';
     } catch (_) {
       return null;
     }
