@@ -6,83 +6,119 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
 import '../../../books/providers/reading_progress_providers.dart';
 
-class ContinueReadingSection extends ConsumerWidget {
+class ContinueReadingSection extends ConsumerStatefulWidget {
   const ContinueReadingSection({super.key, required this.onOpenBooksTab});
 
   final VoidCallback onOpenBooksTab;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ContinueReadingSection> createState() =>
+      _ContinueReadingSectionState();
+}
+
+class _ContinueReadingSectionState
+    extends ConsumerState<ContinueReadingSection> {
+  final _pageCtrl = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = L10n.of(context);
     final c = context.colors;
-    final asyncSnap = ref.watch(continueReadingSnapshotProvider);
+    final asyncSnaps = ref.watch(continueReadingSnapshotsProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                s.continueReadingTitle,
-                style: AppTypography.amharicSubheading.copyWith(
-                  color: c.textOnParchment,
-                ),
-              ),
-              const Spacer(),
-              asyncSnap.when(
-                data: (snap) => Text(
-                  s.completedPercent(snap?.progressPercent ?? 0),
-                  style: AppTypography.englishCaption.copyWith(
-                    color: c.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-                loading: () => Text(
-                  s.completedPercent(0),
-                  style: AppTypography.englishCaption.copyWith(
-                    color: c.textMuted,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-                error: (Object error, StackTrace stackTrace) => Text(
-                  s.completedPercent(0),
-                  style: AppTypography.englishCaption.copyWith(
-                    color: c.textMuted,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            s.continueReadingTitle,
+            style: AppTypography.amharicSubheading.copyWith(
+              color: c.textOnParchment,
+            ),
           ),
           const SizedBox(height: 12),
-          asyncSnap.when(
-            data: (snap) => snap == null
-                ? _EmptyContinueCard(
-                    colors: c,
-                    s: s,
-                    onOpenBooks: onOpenBooksTab,
-                  )
-                : _ContinueReadingCard(
-                    snap: snap,
-                    colors: c,
-                    s: s,
+          asyncSnaps.when(
+            data: (snaps) {
+              if (snaps.isEmpty) {
+                return _EmptyContinueCard(
+                  colors: c,
+                  s: s,
+                  onOpenBooks: widget.onOpenBooksTab,
+                );
+              }
+              if (snaps.length == 1) {
+                return _ContinueReadingCard(snap: snaps.first, colors: c, s: s);
+              }
+              return Column(
+                children: [
+                  SizedBox(
+                    height: 122,
+                    child: PageView.builder(
+                      controller: _pageCtrl,
+                      itemCount: snaps.length,
+                      onPageChanged: (i) => setState(() => _currentPage = i),
+                      itemBuilder: (_, i) =>
+                          _ContinueReadingCard(snap: snaps[i], colors: c, s: s),
+                    ),
                   ),
+                  const SizedBox(height: 10),
+                  _DotIndicator(
+                    count: snaps.length,
+                    current: _currentPage,
+                    color: c.primary,
+                  ),
+                ],
+              );
+            },
             loading: () => const _ContinueCardSkeleton(),
-            error: (Object error, StackTrace stackTrace) => _EmptyContinueCard(
+            error: (_, __) => _EmptyContinueCard(
               colors: c,
               s: s,
-              onOpenBooks: onOpenBooksTab,
+              onOpenBooks: widget.onOpenBooksTab,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DotIndicator extends StatelessWidget {
+  const _DotIndicator({
+    required this.count,
+    required this.current,
+    required this.color,
+  });
+
+  final int count;
+  final int current;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (i) {
+        final active = i == current;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          width: active ? 14 : 6,
+          height: 6,
+          decoration: BoxDecoration(
+            color: active ? color : color.withValues(alpha: 0.25),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      }),
     );
   }
 }
@@ -157,15 +193,31 @@ class _ContinueReadingCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: pct,
-                        minHeight: 6,
-                        backgroundColor: c.parchmentDark,
-                        valueColor: AlwaysStoppedAnimation(c.primary),
-                      ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: pct,
+                              minHeight: 6,
+                              backgroundColor: c.parchmentDark,
+                              valueColor: AlwaysStoppedAnimation(c.primary),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${snap.progressPercent}%',
+                          style: AppTypography.englishCaption.copyWith(
+                            color: c.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

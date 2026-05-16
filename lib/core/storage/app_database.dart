@@ -5,7 +5,7 @@ import '../annotations/annotation_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 2;
+  static const _version = 3;
 
   Database? _db;
 
@@ -33,17 +33,53 @@ class AppDatabase {
     if (oldVersion < 2) {
       await _createReadingTables(db);
     }
+    if (oldVersion < 3) {
+      await _migrateReadingPositionToMultiBook(db);
+    }
+  }
+
+  /// v2→v3: replace single-row reading_position (id=1) with per-book rows.
+  Future<void> _migrateReadingPositionToMultiBook(Database db) async {
+    List<Map<String, Object?>> existing = [];
+    try {
+      existing = await db.query('reading_position');
+    } catch (_) {}
+
+    await db.execute('DROP TABLE IF EXISTS reading_position');
+    await db.execute('''
+      CREATE TABLE reading_position (
+        book_id    TEXT    NOT NULL PRIMARY KEY,
+        chapter    INTEGER NOT NULL,
+        verse      INTEGER,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    for (final row in existing) {
+      final bookId = row['book_id'] as String?;
+      final chapter = row['chapter'] as int?;
+      if (bookId == null || chapter == null) continue;
+      await db.insert(
+        'reading_position',
+        {
+          'book_id': bookId,
+          'chapter': chapter,
+          'verse': row['verse'],
+          'updated_at': row['updated_at'] ?? DateTime.now().millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
   }
 
   /// Reading progress + streak (v2). Used by [onCreate] and migration.
   Future<void> _createReadingTables(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS reading_position (
-        id           INTEGER PRIMARY KEY CHECK (id = 1),
-        book_id      TEXT    NOT NULL,
-        chapter      INTEGER NOT NULL,
-        verse        INTEGER,
-        updated_at   INTEGER NOT NULL
+        book_id    TEXT    NOT NULL PRIMARY KEY,
+        chapter    INTEGER NOT NULL,
+        verse      INTEGER,
+        updated_at INTEGER NOT NULL
       )
     ''');
     await db.execute('''
@@ -137,9 +173,14 @@ class AppDatabase {
 
   Future<Map<String, Object?>?> getReadingPositionRow() async {
     final db = await database;
-    final rows = await db.query('reading_position', where: 'id = ?', whereArgs: [1]);
+    final rows = await db.query('reading_position', orderBy: 'updated_at DESC', limit: 1);
     if (rows.isEmpty) return null;
     return rows.first;
+  }
+
+  Future<List<Map<String, Object?>>> getAllReadingPositionRows() async {
+    final db = await database;
+    return db.query('reading_position', orderBy: 'updated_at DESC');
   }
 
   Future<void> upsertReadingPosition({
@@ -151,7 +192,6 @@ class AppDatabase {
     await db.insert(
       'reading_position',
       {
-        'id': 1,
         'book_id': bookId,
         'chapter': chapter,
         'verse': verse,

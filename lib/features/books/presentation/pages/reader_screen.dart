@@ -203,7 +203,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               bookId: bookId,
               chapter: chNum,
             );
-        container.invalidate(continueReadingSnapshotProvider);
+        container.invalidate(continueReadingSnapshotsProvider);
         container.invalidate(readingStreakStateProvider);
       },
     );
