@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kenat/kenat.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/annotations/annotation_models.dart';
@@ -489,8 +490,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
     final bodyFont = readerFonts[settings.bodyFontIndex];
 
-    final chNumDisplay = settings.useGeezNumbers ? '' : '$chNum';
-    final vNumDisplay = settings.useGeezNumbers ? '' : '$vNum';
+    final chNumDisplay = settings.useGeezNumbers ? toGeez(chNum) : '$chNum';
+    final vNumDisplay = settings.useGeezNumbers ? toGeez(vNum) : '$vNum';
     final reference = '${widget.entry.bookNameAm} $chNumDisplay:$vNumDisplay';
 
     showModalBottomSheet(
