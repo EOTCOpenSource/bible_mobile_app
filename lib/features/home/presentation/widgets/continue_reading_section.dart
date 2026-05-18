@@ -79,7 +79,7 @@ class _ContinueReadingSectionState
               );
             },
             loading: () => const _ContinueCardSkeleton(),
-            error: (_, __) => _EmptyContinueCard(
+            error: (_, _) => _EmptyContinueCard(
               colors: c,
               s: s,
               onOpenBooks: widget.onOpenBooksTab,
