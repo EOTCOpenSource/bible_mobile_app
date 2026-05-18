@@ -11,32 +11,38 @@ final readingProgressRepositoryProvider = Provider<ReadingProgressRepository>(
   (ref) => ReadingProgressRepository(ref.watch(appDatabaseProvider)),
 );
 
-/// Resolves [reading_position] against the loaded Bible index.
-final continueReadingSnapshotProvider =
-    FutureProvider<ContinueReadingSnapshot?>((ref) async {
-  final pos = await ref.watch(readingProgressRepositoryProvider).getReadingPosition();
-  if (pos == null) return null;
+/// All books with reading progress, ordered by most recently read.
+final continueReadingSnapshotsProvider =
+    FutureProvider<List<ContinueReadingSnapshot>>((ref) async {
+  final repo = ref.watch(readingProgressRepositoryProvider);
+  final positions = await repo.getAllReadingPositions();
+  if (positions.isEmpty) return [];
 
   final index = await ref.watch(bibleRepositoryProvider).loadIndex();
-  BookIndexEntry? entry;
-  for (final e in index) {
-    if (e.bookNameEn == pos.bookId) {
-      entry = e;
-      break;
+  final snapshots = <ContinueReadingSnapshot>[];
+
+  for (final pos in positions) {
+    BookIndexEntry? entry;
+    for (final e in index) {
+      if (e.bookNameEn == pos.bookId) {
+        entry = e;
+        break;
+      }
     }
+    if (entry == null) continue;
+
+    final readCount = await repo.countChaptersReadForBook(pos.bookId);
+    final total = entry.chapterCount ?? 1;
+
+    snapshots.add(ContinueReadingSnapshot(
+      entry: entry,
+      position: pos,
+      chaptersReadInBook: readCount,
+      totalChapters: total,
+    ));
   }
-  if (entry == null) return null;
 
-  final readCount =
-      await ref.watch(readingProgressRepositoryProvider).countChaptersReadForBook(pos.bookId);
-  final total = entry.chapterCount ?? 1;
-
-  return ContinueReadingSnapshot(
-    entry: entry,
-    position: pos,
-    chaptersReadInBook: readCount,
-    totalChapters: total,
-  );
+  return snapshots;
 });
 
 final readingStreakStateProvider = FutureProvider<ReadingStreakState>((ref) async {

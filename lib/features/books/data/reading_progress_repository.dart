@@ -52,6 +52,11 @@ class ReadingProgressRepository {
     return ReadingPosition.fromRow(row);
   }
 
+  Future<List<ReadingPosition>> getAllReadingPositions() async {
+    final rows = await _db.getAllReadingPositionRows();
+    return rows.map(ReadingPosition.fromRow).toList();
+  }
+
   Future<ReadingStreakState> getReadingStreakState() async {
     final row = await _db.getReadingStreakRow();
     return ReadingStreakState.fromRow(row);
