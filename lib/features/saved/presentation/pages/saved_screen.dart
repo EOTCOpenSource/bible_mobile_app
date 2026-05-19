@@ -67,7 +67,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     };
 
     if (bookIds.isEmpty) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _highlights = [];
+          _bookmarks = [];
+          _notes = [];
+          _loading = false;
+        });
+      }
       return;
     }
 
@@ -103,6 +110,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             return e == null
                 ? null
                 : AnnotationItem(
+                    id: h.id!,
                     bookEntry: e,
                     chapter: h.chapter,
                     verseStart: h.verseStart,
@@ -120,6 +128,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             return e == null
                 ? null
                 : AnnotationItem(
+                    id: b.id!,
                     bookEntry: e,
                     chapter: b.chapter,
                     verseStart: b.verseStart,
@@ -136,6 +145,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             return e == null
                 ? null
                 : AnnotationItem(
+                    id: n.id!,
                     bookEntry: e,
                     chapter: n.chapter,
                     verseStart: n.verseStart,
@@ -231,9 +241,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
           // ── Tab content ───────────────────────────────────────────────────
           Expanded(
             child: _loading
-                ? Center(
-                    child:
-                        CircularProgressIndicator(color: c.primary))
+                ? Center(child: CircularProgressIndicator(color: c.primary))
                 : IndexedStack(
                     index: _tab,
                     children: [
@@ -299,8 +307,10 @@ class _TabLabel extends StatelessWidget {
               const SizedBox(width: 5),
               if (count > 0)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: active ? c.primary : c.surfaceDim,
                     borderRadius: BorderRadius.circular(10),
