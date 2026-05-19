@@ -14,6 +14,7 @@ class SyncRepository {
     final res = await _client.post(
       '/bookmarks',
       body: {
+        'book': b.bookId,
         'bookId': b.bookId,
         'chapter': b.chapter,
         'verseStart': b.verseStart,
@@ -27,6 +28,7 @@ class SyncRepository {
   Future<void> updateBookmark(String remoteId, Bookmark b) => _client.put(
         '/bookmarks/$remoteId',
         body: {
+          'book': b.bookId,
           'bookId': b.bookId,
           'chapter': b.chapter,
           'verseStart': b.verseStart,
@@ -74,6 +76,7 @@ class SyncRepository {
     final res = await _client.post(
       '/highlights',
       body: {
+        'book': h.bookId,
         'bookId': h.bookId,
         'chapter': h.chapter,
         'verseStart': h.verseStart,
@@ -122,11 +125,13 @@ class SyncRepository {
     throw Exception('Cannot parse remote id for $key');
   }
 
+  // Maps local ARGB palette to the backend's accepted color names:
+  // yellow | green | pink | blue | red | purple
   static const _colorNames = <int, String>{
     0xFFFFEB3B: 'yellow',
-    0xFF80CBC4: 'teal',
+    0xFF80CBC4: 'green',  // teal → closest accepted name
     0xFF90CAF9: 'blue',
-    0xFFEF9A9A: 'red',
+    0xFFEF9A9A: 'pink',   // pink-red → pink
     0xFFCE93D8: 'purple',
   };
 
