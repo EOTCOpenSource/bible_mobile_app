@@ -332,6 +332,15 @@ class AppDatabase {
     );
     return rows.map(Bookmark.fromMap).toList();
   }
+  Future<void> deleteNoteByReference(String bookId, int chapter, int verseStart) async {
+  final db = await database;
+  await db.delete(
+    'notes',
+    where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+    whereArgs: [bookId, chapter, verseStart],
+  );
+}
+
 
   Future<List<Highlight>> getAllHighlights() async {
     final db = await database;

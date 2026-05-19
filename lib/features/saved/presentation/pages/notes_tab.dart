@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_color_scheme.dart';
+import '../../../annotations/providers/annotation_providers.dart';
+import '../../../books/presentation/pages/reader_screen.dart';
 import 'saved_common.dart';
 
-class NotesTab extends StatefulWidget {
+class NotesTab extends ConsumerStatefulWidget {
   const NotesTab({
     super.key,
     required this.items,
@@ -15,10 +18,10 @@ class NotesTab extends StatefulWidget {
   final Future<void> Function() onRefresh;
 
   @override
-  State<NotesTab> createState() => _NotesTabState();
+  ConsumerState<NotesTab> createState() => _NotesTabState();
 }
 
-class _NotesTabState extends State<NotesTab> {
+class _NotesTabState extends ConsumerState<NotesTab> {
   String? _testamentFilter;
   String? _bookFilter;
   int? _chapterFilter;
@@ -111,6 +114,92 @@ class _NotesTabState extends State<NotesTab> {
     );
   }
 
+ void _showNoteOptions(AnnotationItem item) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_rounded),
+              title: const Text('አርትዕ'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _editNote(item);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_rounded, color: Colors.red),
+              title: const Text('ሰርዝ', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _deleteNote(item);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  
+  void _editNote(AnnotationItem item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReaderScreen(
+          entry: item.bookEntry,
+          initialChapter: (item.chapter - 1).clamp(0, 999),
+          initialVerse: item.verseStart,
+          openNoteSheet: true,
+        ),
+      ),
+    ).then((_) => widget.onRefresh());
+  }
+
+
+ 
+  void _deleteNote(AnnotationItem item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ማስታወሻ ሰርዝ'),
+        content: Text('ማስታወሻዎን ለመሰረዝ ይፈልጋሉ?\n${item.bookEntry.bookNameAm} ${item.chapter}:${item.verseStart}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('ተወው'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('ሰርዝ'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirmed == true) {
+      
+      final db = ref.read(annotationDbProvider); 
+      await db.deleteNoteByReference(
+        item.bookEntry.bookNameEn, 
+        item.chapter, 
+        item.verseStart
+      );
+      await widget.onRefresh();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ማስታወሻ ተሰርዟል')),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final items = _filtered;
@@ -195,6 +284,7 @@ class _NotesTabState extends State<NotesTab> {
                         item: items[i],
                         tab: 2,
                         onTap: () => widget.onOpen(items[i]),
+                        onLongPress: () => _showNoteOptions(items[i]),
                       ),
                     ),
                   ),

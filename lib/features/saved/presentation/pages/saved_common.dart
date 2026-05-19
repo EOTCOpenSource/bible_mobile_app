@@ -35,11 +35,13 @@ class AnnotationCard extends StatelessWidget {
     required this.item,
     required this.tab,
     required this.onTap,
+     this.onLongPress
   });
 
   final AnnotationItem item;
   final int tab;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress; 
 
   String _daysAgo() {
     final diff = DateTime.now().difference(item.createdAt);
@@ -61,6 +63,7 @@ class AnnotationCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(

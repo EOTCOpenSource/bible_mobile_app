@@ -35,6 +35,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
     this.initialChapter = 0,
     this.initialChapterNumber,
     this.initialVerse,
+     this.openNoteSheet = false,
   });
 
   final BookIndexEntry entry;
@@ -43,6 +44,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
   /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
   final int? initialChapterNumber;
   final int? initialVerse;
+   final bool openNoteSheet;
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
@@ -260,6 +262,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               curve: Curves.easeInOut,
               alignment: 0.3,
             );
+          }
+          if (widget.openNoteSheet && mounted) {
+            final chKey = (bookId: widget.entry.bookNameEn, chapter: chapter.chapterNumber);
+            final liveAnnotations =
+              _riverpodContainer?.read(chapterAnnotationsProvider(chKey)).value ??
+              ChapterAnnotations.empty;
+            _showNoteSheet(context, Settings.of(context), liveAnnotations);
           }
         });
         break;
