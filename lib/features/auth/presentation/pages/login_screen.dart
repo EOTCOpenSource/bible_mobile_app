@@ -70,11 +70,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _appleSignIn() {
+  void _facebookSignIn() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Apple Sign In — በቅርብ ይመጣል',
+          'Facebook Sign In — በቅርብ ይመጣል',
           style: AppTypography.amharicCaption.copyWith(color: Colors.white),
         ),
         backgroundColor: context.colors.primary,
@@ -179,7 +179,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             isGoogleLoading: _isGoogleLoading,
                             allDisabled: isLoading,
                             onGoogle: _googleSignIn,
-                            onApple: _appleSignIn,
+                            onFacebook: _facebookSignIn,
                           ),
                           const SizedBox(height: 28),
                           _RegisterPrompt(enabled: !isLoading),
@@ -597,13 +597,13 @@ class _SocialRow extends StatelessWidget {
     required this.isGoogleLoading,
     required this.allDisabled,
     required this.onGoogle,
-    required this.onApple,
+    required this.onFacebook,
   });
 
   final bool isGoogleLoading;
   final bool allDisabled;
   final VoidCallback onGoogle;
-  final VoidCallback onApple;
+  final VoidCallback onFacebook;
 
   @override
   Widget build(BuildContext context) {
@@ -621,11 +621,11 @@ class _SocialRow extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _SocialButton(
-            onTap: allDisabled ? null : onApple,
+            onTap: allDisabled ? null : onFacebook,
             isLoading: false,
-            label: 'Apple',
+            label: 'Facebook',
             dark: true,
-            icon: const Icon(Icons.apple_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.facebook_rounded, color: Colors.white, size: 20),
           ),
         ),
       ],
