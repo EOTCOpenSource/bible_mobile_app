@@ -128,4 +128,56 @@ String get searchScopeTitle;
   String get verseCopy;
   String get verseShare;
   String get comingSoon;
+
+  // ── Auth — shared ─────────────────────────────────────────────────────────
+  String get authEmail;
+  String get authEmailRequired;
+  String get authEmailInvalid;
+  String get authPassword;
+  String get authPasswordRequired;
+  String get authConnectionError;
+
+  // ── Auth — login ──────────────────────────────────────────────────────────
+  String get loginTitle;
+  String get loginSubtitle;
+  String get loginRememberMe;
+  String get loginForgotPassword;
+  String get loginButton;
+  String get loginOrDivider;
+  String get loginNoAccount;
+  String get loginRegisterLink;
+  String get loginVerseQuote;
+  String get loginAccountLocked;
+  String get loginGoogleFailed;
+  String get loginFacebookComingSoon;
+
+  // ── Auth — register ───────────────────────────────────────────────────────
+  String get registerTitle;
+  String get registerSubtitle;
+  String get registerFullName;
+  String get registerFullNameRequired;
+  String get registerFullNameTooShort;
+  String get registerPasswordTooShort;
+  String get registerAcceptTerms;
+  String get registerButton;
+  String get registerHaveAccount;
+  String get registerLoginLink;
+  String get registerTermsText;
+  String get passwordWeak;
+  String get passwordFair;
+  String get passwordGood;
+  String get passwordStrong;
+
+  // ── Auth — OTP ────────────────────────────────────────────────────────────
+  String get otpTitle;
+  String get otpSentPrefix;
+  String get otpSentSuffix;
+  String otpDigitsRequired(int n);
+  String get otpNotReceived;
+  String otpResendIn(String t);
+  String get otpResend;
+  String get otpVerifyButton;
+  String get otpChangePhone;
+  String get otpChangeEmail;
+  String get otpResendFailed;
 }

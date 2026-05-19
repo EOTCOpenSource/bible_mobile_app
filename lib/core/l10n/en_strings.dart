@@ -120,4 +120,57 @@ class EnStrings extends AppStrings {
   @override String get verseCopy      => 'Copy';
   @override String get verseShare     => 'Share';
   @override String get comingSoon     => 'Coming soon';
+
+  // ── Auth — shared ─────────────────────────────────────────────────────────
+  @override String get authEmail             => 'Email';
+  @override String get authEmailRequired     => 'Email is required';
+  @override String get authEmailInvalid      => 'Enter a valid email';
+  @override String get authPassword          => 'Password';
+  @override String get authPasswordRequired  => 'Password is required';
+  @override String get authConnectionError   => 'Connection failed. Please try again.';
+
+  // ── Auth — login ──────────────────────────────────────────────────────────
+  @override String get loginTitle            => 'Welcome Back';
+  @override String get loginSubtitle         => 'Sign in to continue reading the Holy Word.';
+  @override String get loginRememberMe       => 'Remember me';
+  @override String get loginForgotPassword   => 'Forgot password?';
+  @override String get loginButton           => 'Sign In';
+  @override String get loginOrDivider        => 'Or sign in with';
+  @override String get loginNoAccount        => "Don't have an account? ";
+  @override String get loginRegisterLink     => 'Register';
+  @override String get loginVerseQuote       => 'Your word is a lamp forever';
+  @override String get loginAccountLocked    => 'Account locked. Try again in 2 hours.';
+  @override String get loginGoogleFailed     => 'Google sign-in failed. Try again.';
+  @override String get loginFacebookComingSoon => 'Facebook Sign In — Coming soon';
+
+  // ── Auth — register ───────────────────────────────────────────────────────
+  @override String get registerTitle             => 'Create Account';
+  @override String get registerSubtitle          => 'Save your progress, highlights, and notes.';
+  @override String get registerFullName          => 'Full Name';
+  @override String get registerFullNameRequired  => 'Full name is required';
+  @override String get registerFullNameTooShort  => 'Name must be at least 2 characters';
+  @override String get registerPhone             => 'Phone Number';
+  @override String get registerPasswordTooShort  => 'At least 8 characters required';
+  @override String get registerAcceptTerms       => 'Please accept the terms and conditions';
+  @override String get registerButton            => 'Register';
+  @override String get registerHaveAccount       => 'Already have an account? ';
+  @override String get registerLoginLink         => 'Sign In';
+  @override String get registerTermsText         => 'I accept the Community Terms and Privacy Policy.';
+  @override String get passwordWeak              => 'Weak';
+  @override String get passwordFair              => 'Fair';
+  @override String get passwordGood              => 'Good';
+  @override String get passwordStrong            => 'Strong';
+
+  // ── Auth — OTP ────────────────────────────────────────────────────────────
+  @override String get otpTitle          => 'Verify Your Code';
+  @override String get otpSentPrefix     => 'We sent a 6-digit code to ';
+  @override String get otpSentSuffix     => '. Enter it below.';
+  @override String otpDigitsRequired(int n) => '$n-digit code required';
+  @override String get otpNotReceived    => "Didn't receive the code? ";
+  @override String otpResendIn(String t) => 'Resend in $t';
+  @override String get otpResend         => 'Resend';
+  @override String get otpVerifyButton   => 'Verify';
+  @override String get otpChangePhone    => 'Change phone number';
+  @override String get otpChangeEmail    => 'Change email';
+  @override String get otpResendFailed   => 'Failed to resend. Try again.';
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/constants/app_icons.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 
@@ -103,7 +104,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   Future<void> _verify() async {
     final otp = _otp;
     if (otp.length < _otpLength) {
-      setState(() => _errorMessage = 'የ$_otpLength ቁጥር ኮድ ያስፈልጋል');
+      setState(() => _errorMessage = L10n.of(context).otpDigitsRequired(_otpLength));
       return;
     }
     setState(() { _isLoading = true; _errorMessage = null; });
@@ -114,7 +115,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       setState(() => _errorMessage = e.message);
       _clearOtp();
     } catch (_) {
-      setState(() => _errorMessage = 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).authConnectionError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -130,7 +131,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (_) {
-      setState(() => _errorMessage = 'ኮድ መላክ አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).otpResendFailed);
     } finally {
       if (mounted) setState(() => _isResending = false);
     }
@@ -150,6 +151,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final c = context.colors;
     final otpFilled = _otp.length == _otpLength;
 
@@ -165,7 +167,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               _BackButton(),
               const SizedBox(height: 24),
               Text(
-                'ኮድዎን ያረጋግጡ',
+                s.otpTitle,
                 style: AppTypography.amharicDisplay.copyWith(
                   color: c.textOnParchment,
                   fontSize: 30,
@@ -180,15 +182,14 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                     height: 1.6,
                   ),
                   children: [
-                    const TextSpan(text: 'ወደ '),
+                    TextSpan(text: s.otpSentPrefix),
                     TextSpan(
                       text: _maskedContact,
                       style: TextStyle(
                           color: c.textOnParchment,
                           fontWeight: FontWeight.w700),
                     ),
-                    const TextSpan(
-                        text: ' 6 አሃዝ ኮድ ልከናል። አባክዎ ከታች ያስገቡ።'),
+                    TextSpan(text: s.otpSentSuffix),
                   ],
                 ),
               ),
@@ -216,7 +217,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               ),
               const SizedBox(height: 28),
               _PrimaryButton(
-                label: 'አረጋጥ',
+                label: s.otpVerifyButton,
                 isLoading: _isLoading,
                 onTap: (!otpFilled || _isLoading) ? null : _verify,
               ),
@@ -232,8 +233,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       const SizedBox(width: 6),
                       Text(
                         widget.phone != null && widget.phone!.isNotEmpty
-                            ? 'ስልክ ቁጥር ለውጥ'
-                            : 'ኢሜል ለውጥ',
+                            ? s.otpChangePhone
+                            : s.otpChangeEmail,
                         style: AppTypography.amharicCaption.copyWith(
                           color: c.textMuted,
                           fontSize: 12,
@@ -375,13 +376,13 @@ class _ResendRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'ኮድ አልደረሰዎትም? ',
+          L10n.of(context).otpNotReceived,
           style: AppTypography.amharicCaption.copyWith(
               color: c.textMuted, fontSize: 12),
         ),
         if (countdown > 0)
           Text(
-            'ደጎሚ ሊክ ቤ $countdownLabel',
+            L10n.of(context).otpResendIn(countdownLabel),
             style: AppTypography.amharicCaption.copyWith(
               color: c.textCaption,
               fontSize: 12,
@@ -398,7 +399,7 @@ class _ResendRow extends StatelessWidget {
                         strokeWidth: 1.5, color: c.primary),
                   )
                 : Text(
-                    'ደጎሚ ሊክ',
+                    L10n.of(context).otpResend,
                     style: AppTypography.amharicCaption.copyWith(
                       color: c.primary,
                       fontWeight: FontWeight.w700,

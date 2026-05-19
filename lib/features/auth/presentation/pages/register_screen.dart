@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/auth/auth_state.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'login_screen.dart';
@@ -18,7 +19,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
   bool _obscurePassword = true;
@@ -31,7 +31,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
-    _phoneCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
   }
@@ -46,12 +45,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return score;
   }
 
-  String _strengthLabel(int s) {
+  String _strengthLabel(int s, AppStrings strings) {
     switch (s) {
-      case 1: return 'ደካማ';
-      case 2: return 'መካከለኛ';
-      case 3: return 'ጥሩ';
-      case 4: return 'ጠንካራ';
+      case 1: return strings.passwordWeak;
+      case 2: return strings.passwordFair;
+      case 3: return strings.passwordGood;
+      case 4: return strings.passwordStrong;
       default: return '';
     }
   }
@@ -69,7 +68,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptedTerms) {
-      setState(() => _errorMessage = 'ውሎቹን እና ሁኔታዎቹን ይቀበሉ');
+      setState(() => _errorMessage = L10n.of(context).registerAcceptTerms);
       return;
     }
     setState(() { _isLoading = true; _errorMessage = null; });
@@ -83,17 +82,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => OtpScreen(
-              email: _emailCtrl.text.trim(),
-              phone: _phoneCtrl.text.trim(),
-            ),
+            builder: (_) => OtpScreen(email: _emailCtrl.text.trim()),
           ),
         );
       }
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (_) {
-      setState(() => _errorMessage = 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).authConnectionError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -101,6 +97,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final c = context.colors;
 
     return Scaffold(
@@ -115,7 +112,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               _BackButton(),
               const SizedBox(height: 24),
               Text(
-                'አካውንት ይፍጠሩ',
+                s.registerTitle,
                 style: AppTypography.amharicDisplay.copyWith(
                   color: c.textOnParchment,
                   fontSize: 30,
@@ -123,7 +120,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'የጎልብ ሂደትዎን፣ ምልክቶቾዎን እና ማስታወሻዎቾዎን ያስቀምጡ።',
+                s.registerSubtitle,
                 style: AppTypography.amharicBody.copyWith(
                   color: c.textMuted,
                   fontSize: 13,
@@ -140,43 +137,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   children: [
                     _InputField(
                       controller: _nameCtrl,
-                      label: 'ሙሉ ስም',
+                      label: s.registerFullName,
                       hint: 'ነህምያ ተስፋዬ',
                       prefixIcon: Icons.person_outline_rounded,
                       enabled: !_isLoading,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'ሙሉ ስም ያስፈልጋል';
-                        if (v.trim().length < 2) return 'ስም ቢያንስ 2 ፊደላት ያስፈልጋሉ';
+                        if (v == null || v.trim().isEmpty) return s.registerFullNameRequired;
+                        if (v.trim().length < 2) return s.registerFullNameTooShort;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     _InputField(
                       controller: _emailCtrl,
-                      label: 'ኢሜል',
+                      label: s.authEmail,
                       hint: 'nehmia@bible.app',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       enabled: !_isLoading,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'ኢሜል ያስፈልጋል';
-                        if (!v.contains('@')) return 'ትክክለኛ ኢሜል ያስፈልጋል';
+                        if (v == null || v.trim().isEmpty) return s.authEmailRequired;
+                        if (!v.contains('@')) return s.authEmailInvalid;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     _InputField(
-                      controller: _phoneCtrl,
-                      label: 'ስልክ ቁጥር',
-                      hint: '+251 911 234 567',
-                      prefixIcon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      enabled: !_isLoading,
-                    ),
-                    const SizedBox(height: 16),
-                    _InputField(
                       controller: _passwordCtrl,
-                      label: 'የይለፍ ቃል',
+                      label: s.authPassword,
                       hint: '••••••••',
                       prefixIcon: Icons.lock_outline_rounded,
                       obscureText: _obscurePassword,
@@ -195,8 +183,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             () => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'የይለፍ ቃል ያስፈልጋል';
-                        if (v.length < 8) return 'ቢያንስ 8 ቁምፊዎች ያስፈልጋሉ';
+                        if (v == null || v.isEmpty) return s.authPasswordRequired;
+                        if (v.length < 8) return s.registerPasswordTooShort;
                         return null;
                       },
                     ),
@@ -204,7 +192,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       const SizedBox(height: 8),
                       _PasswordStrengthBar(
                         strength: _passwordStrength,
-                        label: _strengthLabel(_passwordStrength),
+                        label: _strengthLabel(_passwordStrength, s),
                         color: _strengthColor(_passwordStrength),
                       ),
                     ],
@@ -225,7 +213,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ],
                     const SizedBox(height: 24),
                     _PrimaryButton(
-                      label: 'ይ​መዝ​ጋቡ',
+                      label: s.registerButton,
                       isLoading: _isLoading,
                       onTap: _isLoading ? null : _register,
                     ),
@@ -234,7 +222,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'መለያ አለዎት? ',
+                          s.registerHaveAccount,
                           style: AppTypography.amharicCaption.copyWith(
                               color: c.textMuted, fontSize: 12),
                         ),
@@ -247,7 +235,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         builder: (_) => const LoginScreen()),
                                   ),
                           child: Text(
-                            'ይ​ግቡ',
+                            s.registerLoginLink,
                             style: AppTypography.amharicCaption.copyWith(
                               color: c.primary,
                               fontWeight: FontWeight.w700,
@@ -522,7 +510,7 @@ class _TermsRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'የኅብረተሰቡ ወሎቹን እና የግላዊነት ፖሊሲን ተቀብያለሁ።',
+              L10n.of(context).registerTermsText,
               style: AppTypography.amharicCaption.copyWith(
                 color: c.textMuted,
                 fontSize: 12,

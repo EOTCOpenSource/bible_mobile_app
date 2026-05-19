@@ -46,11 +46,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on ApiException catch (e) {
       setState(() {
         _errorMessage = e.isAccountLocked
-            ? 'መለያዎ ተቆልፏል። ከ2 ሰዓት በኋላ ይሞክሩ።'
+            ? L10n.of(context).loginAccountLocked
             : e.message;
       });
     } catch (_) {
-      setState(() => _errorMessage = 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).authConnectionError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -64,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (_) {
-      setState(() => _errorMessage = 'Google ግባ አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).loginGoogleFailed);
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -74,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Facebook Sign In — በቅርብ ይመጣል',
+          L10n.of(context).loginFacebookComingSoon,
           style: AppTypography.amharicCaption.copyWith(color: Colors.white),
         ),
         backgroundColor: context.colors.primary,
@@ -113,21 +113,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         children: [
                           _InputField(
                             controller: _emailCtrl,
-                            label: 'ኢሜል',
+                            label: s.authEmail,
                             hint: 'nehmia@bible.app',
                             prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             enabled: !isLoading,
                             validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'ኢሜል ያስፈልጋል';
-                              if (!v.contains('@')) return 'ትክክለኛ ኢሜል ያስፈልጋል';
+                              if (v == null || v.trim().isEmpty) return s.authEmailRequired;
+                              if (!v.contains('@')) return s.authEmailInvalid;
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
                           _InputField(
                             controller: _passwordCtrl,
-                            label: 'የይለፍ ቃል',
+                            label: s.authPassword,
                             hint: '••••••••',
                             prefixIcon: Icons.lock_outline_rounded,
                             obscureText: _obscurePassword,
@@ -144,9 +144,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   () => _obscurePassword = !_obscurePassword),
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty) {
-                                return 'የይለፍ ቃል ያስፈልጋል';
-                              }
+                              if (v == null || v.isEmpty) return s.authPasswordRequired;
                               return null;
                             },
                           ),
@@ -168,7 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ],
                           const SizedBox(height: 20),
                           _PrimaryButton(
-                            label: 'ግባ',
+                            label: s.loginButton,
                             isLoading: _isLoading,
                             onTap: isLoading ? null : _login,
                           ),
@@ -258,7 +256,7 @@ class _AppHeader extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  isAmharic ? 'አማርኛ' : 'English',
+                  isAmharic ? s.langAmharic : s.langEnglish,
                   style: AppTypography.amharicCaption.copyWith(
                     color: c.textMuted,
                     fontSize: 12,
@@ -283,12 +281,13 @@ class _TitleSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final c = colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'እንኳን ደህና መጡ',
+          s.loginTitle,
           style: AppTypography.amharicDisplay.copyWith(
             color: c.textOnParchment,
             fontSize: 32,
@@ -296,7 +295,7 @@ class _TitleSection extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'ቅዱስ ቃልን ንዝምን ለመቀጠል ይግቡ።',
+          s.loginSubtitle,
           style: AppTypography.amharicBody.copyWith(
             color: c.textMuted,
             fontSize: 14,
@@ -440,7 +439,7 @@ class _RememberForgotRow extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'አስታወስኝ',
+                L10n.of(context).loginRememberMe,
                 style: AppTypography.amharicCaption.copyWith(
                   color: c.textMuted,
                   fontSize: 12,
@@ -453,7 +452,7 @@ class _RememberForgotRow extends StatelessWidget {
         GestureDetector(
           onTap: enabled ? onForgotTap : null,
           child: Text(
-            'የይለፍ ቃል ረሳህ?',
+            L10n.of(context).loginForgotPassword,
             style: AppTypography.amharicCaption.copyWith(
               color: c.primary,
               fontWeight: FontWeight.w700,
@@ -577,7 +576,7 @@ class _OrDivider extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
-            'ወይም ቤዝህ ይግቡ',
+            L10n.of(context).loginOrDivider,
             style: AppTypography.amharicCaption.copyWith(
               color: c.textCaption,
               fontSize: 11,
@@ -761,7 +760,7 @@ class _RegisterPrompt extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'አካውንት የለዎትም? ',
+          L10n.of(context).loginNoAccount,
           style: AppTypography.amharicCaption.copyWith(
               color: c.textMuted, fontSize: 12),
         ),
@@ -773,7 +772,7 @@ class _RegisterPrompt extends StatelessWidget {
                   )
               : null,
           child: Text(
-            'ይ​መዝ​ጋቡ',
+            L10n.of(context).loginRegisterLink,
             style: AppTypography.amharicCaption.copyWith(
               color: c.primary,
               fontWeight: FontWeight.w700,
@@ -802,7 +801,7 @@ class _VerseQuote extends StatelessWidget {
             style: TextStyle(color: c.accentDeep, fontSize: 12)),
         const SizedBox(width: 8),
         Text(
-          'ቃልህ ለምንጊዜም ብርሃን ነው',
+          L10n.of(context).loginVerseQuote,
           style: AppTypography.amharicCaption.copyWith(
             color: c.textCaption,
             fontSize: 11,

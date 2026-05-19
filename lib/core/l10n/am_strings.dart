@@ -210,4 +210,57 @@ class AmStrings extends AppStrings {
   String get verseShare => 'አጋራ';
   @override
   String get comingSoon => 'በቅርቡ ይመጣል';
+
+  // ── Auth — shared ─────────────────────────────────────────────────────────
+  @override String get authEmail             => 'ኢሜል';
+  @override String get authEmailRequired     => 'ኢሜል ያስፈልጋል';
+  @override String get authEmailInvalid      => 'ትክክለኛ ኢሜል ያስገቡ';
+  @override String get authPassword          => 'የይለፍ ቃል';
+  @override String get authPasswordRequired  => 'የይለፍ ቃል ያስፈልጋል';
+  @override String get authConnectionError   => 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።';
+
+  // ── Auth — login ──────────────────────────────────────────────────────────
+  @override String get loginTitle            => 'እንኳን ደህና መጡ';
+  @override String get loginSubtitle         => 'መጽሐፍ ቅዱስ ማንበብ ለመቀጠል ይግቡ።';
+  @override String get loginRememberMe       => 'አስታወስኝ';
+  @override String get loginForgotPassword   => 'የይለፍ ቃል ረሳህ?';
+  @override String get loginButton           => 'ግባ';
+  @override String get loginOrDivider        => 'ወይም በነዚህ ይግቡ';
+  @override String get loginNoAccount        => 'አካውንት የለዎትም? ';
+  @override String get loginRegisterLink     => 'ይ​መዝ​ገቡ';
+  @override String get loginVerseQuote       => 'ቃልህ ለመንገዴ ብርሃን ነው';
+  @override String get loginAccountLocked    => 'መለያዎ ተቆልፏል። ከ2 ሰዓት በኋላ ይሞክሩ።';
+  @override String get loginGoogleFailed     => 'Google ግባ አልተሳካም። ድጋሚ ይሞክሩ።';
+  @override String get loginFacebookComingSoon => 'Facebook Sign In — በቅርብ ይመጣል';
+
+  // ── Auth — register ───────────────────────────────────────────────────────
+  @override String get registerTitle             => 'አካውንት ይፍጠሩ';
+  @override String get registerSubtitle          => 'የ ንባብ ሂደቶን፣ ኖቶቹን፣ እና ቀለሞችን ';
+  @override String get registerFullName          => 'ሙሉ ስም';
+  @override String get registerFullNameRequired  => 'ሙሉ ስም ያስፈልጋል';
+  @override String get registerFullNameTooShort  => 'ስም ቢያንስ 2 ፊደላት ያስፈልጋሉ';
+  @override String get registerPhone             => 'ስልክ ቁጥር';
+  @override String get registerPasswordTooShort  => 'ቢያንስ 8 ቁምፊዎች ያስፈልጋሉ';
+  @override String get registerAcceptTerms       => 'ውሎቹን እና ሁኔታዎቹን ይቀበሉ';
+  @override String get registerButton            => 'ይ​መዝ​ጋቡ';
+  @override String get registerHaveAccount       => 'መለያ አለዎት? ';
+  @override String get registerLoginLink         => 'ይ​ግቡ';
+  @override String get registerTermsText         => 'I accept the Community Terms and Privacy Policy.';
+  @override String get passwordWeak              => 'ደካማ';
+  @override String get passwordFair              => 'መካከለኛ';
+  @override String get passwordGood              => 'ጥሩ';
+  @override String get passwordStrong            => 'ጠንካራ';
+
+  // ── Auth — OTP ────────────────────────────────────────────────────────────
+  @override String get otpTitle          => 'ኮድዎን ያረጋግጡ';
+  @override String get otpSentPrefix     => 'ወደ ';
+  @override String get otpSentSuffix     => ' 6 አሃዝ ኮድ ልከናል። አባክዎ ከታች ያስገቡ።';
+  @override String otpDigitsRequired(int n) => 'የ$n ቁጥር ኮድ ያስፈልጋል';
+  @override String get otpNotReceived    => 'ኮድ አልደረሰዎትም? ';
+  @override String otpResendIn(String t) => 'ድጋሚ ላክ $t';
+  @override String get otpResend         => 'ድጋሚ ላክ';
+  @override String get otpVerifyButton   => 'አረጋጥ';
+  @override String get otpChangePhone    => 'ስልክ ቁጥር ለውጥ';
+  @override String get otpChangeEmail    => 'ኢሜል ለውጥ';
+  @override String get otpResendFailed   => 'ኮድ መላክ አልተሳካም። ድጋሚ ይሞክሩ።';
 }
