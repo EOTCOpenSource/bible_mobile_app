@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kenat/kenat.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../../../../core/annotations/annotation_models.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
@@ -39,8 +42,10 @@ class ReaderScreen extends ConsumerStatefulWidget {
   });
 
   final BookIndexEntry entry;
+
   /// Page index in [Book.chapters] (0-based).
   final int initialChapter;
+
   /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
   final int? initialChapterNumber;
   final int? initialVerse;
@@ -62,6 +67,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   Timer? _dwellTimer;
   int? _dwellChapterNumber;
+
   /// Page index used only to spotlight [initialVerse] on first open.
   int? _spotlightChapterPageIndex;
 
@@ -173,7 +179,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     }
     final verse = _selectedVerseNum;
     unawaited(
-      container.read(readingProgressRepositoryProvider).saveReadingPosition(
+      container
+          .read(readingProgressRepositoryProvider)
+          .saveReadingPosition(
             bookId: widget.entry.bookNameEn,
             chapter: _currentChapterNumber,
             verse: verse,
@@ -201,25 +209,26 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           return;
         }
         final bookId = widget.entry.bookNameEn;
-        await container.read(readingProgressRepositoryProvider).recordQualifiedChapterRead(
-              bookId: bookId,
-              chapter: chNum,
-            );
-        container.invalidate(continueReadingSnapshotProvider);
+        await container
+            .read(readingProgressRepositoryProvider)
+            .recordQualifiedChapterRead(bookId: bookId, chapter: chNum);
+        container.invalidate(continueReadingSnapshotsProvider);
         container.invalidate(readingStreakStateProvider);
       },
     );
   }
 
   Future<void> _loadBook() async {
-    final book =
-        await BibleRepositoryProvider.of(context).loadBook(widget.entry);
+    final book = await BibleRepositoryProvider.of(
+      context,
+    ).loadBook(widget.entry);
     if (!mounted) return;
 
     var pageIdx = widget.initialChapter.clamp(0, book.chapters.length - 1);
     if (widget.initialChapterNumber != null) {
-      final i = book.chapters
-          .indexWhere((c) => c.chapterNumber == widget.initialChapterNumber);
+      final i = book.chapters.indexWhere(
+        (c) => c.chapterNumber == widget.initialChapterNumber,
+      );
       if (i >= 0) pageIdx = i;
     }
 
@@ -227,8 +236,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       _book = book;
       _currentChapter = pageIdx;
       _loading = false;
-      _spotlightChapterPageIndex =
-          widget.initialVerse != null ? pageIdx : null;
+      _spotlightChapterPageIndex = widget.initialVerse != null ? pageIdx : null;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -249,27 +257,27 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final chIdx = chapterPageIndex.clamp(0, _book!.chapters.length - 1);
     final chapter = _book!.chapters[chIdx];
     for (var sIdx = 0; sIdx < chapter.sections.length; sIdx++) {
-      if (chapter.sections[sIdx].verses.any((v) => v.verseNumber == targetVerse)) {
+      if (chapter.sections[sIdx].verses.any(
+        (v) => v.verseNumber == targetVerse,
+      )) {
         setState(() {
           _selectedKey = _verseKey(chapter.chapterNumber, sIdx, targetVerse);
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          final ctx = _spotlightKey.currentContext;
-          if (ctx != null) {
-            Scrollable.ensureVisible(
-              ctx,
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.easeInOut,
-              alignment: 0.3,
-            );
-          }
-          if (widget.openNoteSheet && mounted) {
-            final chKey = (bookId: widget.entry.bookNameEn, chapter: chapter.chapterNumber);
-            final liveAnnotations =
-              _riverpodContainer?.read(chapterAnnotationsProvider(chKey)).value ??
-              ChapterAnnotations.empty;
-            _showNoteSheet(context, Settings.of(context), liveAnnotations);
-          }
+          // Wait one extra frame so any page jump has time to render the
+          // target chapter before we try to scroll within it.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final ctx = _spotlightKey.currentContext;
+            if (ctx != null) {
+              Scrollable.ensureVisible(
+                ctx,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                alignment: 0.3,
+              );
+            }
+          });
         });
         break;
       }
@@ -322,12 +330,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final vNum = int.tryParse(parts[2]);
     if (chNum == null || secIdx == null || vNum == null) return null;
     try {
-      final chapter =
-          _book!.chapters.firstWhere((c) => c.chapterNumber == chNum);
+      final chapter = _book!.chapters.firstWhere(
+        (c) => c.chapterNumber == chNum,
+      );
       final section = chapter.sections[secIdx];
       final verse = section.verses.firstWhere((v) => v.verseNumber == vNum);
       final deepLink = verseDeepLinkUri(widget.entry, chNum, verse.verseNumber);
-      return '${verse.text}\n${widget.entry.bookNameAm} $chNum:${verse.verseNumber} ($deepLink)';
+      return '${verse.text}\n${widget.entry.bookNameAm} $chNum:${verse.verseNumber}\n$deepLink';
     } catch (_) {
       return null;
     }
@@ -382,7 +391,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           Navigator.pop(ctx);
           final c = _riverpodContainer;
           if (c == null) return;
-          c.read(chapterAnnotationsProvider(_chapterKey).notifier).setHighlight(
+          c
+              .read(chapterAnnotationsProvider(_chapterKey).notifier)
+              .setHighlight(
                 verseStart: verseNum,
                 bookNumber: widget.entry.bookNumber,
                 color: color,
@@ -430,7 +441,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         onSave: (content) {
           final c = _riverpodContainer;
           if (c == null) return;
-          c.read(chapterAnnotationsProvider(_chapterKey).notifier).saveNote(
+          c
+              .read(chapterAnnotationsProvider(_chapterKey).notifier)
+              .saveNote(
                 verseStart: verseNum,
                 bookNumber: widget.entry.bookNumber,
                 content: content,
@@ -448,7 +461,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final parts = verseKey.split(':');
     if (parts.length != 3) return;
     final chNum = int.tryParse(parts[0]);
-    final vNum  = int.tryParse(parts[2]);
+    final vNum = int.tryParse(parts[2]);
     if (chNum == null || vNum == null) return;
 
     final note = annotations.noteFor(vNum);
@@ -456,32 +469,32 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     String? verseText;
     try {
-      final chapter = _book!.chapters.firstWhere((ch) => ch.chapterNumber == chNum);
+      final chapter = _book!.chapters.firstWhere(
+        (ch) => ch.chapterNumber == chNum,
+      );
       outer:
       for (final sec in chapter.sections) {
         for (final v in sec.verses) {
-          if (v.verseNumber == vNum) { verseText = v.text; break outer; }
+          if (v.verseNumber == vNum) {
+            verseText = v.text;
+            break outer;
+          }
         }
       }
     } catch (_) {}
     if (verseText == null) return;
 
-    final settings     = Settings.of(context);
-    final isDark       = settings.isDarkReader;
+    final settings = Settings.of(context);
+    final isDark = settings.isDarkReader;
     final surfaceColor = isDark ? readerDarkSurface : Colors.white;
-    final textColor    = isDark ? readerDarkText    : AppColors.textOnParchment;
-    final mutedColor   = isDark ? readerDarkMuted   : AppColors.textMuted;
-    final accentColor  = isDark ? readerDarkAccent  : AppColors.accentDeep;
-    final bodyFont     = readerFonts[settings.bodyFontIndex];
+    final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
+    final mutedColor = isDark ? readerDarkMuted : AppColors.textMuted;
+    final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
+    final bodyFont = readerFonts[settings.bodyFontIndex];
 
-    final chNumDisplay = settings.useGeezNumbers
-        ? ''
-        : '$chNum';
-    final vNumDisplay = settings.useGeezNumbers
-        ? ''
-        : '$vNum';
-    final reference =
-        '${widget.entry.bookNameAm} $chNumDisplay:$vNumDisplay';
+    final chNumDisplay = settings.useGeezNumbers ? toGeez(chNum) : '$chNum';
+    final vNumDisplay = settings.useGeezNumbers ? toGeez(vNum) : '$vNum';
+    final reference = '${widget.entry.bookNameAm} $chNumDisplay:$vNumDisplay';
 
     showModalBottomSheet(
       context: context,
@@ -491,12 +504,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => NoteViewSheet(
-        reference:   reference,
-        verseText:   verseText!,
+        reference: reference,
+        verseText: verseText!,
         noteContent: note.content,
-        bodyFont:    bodyFont,
-        textColor:   textColor,
-        mutedColor:  mutedColor,
+        bodyFont: bodyFont,
+        textColor: textColor,
+        mutedColor: mutedColor,
         accentColor: accentColor,
         onEdit: () {
           Navigator.pop(context);
@@ -504,7 +517,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           setState(() => _selectedKey = verseKey);
           final chKey = (bookId: widget.entry.bookNameEn, chapter: chNum);
           final liveAnnotations =
-              _riverpodContainer?.read(chapterAnnotationsProvider(chKey)).value ??
+              _riverpodContainer
+                  ?.read(chapterAnnotationsProvider(chKey))
+                  .value ??
               ChapterAnnotations.empty;
           _showNoteSheet(context, Settings.of(context), liveAnnotations);
         },
@@ -531,9 +546,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final bodyFont = readerFonts[settings.bodyFontIndex];
     final titleFont = readerFonts[settings.titleFontIndex];
 
-    final chapterReady = !_loading &&
-        _book != null &&
-        _currentChapter < _book!.chapters.length;
+    final chapterReady =
+        !_loading && _book != null && _currentChapter < _book!.chapters.length;
 
     return PopScope(
       onPopInvokedWithResult: (bool didPop, _) {
@@ -541,211 +555,242 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       },
       child: Consumer(
         builder: (context, ref, _) {
-          final annotationsAsync =
-              ref.watch(chapterAnnotationsProvider(_chapterKey));
-        final annotations =
-            annotationsAsync.value ?? ChapterAnnotations.empty;
+          final annotationsAsync = ref.watch(
+            chapterAnnotationsProvider(_chapterKey),
+          );
+          final annotations =
+              annotationsAsync.value ?? ChapterAnnotations.empty;
 
-        final verseNum = _selectedVerseNum;
-        final isBookmarked =
-            verseNum != null && annotations.isBookmarked(verseNum);
-        final highlightColor =
-            verseNum != null ? annotations.highlightColor(verseNum) : null;
-        final hasNote =
-            verseNum != null && annotations.noteFor(verseNum) != null;
+          final verseNum = _selectedVerseNum;
+          final isBookmarked =
+              verseNum != null && annotations.isBookmarked(verseNum);
+          final highlightColor = verseNum != null
+              ? annotations.highlightColor(verseNum)
+              : null;
+          final hasNote =
+              verseNum != null && annotations.noteFor(verseNum) != null;
 
-        return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AnimatedSize(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: _readerChromeVisible
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ReaderToolbar(
-                          entry: widget.entry,
-                          currentChapter: _currentChapter,
-                          useGeez: useGeez,
-                          isAmharic: isAm,
-                          bgColor: bgColor,
-                          textColor: textColor,
-                          mutedColor: mutedColor,
-                          s: s,
-                          onBack: () => Navigator.pop(context),
-                          onFontSettings: () =>
-                              _showFontSheet(context, settings),
-                        ),
-                        if (chapterReady)
-                          ReaderBreadcrumb(
-                            entry: widget.entry,
-                            chapter: _book!.chapters[_currentChapter],
-                            useGeez: useGeez,
-                            isAmharic: isAm,
-                            s: s,
-                            bgColor: bgColor,
-                            accentColor: accentColor,
-                            mutedColor: mutedColor,
-                          ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            // ── Pages ────────────────────────────────────────────────────────
-            Expanded(
-              child: _loading || _book == null
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: isDark ? context.colors.accent : context.colors.primary,
-                      ),
-                    )
-                  : NotificationListener<ScrollNotification>(
-                      onNotification: _onChapterScroll,
-                      child: GestureDetector(
-                        onTap: _deselect,
-                        behavior: HitTestBehavior.translucent,
-                        child: Stack(
-                          children: [
-                            PageView.builder(
-                              controller: _pageCtrl,
-                              itemCount: _book!.chapters.length,
-                              onPageChanged: (i) {
-                                setState(() => _currentChapter = i);
-                                _setReaderChromeVisible(true);
-                                _persistReadingPosition();
-                                _scheduleDwellTimer();
-                              },
-                              itemBuilder: (ctx, i) {
-                                final pageChapterNum =
-                                    _book!.chapters[i].chapterNumber;
-                                final pageKey = (
-                                  bookId: widget.entry.bookNameEn,
-                                  chapter: pageChapterNum
-                                );
-                                return Consumer(
-                                  builder: (ctx2, pageRef, _) {
-                                    final pageAnnotations = pageRef
-                                            .watch(
-                                                chapterAnnotationsProvider(
-                                                    pageKey))
-                                            .value ??
-                                        ChapterAnnotations.empty;
-                                    return ReaderChapterPage(
-                                      entry: widget.entry,
-                                      chapter: _book!.chapters[i],
-                                      isDark: isDark,
-                                      fontSize: settings.fontSize,
-                                      fontFamily: bodyFont,
-                                      titleFontFamily: titleFont,
-                                      textColor: textColor,
-                                      mutedColor: mutedColor,
-                                      accentColor: accentColor,
-                                      useGeez: useGeez,
-                                      isAmharic: isAm,
-                                      isSelectedFn: _isSelected,
-                                      onVerseTap: _selectVerse,
-                                      verseKeyFn: _verseKey,
-                                      annotations: pageAnnotations,
-                                      continuousReading: settings.continuousReading,
-                                      onNoteTap: (key, ann) => _showNoteView(key, ann),
-                                      spotlightVerseNum: (widget.initialVerse !=
-                                                  null &&
-                                              i == _spotlightChapterPageIndex)
-                                          ? widget.initialVerse
-                                          : null,
-                                      spotlightKey:
-                                          (widget.initialVerse != null &&
-                                                  i ==
-                                                      _spotlightChapterPageIndex)
-                                              ? _spotlightKey
-                                              : null,
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          // Verse action bar
-                          AnimatedSlide(
-                            offset: _selectedKey != null
-                                ? Offset.zero
-                                : const Offset(0, 1),
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut,
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: VerseActionBar(
-                                s: s,
-                                isDark: isDark,
-                                surfaceColor: surfaceColor,
+          return Scaffold(
+            backgroundColor: bgColor,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: _readerChromeVisible
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ReaderToolbar(
+                                entry: widget.entry,
+                                currentChapter: _currentChapter,
+                                useGeez: useGeez,
+                                isAmharic: isAm,
+                                bgColor: bgColor,
                                 textColor: textColor,
-                                isBookmarked: isBookmarked,
-                                highlightColor: highlightColor,
-                                hasNote: hasNote,
-                                onBookmark: () {
-                                  if (verseNum == null) return;
-                                  final c = _riverpodContainer;
-                                  if (c == null) return;
-                                  c
-                                      .read(chapterAnnotationsProvider(
-                                              _chapterKey)
-                                          .notifier)
-                                      .toggleBookmark(
-                                        verseStart: verseNum,
-                                        bookNumber: widget.entry.bookNumber,
+                                mutedColor: mutedColor,
+                                s: s,
+                                onBack: () => Navigator.pop(context),
+                                onFontSettings: () =>
+                                    _showFontSheet(context, settings),
+                              ),
+                              if (chapterReady)
+                                ReaderBreadcrumb(
+                                  entry: widget.entry,
+                                  chapter: _book!.chapters[_currentChapter],
+                                  useGeez: useGeez,
+                                  isAmharic: isAm,
+                                  s: s,
+                                  bgColor: bgColor,
+                                  accentColor: accentColor,
+                                  mutedColor: mutedColor,
+                                ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  // ── Pages ────────────────────────────────────────────────────────
+                  Expanded(
+                    child: _loading || _book == null
+                        ? Center(
+                            child: CircularProgressIndicator(
+                              color: isDark
+                                  ? context.colors.accent
+                                  : context.colors.primary,
+                            ),
+                          )
+                        : NotificationListener<ScrollNotification>(
+                            onNotification: _onChapterScroll,
+                            child: GestureDetector(
+                              onTap: _deselect,
+                              behavior: HitTestBehavior.translucent,
+                              child: Stack(
+                                children: [
+                                  PageView.builder(
+                                    controller: _pageCtrl,
+                                    itemCount: _book!.chapters.length,
+                                    onPageChanged: (i) {
+                                      setState(() => _currentChapter = i);
+                                      _setReaderChromeVisible(true);
+                                      _persistReadingPosition();
+                                      _scheduleDwellTimer();
+                                    },
+                                    itemBuilder: (ctx, i) {
+                                      final pageChapterNum =
+                                          _book!.chapters[i].chapterNumber;
+                                      final pageKey = (
+                                        bookId: widget.entry.bookNameEn,
+                                        chapter: pageChapterNum,
                                       );
-                                  _deselect();
-                                },
-                                onHighlight: () =>
-                                    _showHighlightSheet(context, settings, annotations),
-                                onNote: () =>
-                                    _showNoteSheet(context, settings, annotations),
-                                onCopy: () async {
-                                  final text = _selectedVerseText(settings);
-                                  if (text != null) {
-                                    await Clipboard.setData(
-                                        ClipboardData(text: text));
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                              content: Text(s.verseCopy)));
-                                    }
-                                  }
-                                  _deselect();
-                                },
-                                onShare: () {
-                                  _deselect();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(s.comingSoon)));
-                                },
+                                      return Consumer(
+                                        builder: (ctx2, pageRef, _) {
+                                          final pageAnnotations =
+                                              pageRef
+                                                  .watch(
+                                                    chapterAnnotationsProvider(
+                                                      pageKey,
+                                                    ),
+                                                  )
+                                                  .value ??
+                                              ChapterAnnotations.empty;
+                                          return ReaderChapterPage(
+                                            entry: widget.entry,
+                                            chapter: _book!.chapters[i],
+                                            isDark: isDark,
+                                            fontSize: settings.fontSize,
+                                            fontFamily: bodyFont,
+                                            titleFontFamily: titleFont,
+                                            textColor: textColor,
+                                            mutedColor: mutedColor,
+                                            accentColor: accentColor,
+                                            useGeez: useGeez,
+                                            isAmharic: isAm,
+                                            isSelectedFn: _isSelected,
+                                            onVerseTap: _selectVerse,
+                                            verseKeyFn: _verseKey,
+                                            annotations: pageAnnotations,
+                                            continuousReading:
+                                                settings.continuousReading,
+                                            onNoteTap: (key, ann) =>
+                                                _showNoteView(key, ann),
+                                            spotlightVerseNum:
+                                                (widget.initialVerse != null &&
+                                                    i ==
+                                                        _spotlightChapterPageIndex)
+                                                ? widget.initialVerse
+                                                : null,
+                                            spotlightKey:
+                                                (widget.initialVerse != null &&
+                                                    i ==
+                                                        _spotlightChapterPageIndex)
+                                                ? _spotlightKey
+                                                : null,
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  // Verse action bar
+                                  AnimatedSlide(
+                                    offset: _selectedKey != null
+                                        ? Offset.zero
+                                        : const Offset(0, 1),
+                                    duration: const Duration(milliseconds: 220),
+                                    curve: Curves.easeOut,
+                                    child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: VerseActionBar(
+                                        s: s,
+                                        isDark: isDark,
+                                        surfaceColor: surfaceColor,
+                                        textColor: textColor,
+                                        isBookmarked: isBookmarked,
+                                        highlightColor: highlightColor,
+                                        hasNote: hasNote,
+                                        onBookmark: () {
+                                          if (verseNum == null) return;
+                                          final c = _riverpodContainer;
+                                          if (c == null) return;
+                                          c
+                                              .read(
+                                                chapterAnnotationsProvider(
+                                                  _chapterKey,
+                                                ).notifier,
+                                              )
+                                              .toggleBookmark(
+                                                verseStart: verseNum,
+                                                bookNumber:
+                                                    widget.entry.bookNumber,
+                                              );
+                                          _deselect();
+                                        },
+                                        onHighlight: () => _showHighlightSheet(
+                                          context,
+                                          settings,
+                                          annotations,
+                                        ),
+                                        onNote: () => _showNoteSheet(
+                                          context,
+                                          settings,
+                                          annotations,
+                                        ),
+                                        onCopy: () async {
+                                          final text = _selectedVerseText(
+                                            settings,
+                                          );
+                                          if (text != null) {
+                                            await Clipboard.setData(
+                                              ClipboardData(text: text),
+                                            );
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(s.verseCopy),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                          _deselect();
+                                        },
+                                        onShare: () async {
+                                          final text = _selectedVerseText(
+                                            settings,
+                                          );
+                                          if (text != null) {
+                                            await SharePlus.instance.share(
+                                              ShareParams(text: text),
+                                            );
+                                          }
+                                          _deselect();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
                   ),
-            ),
-            if (!_loading && _book != null)
-              ChapterNavBar(
-                currentChapter: _currentChapter,
-                totalChapters: _book!.chapters.length,
-                useGeez: useGeez,
-                s: s,
-                bgColor: bgColor,
-                textColor: textColor,
-                mutedColor: mutedColor,
-                onPrev: () => _goToChapter(_currentChapter - 1),
-                onNext: () => _goToChapter(_currentChapter + 1),
+                  if (!_loading && _book != null)
+                    ChapterNavBar(
+                      currentChapter: _currentChapter,
+                      totalChapters: _book!.chapters.length,
+                      useGeez: useGeez,
+                      s: s,
+                      bgColor: bgColor,
+                      textColor: textColor,
+                      mutedColor: mutedColor,
+                      onPrev: () => _goToChapter(_currentChapter - 1),
+                      onNext: () => _goToChapter(_currentChapter + 1),
+                    ),
+                ],
               ),
-          ],
-        ),
-      ),
-    );
+            ),
+          );
         },
       ),
     );
