@@ -399,7 +399,7 @@ class AppDatabase {
       'notes',
       where: 'sync_status != ?',
       whereArgs: [SyncStatus.pendingDelete.name],
-      orderBy: 'created_at DESC',
+      orderBy: 'book_number ASC, chapter ASC, verse_start ASC',
     );
     return rows.map(Note.fromMap).toList();
   }
