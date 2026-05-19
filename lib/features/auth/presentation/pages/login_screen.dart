@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/constants/app_icons.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordCtrl = TextEditingController();
 
   bool _obscurePassword = true;
+  bool _rememberMe = true;
   bool _isLoading = false;
   bool _isGoogleLoading = false;
   String? _errorMessage;
@@ -68,104 +70,125 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _appleSignIn() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Apple Sign In — በቅርብ ይመጣል',
+          style: AppTypography.amharicCaption.copyWith(color: Colors.white),
+        ),
+        backgroundColor: context.colors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final s = L10n.of(context);
     final isLoading = _isLoading || _isGoogleLoading;
 
     return Scaffold(
       backgroundColor: c.parchment,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 48),
-              _Header(colors: c),
-              const SizedBox(height: 32),
-              Form(
-                key: _formKey,
+              _AppHeader(s: s),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _AuthField(
-                      controller: _emailCtrl,
-                      label: 'ኢሜል',
-                      hint: 'example@email.com',
-                      keyboardType: TextInputType.emailAddress,
-                      enabled: !isLoading,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'ኢሜል ያስፈልጋል';
-                        if (!v.contains('@')) return 'ትክክለኛ ኢሜል ያስፈልጋል';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    _AuthField(
-                      controller: _passwordCtrl,
-                      label: 'የይለፍ ቃል',
-                      hint: '••••••••',
-                      obscureText: _obscurePassword,
-                      enabled: !isLoading,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          color: c.textCaption,
-                          size: 20,
-                        ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'የይለፍ ቃል ያስፈልጋል';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: isLoading
-                            ? null
-                            : () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ForgotPasswordScreen()),
-                                ),
-                        child: Text(
-                          'የይለፍ ቃል ረሳሁ?',
-                          style: AppTypography.amharicCaption.copyWith(
-                            color: c.primary,
-                            fontWeight: FontWeight.w700,
+                    const SizedBox(height: 28),
+                    _TitleSection(colors: c),
+                    const SizedBox(height: 28),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _InputField(
+                            controller: _emailCtrl,
+                            label: 'ኢሜል',
+                            hint: 'nehmia@bible.app',
+                            prefixIcon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            enabled: !isLoading,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return 'ኢሜል ያስፈልጋል';
+                              if (!v.contains('@')) return 'ትክክለኛ ኢሜል ያስፈልጋል';
+                              return null;
+                            },
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          _InputField(
+                            controller: _passwordCtrl,
+                            label: 'የይለፍ ቃል',
+                            hint: '••••••••',
+                            prefixIcon: Icons.lock_outline_rounded,
+                            obscureText: _obscurePassword,
+                            enabled: !isLoading,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: c.textCaption,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return 'የይለፍ ቃል ያስፈልጋል';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _RememberForgotRow(
+                            rememberMe: _rememberMe,
+                            enabled: !isLoading,
+                            onRememberChanged: (v) =>
+                                setState(() => _rememberMe = v),
+                            onForgotTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const ForgotPasswordScreen()),
+                            ),
+                          ),
+                          if (_errorMessage != null) ...[
+                            const SizedBox(height: 12),
+                            _ErrorBanner(message: _errorMessage!),
+                          ],
+                          const SizedBox(height: 20),
+                          _PrimaryButton(
+                            label: 'ግባ',
+                            isLoading: _isLoading,
+                            onTap: isLoading ? null : _login,
+                          ),
+                          const SizedBox(height: 24),
+                          _OrDivider(colors: c),
+                          const SizedBox(height: 20),
+                          _SocialRow(
+                            isGoogleLoading: _isGoogleLoading,
+                            allDisabled: isLoading,
+                            onGoogle: _googleSignIn,
+                            onApple: _appleSignIn,
+                          ),
+                          const SizedBox(height: 28),
+                          _RegisterPrompt(enabled: !isLoading),
+                          const SizedBox(height: 24),
+                          _VerseQuote(colors: c),
+                          const SizedBox(height: 24),
+                        ],
                       ),
                     ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 4),
-                      _ErrorBanner(message: _errorMessage!),
-                      const SizedBox(height: 4),
-                    ] else
-                      const SizedBox(height: 8),
-                    _PrimaryButton(
-                      label: 'ግባ',
-                      isLoading: _isLoading,
-                      onTap: isLoading ? null : _login,
-                    ),
-                    const SizedBox(height: 20),
-                    _Divider(colors: c),
-                    const SizedBox(height: 20),
-                    _GoogleButton(
-                      isLoading: _isGoogleLoading,
-                      onTap: isLoading ? null : _googleSignIn,
-                    ),
-                    const SizedBox(height: 32),
-                    _RegisterPrompt(enabled: !isLoading),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -177,43 +200,108 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
+// ── App header ────────────────────────────────────────────────────────────────
 
-class _Header extends StatelessWidget {
-  const _Header({required this.colors});
+class _AppHeader extends StatelessWidget {
+  const _AppHeader({required this.s});
+  final AppStrings s;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final isAmharic = s is AmStrings;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: c.primary,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              AppIcons.ethiopianCross,
+              style: TextStyle(fontSize: 18, color: c.accent, height: 1),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ቅዱስ መጽሐፍ',
+                style: AppTypography.amharicLabel.copyWith(
+                  color: c.textOnParchment,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                'AMHARIC BIBLE',
+                style: AppTypography.englishCaption.copyWith(
+                  color: c.textMuted,
+                  fontSize: 9,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => L10n.switchLanguage(
+              context,
+              isAmharic ? AppLanguage.english : AppLanguage.amharic,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  isAmharic ? 'አማርኛ' : 'English',
+                  style: AppTypography.amharicCaption.copyWith(
+                    color: c.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+                Icon(Icons.keyboard_arrow_down_rounded,
+                    color: c.textMuted, size: 16),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Title section ─────────────────────────────────────────────────────────────
+
+class _TitleSection extends StatelessWidget {
+  const _TitleSection({required this.colors});
   final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
     final c = colors;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: c.primary,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            AppIcons.ethiopianCross,
-            style: TextStyle(fontSize: 30, color: c.accent, height: 1),
-          ),
-        ),
-        const SizedBox(height: 16),
         Text(
-          'ወደ መጽሐፍ ቅዱስ ግባ',
-          style: AppTypography.amharicHeading.copyWith(
+          'እንኳን ደህና መጡ',
+          style: AppTypography.amharicDisplay.copyWith(
             color: c.textOnParchment,
+            fontSize: 32,
           ),
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
         Text(
-          'Sign in to sync your reading across devices',
-          style: AppTypography.englishCaption.copyWith(color: c.textMuted),
-          textAlign: TextAlign.center,
+          'ቅዱስ ቃልን ንዝምን ለመቀጠል ይግቡ።',
+          style: AppTypography.amharicBody.copyWith(
+            color: c.textMuted,
+            fontSize: 14,
+            height: 1.6,
+          ),
         ),
       ],
     );
@@ -222,11 +310,12 @@ class _Header extends StatelessWidget {
 
 // ── Input field ───────────────────────────────────────────────────────────────
 
-class _AuthField extends StatelessWidget {
-  const _AuthField({
+class _InputField extends StatelessWidget {
+  const _InputField({
     required this.controller,
     required this.label,
     required this.hint,
+    required this.prefixIcon,
     this.obscureText = false,
     this.keyboardType,
     this.suffixIcon,
@@ -237,6 +326,7 @@ class _AuthField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
+  final IconData prefixIcon;
   final bool obscureText;
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
@@ -254,6 +344,7 @@ class _AuthField extends StatelessWidget {
           style: AppTypography.amharicCaption.copyWith(
             color: c.textMuted,
             fontWeight: FontWeight.w700,
+            fontSize: 12,
           ),
         ),
         const SizedBox(height: 6),
@@ -271,12 +362,14 @@ class _AuthField extends StatelessWidget {
             hintText: hint,
             hintStyle: AppTypography.englishCaption.copyWith(
               color: c.textCaption,
+              fontSize: 14,
             ),
+            prefixIcon: Icon(prefixIcon, color: c.textCaption, size: 18),
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: c.surface,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: c.borderSubtle),
@@ -291,11 +384,80 @@ class _AuthField extends StatelessWidget {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFB71C1C)),
+              borderSide: BorderSide(color: c.primary.withValues(alpha: 0.6)),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFB71C1C), width: 1.5),
+              borderSide: BorderSide(color: c.primary, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Remember me + Forgot password row ────────────────────────────────────────
+
+class _RememberForgotRow extends StatelessWidget {
+  const _RememberForgotRow({
+    required this.rememberMe,
+    required this.enabled,
+    required this.onRememberChanged,
+    required this.onForgotTap,
+  });
+
+  final bool rememberMe;
+  final bool enabled;
+  final ValueChanged<bool> onRememberChanged;
+  final VoidCallback onForgotTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: enabled ? () => onRememberChanged(!rememberMe) : null,
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: rememberMe ? c.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: rememberMe ? c.primary : c.borderSubtle,
+                    width: 1.5,
+                  ),
+                ),
+                child: rememberMe
+                    ? Icon(Icons.check_rounded,
+                        color: c.accent, size: 13)
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'አስታወስኝ',
+                style: AppTypography.amharicCaption.copyWith(
+                  color: c.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+        GestureDetector(
+          onTap: enabled ? onForgotTap : null,
+          child: Text(
+            'የይለፍ ቃል ረሳህ?',
+            style: AppTypography.amharicCaption.copyWith(
+              color: c.primary,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
             ),
           ),
         ),
@@ -312,25 +474,24 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFB71C1C).withValues(alpha: 0.08),
+        color: c.primary.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFB71C1C).withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: c.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded,
-              color: Color(0xFFB71C1C), size: 18),
+          Icon(Icons.error_outline_rounded, color: c.primary, size: 18),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
               style: AppTypography.amharicCaption.copyWith(
-                color: const Color(0xFFB71C1C),
+                color: c.primary,
+                fontSize: 12,
               ),
             ),
           ),
@@ -360,7 +521,7 @@ class _PrimaryButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        height: 52,
+        height: 54,
         decoration: BoxDecoration(
           color: onTap == null ? c.primary.withValues(alpha: 0.5) : c.primary,
           borderRadius: BorderRadius.circular(14),
@@ -368,9 +529,9 @@ class _PrimaryButton extends StatelessWidget {
               ? null
               : [
                   BoxShadow(
-                    color: c.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: c.primary.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 5),
                   ),
                 ],
         ),
@@ -380,26 +541,31 @@ class _PrimaryButton extends StatelessWidget {
                 width: 22,
                 height: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: c.accent,
-                ),
+                    strokeWidth: 2.5, color: c.accent),
               )
-            : Text(
-                label,
-                style: AppTypography.amharicLabel.copyWith(
-                  color: c.accent,
-                  fontSize: 16,
-                ),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: AppTypography.amharicLabel.copyWith(
+                      color: c.accent,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(Icons.chevron_right_rounded, color: c.accent, size: 20),
+                ],
               ),
       ),
     );
   }
 }
 
-// ── Divider with cross ────────────────────────────────────────────────────────
+// ── Or divider ────────────────────────────────────────────────────────────────
 
-class _Divider extends StatelessWidget {
-  const _Divider({required this.colors});
+class _OrDivider extends StatelessWidget {
+  const _OrDivider({required this.colors});
   final AppColorScheme colors;
 
   @override
@@ -409,10 +575,13 @@ class _Divider extends StatelessWidget {
       children: [
         Expanded(child: Divider(color: c.borderSubtle, thickness: 1)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
-            AppIcons.ethiopianCross,
-            style: TextStyle(color: c.accentDeep, fontSize: 13, height: 1),
+            'ወይም ቤዝህ ይግቡ',
+            style: AppTypography.amharicCaption.copyWith(
+              color: c.textCaption,
+              fontSize: 11,
+            ),
           ),
         ),
         Expanded(child: Divider(color: c.borderSubtle, thickness: 1)),
@@ -421,13 +590,63 @@ class _Divider extends StatelessWidget {
   }
 }
 
-// ── Google button ─────────────────────────────────────────────────────────────
+// ── Social buttons row ────────────────────────────────────────────────────────
 
-class _GoogleButton extends StatelessWidget {
-  const _GoogleButton({required this.isLoading, required this.onTap});
+class _SocialRow extends StatelessWidget {
+  const _SocialRow({
+    required this.isGoogleLoading,
+    required this.allDisabled,
+    required this.onGoogle,
+    required this.onApple,
+  });
 
-  final bool isLoading;
+  final bool isGoogleLoading;
+  final bool allDisabled;
+  final VoidCallback onGoogle;
+  final VoidCallback onApple;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _SocialButton(
+            onTap: allDisabled ? null : onGoogle,
+            isLoading: isGoogleLoading,
+            label: 'Google',
+            dark: false,
+            icon: _GoogleLogo(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _SocialButton(
+            onTap: allDisabled ? null : onApple,
+            isLoading: false,
+            label: 'Apple',
+            dark: true,
+            icon: const Icon(Icons.apple_rounded, color: Colors.white, size: 20),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
+    required this.onTap,
+    required this.isLoading,
+    required this.label,
+    required this.dark,
+    required this.icon,
+  });
+
   final VoidCallback? onTap;
+  final bool isLoading;
+  final String label;
+  final bool dark;
+  final Widget icon;
 
   @override
   Widget build(BuildContext context) {
@@ -435,32 +654,32 @@ class _GoogleButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 52,
+        height: 50,
         decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.borderSubtle, width: 1.2),
+          color: dark ? const Color(0xFF1A1A1A) : c.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: dark ? null : Border.all(color: c.borderSubtle, width: 1.2),
         ),
         alignment: Alignment.center,
         child: isLoading
             ? SizedBox(
-                width: 22,
-                height: 22,
+                width: 20,
+                height: 20,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: c.primary,
+                  strokeWidth: 2,
+                  color: dark ? Colors.white : c.primary,
                 ),
               )
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _GoogleLogo(),
-                  const SizedBox(width: 10),
+                  icon,
+                  const SizedBox(width: 8),
                   Text(
-                    'Google በኩል ግባ',
-                    style: AppTypography.amharicLabel.copyWith(
-                      color: c.textBody,
-                      fontWeight: FontWeight.w600,
+                    label,
+                    style: AppTypography.englishLabel.copyWith(
+                      color: dark ? Colors.white : c.textBody,
+                      fontSize: 13,
                     ),
                   ),
                 ],
@@ -473,9 +692,18 @@ class _GoogleButton extends StatelessWidget {
 class _GoogleLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return const _GooglePainter();
+  }
+}
+
+class _GooglePainter extends StatelessWidget {
+  const _GooglePainter();
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
-      width: 20,
-      height: 20,
+      width: 18,
+      height: 18,
       child: CustomPaint(painter: _GoogleLogoPainter()),
     );
   }
@@ -484,43 +712,40 @@ class _GoogleLogo extends StatelessWidget {
 class _GoogleLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final center = rect.center;
+    final w = size.width;
+    final h = size.height;
+    final stroke = w * 0.17;
 
-    // Blue arc (top-right)
-    canvas.drawArc(rect, -1.57, 3.14, false,
-        Paint()..color = const Color(0xFF4285F4)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = size.width * 0.18);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round;
 
-    // Red arc (top-left)
-    canvas.drawArc(rect, 1.57, 1.57, false,
-        Paint()..color = const Color(0xFFEA4335)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = size.width * 0.18);
+    final rect = Rect.fromLTWH(stroke / 2, stroke / 2,
+        w - stroke, h - stroke);
 
-    // Yellow arc (bottom-left)
-    canvas.drawArc(rect, 3.14, 0.78, false,
-        Paint()..color = const Color(0xFFFBBC05)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = size.width * 0.18);
+    paint.color = const Color(0xFF4285F4);
+    canvas.drawArc(rect, -1.57, 2.8, false, paint);
 
-    // Green arc (bottom-right)
-    canvas.drawArc(rect, 3.93, 0.79, false,
-        Paint()..color = const Color(0xFF34A853)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = size.width * 0.18);
+    paint.color = const Color(0xFFEA4335);
+    canvas.drawArc(rect, 1.57 + 0.37, 1.2, false, paint);
 
-    // White horizontal bar for the "G"
+    paint.color = const Color(0xFFFBBC05);
+    canvas.drawArc(rect, 3.14, 0.74, false, paint);
+
+    paint.color = const Color(0xFF34A853);
+    canvas.drawArc(rect, 3.93, 0.83, false, paint);
+
+    final center = Offset(w / 2, h / 2);
     canvas.drawRect(
-      Rect.fromLTRB(center.dx, center.dy - size.height * 0.09,
-          size.width * 0.92, center.dy + size.height * 0.09),
+      Rect.fromLTRB(
+          center.dx, center.dy - h * 0.1, w - stroke / 2, center.dy + h * 0.1),
       Paint()..color = const Color(0xFF4285F4),
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
 // ── Register prompt ───────────────────────────────────────────────────────────
@@ -536,8 +761,9 @@ class _RegisterPrompt extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'መለያ የለዎትም? ',
-          style: AppTypography.amharicCaption.copyWith(color: c.textMuted),
+          'አካውንት የለዎትም? ',
+          style: AppTypography.amharicCaption.copyWith(
+              color: c.textMuted, fontSize: 12),
         ),
         GestureDetector(
           onTap: enabled
@@ -547,13 +773,45 @@ class _RegisterPrompt extends StatelessWidget {
                   )
               : null,
           child: Text(
-            'ይመዝገቡ',
+            'ይ​መዝ​ጋቡ',
             style: AppTypography.amharicCaption.copyWith(
               color: c.primary,
               fontWeight: FontWeight.w700,
+              fontSize: 12,
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+// ── Bible verse quote ─────────────────────────────────────────────────────────
+
+class _VerseQuote extends StatelessWidget {
+  const _VerseQuote({required this.colors});
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(AppIcons.malteseCross,
+            style: TextStyle(color: c.accentDeep, fontSize: 12)),
+        const SizedBox(width: 8),
+        Text(
+          'ቃልህ ለምንጊዜም ብርሃን ነው',
+          style: AppTypography.amharicCaption.copyWith(
+            color: c.textCaption,
+            fontSize: 11,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(AppIcons.malteseCross,
+            style: TextStyle(color: c.accentDeep, fontSize: 12)),
       ],
     );
   }
