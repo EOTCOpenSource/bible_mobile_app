@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../annotations/providers/annotation_providers.dart';
@@ -57,6 +58,8 @@ class _NotesTabState extends ConsumerState<NotesTab> {
   }
 
   void _showBookPicker() {
+    final s = L10n.of(context);
+    final isEnglish = s is EnStrings;
     final books =
         widget.items
             .where((item) {
@@ -75,11 +78,14 @@ class _NotesTabState extends ConsumerState<NotesTab> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => AnnotationPickerSheet(
-        title: 'መጽሐፍ ምረጥ',
+        title: s.savedPickBook,
         items: [
-          const AnnotationPickerItem(id: null, label: 'ሁሉም መጻሕፍ'),
+          AnnotationPickerItem(id: null, label: s.savedAllBooks),
           ...books.map(
-            (e) => AnnotationPickerItem(id: e.bookNameEn, label: e.bookNameAm),
+            (e) => AnnotationPickerItem(
+              id: e.bookNameEn,
+              label: isEnglish ? e.bookNameEn : e.bookNameAm,
+            ),
           ),
         ],
         selectedId: _bookFilter,
@@ -96,6 +102,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
 
   void _showChapterPicker() {
     if (_bookFilter == null) return;
+    final s = L10n.of(context);
     final chapters = _availableChapters.toList()..sort();
 
     showModalBottomSheet(
@@ -104,11 +111,12 @@ class _NotesTabState extends ConsumerState<NotesTab> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => AnnotationPickerSheet(
-        title: 'ምዕራፍ ምረጥ',
+        title: s.savedPickChapter,
         items: [
-          const AnnotationPickerItem(id: null, label: 'ሁሉም ምዕራፍ'),
+          AnnotationPickerItem(id: null, label: s.savedAllChapters),
           ...chapters.map(
-            (ch) => AnnotationPickerItem(id: ch, label: 'ምዕ. $ch'),
+            (ch) =>
+                AnnotationPickerItem(id: ch, label: s.savedChapterLabel(ch)),
           ),
         ],
         selectedId: _chapterFilter,
@@ -121,6 +129,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
   }
 
   void _showNoteOptions(AnnotationItem item) {
+    final s = L10n.of(context);
     final c = context.colors;
     showModalBottomSheet(
       context: context,
@@ -146,7 +155,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
               ListTile(
                 leading: Icon(Icons.edit_rounded, color: c.textOnParchment),
                 title: Text(
-                  'አስተካክል',
+                  s.savedEdit,
                   style: AppTypography.amharicLabel.copyWith(
                     color: c.textOnParchment,
                     fontSize: 16,
@@ -160,7 +169,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
               ListTile(
                 leading: const Icon(Icons.delete_rounded, color: Colors.red),
                 title: Text(
-                  'ሰርዝ',
+                  s.savedDelete,
                   style: AppTypography.amharicLabel.copyWith(
                     color: Colors.red,
                     fontSize: 16,
@@ -193,14 +202,16 @@ class _NotesTabState extends ConsumerState<NotesTab> {
   }
 
   void _deleteNote(AnnotationItem item) async {
+    final s = L10n.of(context);
     final c = context.colors;
+    final reference = '${item.bookName(s)} ${item.chapter}:${item.verseStart}';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: c.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'ማስታወሻ ሰርዝ',
+          s.savedDeleteNoteTitle,
           style: AppTypography.amharicLabel.copyWith(
             color: c.textOnParchment,
             fontSize: 18,
@@ -208,7 +219,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
           ),
         ),
         content: Text(
-          'ማስታወሻዎን ለመሰረዝ ይፈልጋሉ?\n${item.bookEntry.bookNameAm} ${item.chapter}:${item.verseStart}',
+          s.savedDeleteNoteMessage(reference),
           style: AppTypography.amharicBody.copyWith(
             color: c.textMuted,
             fontSize: 15,
@@ -218,7 +229,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
-              'ተወው',
+              s.savedCancel,
               style: AppTypography.amharicLabel.copyWith(color: c.textMuted),
             ),
           ),
@@ -226,7 +237,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(
-              'ሰርዝ',
+              s.savedDelete,
               style: AppTypography.amharicLabel.copyWith(
                 color: Colors.red,
                 fontWeight: FontWeight.bold,
@@ -245,13 +256,14 @@ class _NotesTabState extends ConsumerState<NotesTab> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('ማስታወሻ ተሰርዟል')));
+        ).showSnackBar(SnackBar(content: Text(s.savedNoteDeleted)));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final items = _filtered;
     final availableBookIds = _availableBookIds;
     final availableChapters = _availableChapters;
@@ -272,13 +284,13 @@ class _NotesTabState extends ConsumerState<NotesTab> {
             child: Row(
               children: [
                 SavedFilterChip(
-                  label: 'ሁሉም',
+                  label: s.savedFilterAll,
                   active: _testamentFilter == null,
                   onTap: () => setState(() => _testamentFilter = null),
                 ),
                 const SizedBox(width: 6),
                 SavedFilterChip(
-                  label: 'ብሉይ',
+                  label: s.savedFilterOld,
                   active: _testamentFilter == 'OT',
                   onTap: () => setState(() {
                     _testamentFilter = _testamentFilter == 'OT' ? null : 'OT';
@@ -288,7 +300,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                 ),
                 const SizedBox(width: 6),
                 SavedFilterChip(
-                  label: 'አዲስ',
+                  label: s.savedFilterNew,
                   active: _testamentFilter == 'NT',
                   onTap: () => setState(() {
                     _testamentFilter = _testamentFilter == 'NT' ? null : 'NT';
@@ -299,7 +311,11 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                 if (availableBookIds.length > 1) ...[
                   const SizedBox(width: 6),
                   SavedFilterChip(
-                    label: currentBookEntry?.bookNameAm ?? 'ሁሉም',
+                    label: currentBookEntry == null
+                        ? s.savedFilterAll
+                        : s is EnStrings
+                        ? currentBookEntry.bookNameEn
+                        : currentBookEntry.bookNameAm,
                     active: _bookFilter != null,
                     trailing: Icons.expand_more_rounded,
                     onTap: _showBookPicker,
@@ -309,8 +325,8 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                   const SizedBox(width: 6),
                   SavedFilterChip(
                     label: _chapterFilter != null
-                        ? 'ምዕ. $_chapterFilter'
-                        : 'ሁሉም ምዕ.',
+                        ? s.savedChapterLabel(_chapterFilter!)
+                        : s.savedAllChaptersShort,
                     active: _chapterFilter != null,
                     trailing: Icons.expand_more_rounded,
                     onTap: _showChapterPicker,

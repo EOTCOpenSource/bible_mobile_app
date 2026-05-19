@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/models/book_index_entry.dart';
@@ -27,6 +28,13 @@ class AnnotationItem {
   final String? noteContent;
 
   bool get isOT => bookEntry.isOldTestament;
+
+  String bookName(AppStrings strings) =>
+      strings is EnStrings ? bookEntry.bookNameEn : bookEntry.bookNameAm;
+
+  String bookShortName(AppStrings strings) => strings is EnStrings
+      ? bookEntry.bookShortNameEn
+      : bookEntry.bookShortNameAm;
 }
 
 // ── Annotation card ──────────────────────────────────────────────────────────
@@ -45,23 +53,23 @@ class AnnotationCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
 
-  String _daysAgo() {
+  String _daysAgo(AppStrings strings) {
     final diff = DateTime.now().difference(item.createdAt);
-    if (diff.inDays == 0) return 'ዛሬ';
-    if (diff.inDays == 1) return 'ትናንት';
-    return '${diff.inDays} ቀን';
+    if (diff.inDays == 0) return strings.savedToday;
+    if (diff.inDays == 1) return strings.savedYesterday;
+    return strings.savedDaysAgo(diff.inDays);
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final c = context.colors;
     final accent = tab == 0 && item.highlightColor != null
         ? item.highlightColor!
         : tab == 1
         ? c.primary
         : c.accentDeep;
-    final chRef =
-        '${item.bookEntry.bookShortNameAm} ${item.chapter}:${item.verseStart}';
+    final chRef = '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}';
 
     return GestureDetector(
       onTap: onTap,
@@ -113,7 +121,7 @@ class AnnotationCard extends StatelessWidget {
                             ),
                             const Spacer(),
                             Text(
-                              _daysAgo(),
+                              _daysAgo(s),
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
                                 color: c.textCaption,
@@ -205,7 +213,7 @@ class AnnotationCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              item.bookEntry.bookNameAm,
+                              item.bookName(s),
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
                                 color: c.textCaption,
@@ -265,17 +273,22 @@ class AnnotationEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final (icon, label, hint) = switch (tab) {
       0 => (
         Icons.format_color_fill_rounded,
-        'ምንም ምልክቶ የለም',
-        'ምንባብ ሲያነቡ ቁጥር ጎልቶ ይሰምጡ',
+        s.savedEmptyHighlightsTitle,
+        s.savedEmptyHighlightsHint,
       ),
-      1 => (Icons.bookmark_border_rounded, 'ምንም ክታቦ የለም', 'ምንባብ ሲያነቡ ቁጥር ያቆዩ'),
+      1 => (
+        Icons.bookmark_border_rounded,
+        s.savedEmptyBookmarksTitle,
+        s.savedEmptyBookmarksHint,
+      ),
       _ => (
         Icons.sticky_note_2_outlined,
-        'ምንም ማስታወሻ የለም',
-        'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ',
+        s.savedEmptyNotesTitle,
+        s.savedEmptyNotesHint,
       ),
     };
 

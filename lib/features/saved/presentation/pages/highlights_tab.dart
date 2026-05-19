@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/annotations/annotation_models.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import 'saved_common.dart';
 
@@ -26,20 +27,20 @@ class _HighlightsTabState extends State<HighlightsTab> {
   int? _chapterFilter;
 
   List<AnnotationItem> get _filtered => widget.items.where((item) {
-        if (_colorFilter != null &&
-            item.highlightColor?.toARGB32() != _colorFilter!.toARGB32()) {
-          return false;
-        }
-        if (_testamentFilter == 'OT' && !item.isOT) return false;
-        if (_testamentFilter == 'NT' && item.isOT) return false;
-        if (_bookFilter != null && item.bookEntry.bookNameEn != _bookFilter) {
-          return false;
-        }
-        if (_chapterFilter != null && item.chapter != _chapterFilter) {
-          return false;
-        }
-        return true;
-      }).toList();
+    if (_colorFilter != null &&
+        item.highlightColor?.toARGB32() != _colorFilter!.toARGB32()) {
+      return false;
+    }
+    if (_testamentFilter == 'OT' && !item.isOT) return false;
+    if (_testamentFilter == 'NT' && item.isOT) return false;
+    if (_bookFilter != null && item.bookEntry.bookNameEn != _bookFilter) {
+      return false;
+    }
+    if (_chapterFilter != null && item.chapter != _chapterFilter) {
+      return false;
+    }
+    return true;
+  }).toList();
 
   Set<String> get _availableBookIds => widget.items
       .where((item) {
@@ -63,27 +64,35 @@ class _HighlightsTabState extends State<HighlightsTab> {
   }
 
   void _showBookPicker() {
-    final books = widget.items
-        .where((item) {
-          if (_testamentFilter == 'OT' && !item.isOT) return false;
-          if (_testamentFilter == 'NT' && item.isOT) return false;
-          return true;
-        })
-        .map((item) => item.bookEntry)
-        .toSet()
-        .toList()
-      ..sort((a, b) => a.bookNumber.compareTo(b.bookNumber));
+    final s = L10n.of(context);
+    final isEnglish = s is EnStrings;
+    final books =
+        widget.items
+            .where((item) {
+              if (_testamentFilter == 'OT' && !item.isOT) return false;
+              if (_testamentFilter == 'NT' && item.isOT) return false;
+              return true;
+            })
+            .map((item) => item.bookEntry)
+            .toSet()
+            .toList()
+          ..sort((a, b) => a.bookNumber.compareTo(b.bookNumber));
 
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => AnnotationPickerSheet(
-        title: 'መጽሐፍ ምረጥ',
+        title: s.savedPickBook,
         items: [
-          const AnnotationPickerItem(id: null, label: 'ሁሉም መጻሕፍ'),
+          AnnotationPickerItem(id: null, label: s.savedAllBooks),
           ...books.map(
-              (e) => AnnotationPickerItem(id: e.bookNameEn, label: e.bookNameAm)),
+            (e) => AnnotationPickerItem(
+              id: e.bookNameEn,
+              label: isEnglish ? e.bookNameEn : e.bookNameAm,
+            ),
+          ),
         ],
         selectedId: _bookFilter,
         onSelect: (id) {
@@ -99,18 +108,22 @@ class _HighlightsTabState extends State<HighlightsTab> {
 
   void _showChapterPicker() {
     if (_bookFilter == null) return;
+    final s = L10n.of(context);
     final chapters = _availableChapters.toList()..sort();
 
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => AnnotationPickerSheet(
-        title: 'ምዕራፍ ምረጥ',
+        title: s.savedPickChapter,
         items: [
-          const AnnotationPickerItem(id: null, label: 'ሁሉም ምዕራፍ'),
-          ...chapters
-              .map((ch) => AnnotationPickerItem(id: ch, label: 'ምዕ. $ch')),
+          AnnotationPickerItem(id: null, label: s.savedAllChapters),
+          ...chapters.map(
+            (ch) =>
+                AnnotationPickerItem(id: ch, label: s.savedChapterLabel(ch)),
+          ),
         ],
         selectedId: _chapterFilter,
         onSelect: (id) {
@@ -123,15 +136,16 @@ class _HighlightsTabState extends State<HighlightsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final items = _filtered;
     final availableBookIds = _availableBookIds;
     final availableChapters = _availableChapters;
     final currentBookEntry = _bookFilter == null
         ? null
         : widget.items
-            .where((i) => i.bookEntry.bookNameEn == _bookFilter)
-            .firstOrNull
-            ?.bookEntry;
+              .where((i) => i.bookEntry.bookNameEn == _bookFilter)
+              .firstOrNull
+              ?.bookEntry;
 
     return ColoredBox(
       color: context.colors.surfaceDim,
@@ -163,28 +177,26 @@ class _HighlightsTabState extends State<HighlightsTab> {
                   color: context.colors.borderSubtle,
                 ),
                 SavedFilterChip(
-                  label: 'ሁሉም',
+                  label: s.savedFilterAll,
                   active: _testamentFilter == null,
                   onTap: () => setState(() => _testamentFilter = null),
                 ),
                 const SizedBox(width: 6),
                 SavedFilterChip(
-                  label: 'ብሉይ',
+                  label: s.savedFilterOld,
                   active: _testamentFilter == 'OT',
                   onTap: () => setState(() {
-                    _testamentFilter =
-                        _testamentFilter == 'OT' ? null : 'OT';
+                    _testamentFilter = _testamentFilter == 'OT' ? null : 'OT';
                     _bookFilter = null;
                     _chapterFilter = null;
                   }),
                 ),
                 const SizedBox(width: 6),
                 SavedFilterChip(
-                  label: 'አዲስ',
+                  label: s.savedFilterNew,
                   active: _testamentFilter == 'NT',
                   onTap: () => setState(() {
-                    _testamentFilter =
-                        _testamentFilter == 'NT' ? null : 'NT';
+                    _testamentFilter = _testamentFilter == 'NT' ? null : 'NT';
                     _bookFilter = null;
                     _chapterFilter = null;
                   }),
@@ -192,7 +204,11 @@ class _HighlightsTabState extends State<HighlightsTab> {
                 if (availableBookIds.length > 1) ...[
                   const SizedBox(width: 6),
                   SavedFilterChip(
-                    label: currentBookEntry?.bookNameAm ?? 'ሁሉም',
+                    label: currentBookEntry == null
+                        ? s.savedFilterAll
+                        : s is EnStrings
+                        ? currentBookEntry.bookNameEn
+                        : currentBookEntry.bookNameAm,
                     active: _bookFilter != null,
                     trailing: Icons.expand_more_rounded,
                     onTap: _showBookPicker,
@@ -202,8 +218,8 @@ class _HighlightsTabState extends State<HighlightsTab> {
                   const SizedBox(width: 6),
                   SavedFilterChip(
                     label: _chapterFilter != null
-                        ? 'ምዕ. $_chapterFilter'
-                        : 'ሁሉም ምዕ.',
+                        ? s.savedChapterLabel(_chapterFilter!)
+                        : s.savedAllChaptersShort,
                     active: _chapterFilter != null,
                     trailing: Icons.expand_more_rounded,
                     onTap: _showChapterPicker,
@@ -269,9 +285,8 @@ class _ColorDot extends StatelessWidget {
         child: color == null
             ? Icon(Icons.done_all_rounded, size: 16, color: c.textMuted)
             : selected
-                ? const Icon(Icons.check_rounded,
-                    size: 14, color: Colors.black54)
-                : null,
+            ? const Icon(Icons.check_rounded, size: 14, color: Colors.black54)
+            : null,
       ),
     );
   }
