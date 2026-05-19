@@ -239,7 +239,6 @@ class AmStrings extends AppStrings {
   @override String get registerFullName          => 'ሙሉ ስም';
   @override String get registerFullNameRequired  => 'ሙሉ ስም ያስፈልጋል';
   @override String get registerFullNameTooShort  => 'ስም ቢያንስ 2 ፊደላት ያስፈልጋሉ';
-  @override String get registerPhone             => 'ስልክ ቁጥር';
   @override String get registerPasswordTooShort  => 'ቢያንስ 8 ቁምፊዎች ያስፈልጋሉ';
   @override String get registerAcceptTerms       => 'ውሎቹን እና ሁኔታዎቹን ይቀበሉ';
   @override String get registerButton            => 'ይ​መዝ​ጋቡ';

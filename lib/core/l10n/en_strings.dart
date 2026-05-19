@@ -149,7 +149,6 @@ class EnStrings extends AppStrings {
   @override String get registerFullName          => 'Full Name';
   @override String get registerFullNameRequired  => 'Full name is required';
   @override String get registerFullNameTooShort  => 'Name must be at least 2 characters';
-  @override String get registerPhone             => 'Phone Number';
   @override String get registerPasswordTooShort  => 'At least 8 characters required';
   @override String get registerAcceptTerms       => 'Please accept the terms and conditions';
   @override String get registerButton            => 'Register';
