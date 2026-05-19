@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
+import '../storage/app_database_provider.dart';
+import '../sync/sync_repository.dart';
+import '../sync/sync_service.dart';
 import 'auth_repository.dart';
 import 'auth_storage.dart';
 import 'user_profile.dart';
@@ -21,6 +24,7 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) => AuthNotifier(
     ref.read(authRepositoryProvider),
     ref.read(authStorageProvider),
+    ref,
   ),
 );
 
@@ -47,12 +51,14 @@ class AuthState {
 // ── Notifier ──────────────────────────────────────────────────────────────────
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._repo, this._storage) : super(const AuthState.unknown()) {
+  AuthNotifier(this._repo, this._storage, this._ref)
+      : super(const AuthState.unknown()) {
     _init();
   }
 
   final AuthRepository _repo;
   final AuthStorage _storage;
+  final Ref _ref;
 
   Future<void> _init() async {
     final token = await _storage.readToken();
@@ -63,6 +69,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final profile = await _repo.fetchProfile(token);
       state = AuthState.authenticated(profile, token);
+      _syncAfterAuth(token);
     } on ApiException catch (e) {
       if (e.isUnauthorized) await _storage.clearToken();
       state = const AuthState.unauthenticated();
@@ -77,6 +84,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storage.saveToken(token);
     final profile = await _repo.fetchProfile(token);
     state = AuthState.authenticated(profile, token);
+    _syncAfterAuth(token);
   }
 
   Future<void> register(String name, String email, String password) async {
@@ -88,6 +96,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storage.saveToken(token);
     final profile = await _repo.fetchProfile(token);
     state = AuthState.authenticated(profile, token);
+    _syncAfterAuth(token);
   }
 
   Future<void> signInWithGoogle() async {
@@ -95,6 +104,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storage.saveToken(token);
     final profile = await _repo.fetchProfile(token);
     state = AuthState.authenticated(profile, token);
+    _syncAfterAuth(token);
+  }
+
+  void _syncAfterAuth(String token) {
+    SyncService(
+      db: _ref.read(appDatabaseProvider),
+      repo: SyncRepository(_ref.read(apiClientProvider), token),
+    ).syncAll();
   }
 
   Future<void> logout() async {

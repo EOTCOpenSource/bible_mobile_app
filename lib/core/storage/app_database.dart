@@ -395,6 +395,104 @@ class AppDatabase {
     return rows.map(Note.fromMap).toList();
   }
 
+  // ── Sync helpers ───────────────────────────────────────────────────────────
+
+  Future<void> updateAnnotationSync(
+    String table,
+    int id,
+    SyncStatus status, {
+    String? remoteId,
+  }) async {
+    final db = await database;
+    final values = <String, dynamic>{'sync_status': status.name};
+    if (remoteId != null) values['remote_id'] = remoteId;
+    await db.update(table, values, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> softDeleteBookmark(int id, {required bool hasRemoteId}) async {
+    final db = await database;
+    if (hasRemoteId) {
+      await db.update(
+        'bookmarks',
+        {'sync_status': SyncStatus.pendingDelete.name},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } else {
+      await db.delete('bookmarks', where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  Future<void> softDeleteHighlight(int id, {required bool hasRemoteId}) async {
+    final db = await database;
+    if (hasRemoteId) {
+      await db.update(
+        'highlights',
+        {'sync_status': SyncStatus.pendingDelete.name},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } else {
+      await db.delete('highlights', where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  Future<void> softDeleteNote(int id, {required bool hasRemoteId}) async {
+    final db = await database;
+    if (hasRemoteId) {
+      await db.update(
+        'notes',
+        {'sync_status': SyncStatus.pendingDelete.name},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } else {
+      await db.delete('notes', where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  Future<List<Bookmark>> getPendingBookmarks() async {
+    final db = await database;
+    final rows = await db.query(
+      'bookmarks',
+      where: 'sync_status IN (?, ?, ?)',
+      whereArgs: [
+        SyncStatus.pendingCreate.name,
+        SyncStatus.pendingUpdate.name,
+        SyncStatus.pendingDelete.name,
+      ],
+    );
+    return rows.map(Bookmark.fromMap).toList();
+  }
+
+  Future<List<Note>> getPendingNotes() async {
+    final db = await database;
+    final rows = await db.query(
+      'notes',
+      where: 'sync_status IN (?, ?, ?)',
+      whereArgs: [
+        SyncStatus.pendingCreate.name,
+        SyncStatus.pendingUpdate.name,
+        SyncStatus.pendingDelete.name,
+      ],
+    );
+    return rows.map(Note.fromMap).toList();
+  }
+
+  Future<List<Highlight>> getPendingHighlights() async {
+    final db = await database;
+    final rows = await db.query(
+      'highlights',
+      where: 'sync_status IN (?, ?, ?)',
+      whereArgs: [
+        SyncStatus.pendingCreate.name,
+        SyncStatus.pendingUpdate.name,
+        SyncStatus.pendingDelete.name,
+      ],
+    );
+    return rows.map(Highlight.fromMap).toList();
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;

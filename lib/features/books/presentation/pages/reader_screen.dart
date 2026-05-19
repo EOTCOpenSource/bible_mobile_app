@@ -7,9 +7,12 @@ import 'package:kenat/kenat.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/annotations/annotation_models.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
+import '../../../../core/sync/sync_repository.dart';
+import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
@@ -210,6 +213,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         await container
             .read(readingProgressRepositoryProvider)
             .recordQualifiedChapterRead(bookId: bookId, chapter: chNum);
+        final token = container.read(authStateProvider).token;
+        if (token != null) {
+          SyncService(
+            db: container.read(appDatabaseProvider),
+            repo: SyncRepository(container.read(apiClientProvider), token),
+          ).logReadingProgress(bookId: bookId, chapter: chNum);
+        }
         container.invalidate(continueReadingSnapshotsProvider);
         container.invalidate(readingStreakStateProvider);
       },

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/annotations/annotation_models.dart';
+import '../../../core/auth/auth_state.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/storage/app_database_provider.dart';
+import '../../../core/sync/sync_repository.dart';
+import '../../../core/sync/sync_service.dart';
 
 export '../../../core/storage/app_database_provider.dart'
     show appDatabaseProvider, annotationDbProvider;
@@ -15,12 +18,13 @@ typedef ChapterKey = ({String bookId, int chapter});
 
 class ChapterAnnotationsNotifier
     extends StateNotifier<AsyncValue<ChapterAnnotations>> {
-  ChapterAnnotationsNotifier(this._db, this._key)
+  ChapterAnnotationsNotifier(this._db, this._ref, this._key)
       : super(const AsyncValue.loading()) {
     _load();
   }
 
   final AppDatabase _db;
+  final Ref _ref;
   final ChapterKey _key;
 
   Future<void> _load() async {
@@ -51,7 +55,8 @@ class ChapterAnnotationsNotifier
     final existing =
         annotations.bookmarks.where((b) => b.verseStart == verseStart).firstOrNull;
     if (existing != null) {
-      await _db.deleteBookmark(existing.id!);
+      await _db.softDeleteBookmark(
+          existing.id!, hasRemoteId: existing.remoteId != null);
     } else {
       final now = DateTime.now();
       await _db.insertBookmark(Bookmark(
@@ -64,6 +69,7 @@ class ChapterAnnotationsNotifier
       ));
     }
     await _load();
+    _triggerSync();
   }
 
   Future<void> setHighlight({
@@ -96,6 +102,7 @@ class ChapterAnnotationsNotifier
       ));
     }
     await _load();
+    _triggerSync();
   }
 
   Future<void> removeHighlight(int verseStart) async {
@@ -103,8 +110,10 @@ class ChapterAnnotationsNotifier
         .where((h) => h.verseStart == verseStart)
         .firstOrNull;
     if (existing != null) {
-      await _db.deleteHighlight(existing.id!);
+      await _db.softDeleteHighlight(
+          existing.id!, hasRemoteId: existing.remoteId != null);
       await _load();
+      _triggerSync();
     }
   }
 
@@ -120,7 +129,8 @@ class ChapterAnnotationsNotifier
     final now = DateTime.now();
     if (existing != null) {
       if (content.trim().isEmpty) {
-        await _db.deleteNote(existing.id!);
+        await _db.softDeleteNote(
+            existing.id!, hasRemoteId: existing.remoteId != null);
       } else {
         await _db.updateNote(existing.copyWith(
           content: content.trim(),
@@ -142,6 +152,16 @@ class ChapterAnnotationsNotifier
       ));
     }
     await _load();
+    _triggerSync();
+  }
+
+  void _triggerSync() {
+    final token = _ref.read(authStateProvider).token;
+    if (token == null) return;
+    SyncService(
+      db: _db,
+      repo: SyncRepository(_ref.read(apiClientProvider), token),
+    ).syncAll();
   }
 }
 
@@ -151,5 +171,6 @@ final chapterAnnotationsProvider = StateNotifierProvider.family<
     ChapterAnnotationsNotifier,
     AsyncValue<ChapterAnnotations>,
     ChapterKey>(
-  (ref, key) => ChapterAnnotationsNotifier(ref.watch(annotationDbProvider), key),
+  (ref, key) =>
+      ChapterAnnotationsNotifier(ref.watch(annotationDbProvider), ref, key),
 );
