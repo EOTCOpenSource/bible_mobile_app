@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 const _baseUrl = 'https://eotcbiblebe.onrender.com/api/v1';
@@ -55,6 +56,20 @@ class ApiClient {
       body: body != null ? jsonEncode(body) : null,
     );
     return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> uploadFile(
+    String path, {
+    required File file,
+    String field = 'avatar',
+    String? token,
+  }) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl$path'));
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath(field, file.path));
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    return _parse(response);
   }
 
   Future<Map<String, dynamic>> delete(String path, {String? token}) async {

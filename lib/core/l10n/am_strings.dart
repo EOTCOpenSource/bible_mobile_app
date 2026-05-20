@@ -310,6 +310,25 @@ class AmStrings extends AppStrings {
   @override String get achievementPsalmTitle    => 'የምዝሙሩ';
   @override String get achievementPsalmSub      => 'Psalm Reader';
 
+  // ── Profile editing ───────────────────────────────────────────────────────
+  @override String get profileFirstName          => 'ስም';
+  @override String get profileLastName           => 'ያባት ስም';
+  @override String get profileSaveChanges        => 'ለውጦች አስቀምጥ';
+  @override String get profileSaved              => 'ፕሮፋይሉ ተዘምኗል';
+  @override String get profileSectionInfo        => 'የመለያ መረጃ';
+  @override String get profileSectionSecurity    => 'ደህንነት';
+  @override String get profileSectionPreferences => 'ምርጫዎች';
+  @override String get profileChangePhoto        => 'ፎቶ ቀይር';
+  @override String get profileGoogleNote         => 'Google አካውንት ነዎት — ኢሜይሉ ሊቀየር አይችልም';
+  @override String get profileChangePassword     => 'ይለፍ ቃሉን ቀይር';
+  @override String get profileCurrentPassword    => 'አሁን ያለ ይለፍ ቃሉ';
+  @override String get profileNewPassword        => 'አዲስ ይለፍ ቃሉ';
+  @override String get profileConfirmNewPassword => 'ይለፍ ቃሉን ያረጋግጡ';
+  @override String get profileUpdatePassword     => 'ይለፍ ቃሉን ዘምን';
+  @override String get profilePasswordChanged    => 'ይለፍ ቃሉ ተቀይሯል';
+  @override String get profilePasswordMismatch   => 'ይለፍ ቃሎቹ አይዛመዱም';
+  @override String get profileUpdateFailed       => 'ማዘምን አልተሳካም። እንደገና ይሞክሩ።';
+
   // ── Saved / Collection screen ─────────────────────────────────────────────
   @override String get savedScreenTitle        => 'ስብስቤ';
   @override String get savedScreenSubtitle     => 'ያቀቡት';

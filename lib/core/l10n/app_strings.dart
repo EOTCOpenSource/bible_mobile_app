@@ -228,6 +228,25 @@ String get searchScopeTitle;
   String get achievementPsalmTitle;
   String get achievementPsalmSub;
 
+  // ── Profile editing ───────────────────────────────────────────────────────
+  String get profileFirstName;
+  String get profileLastName;
+  String get profileSaveChanges;
+  String get profileSaved;
+  String get profileSectionInfo;
+  String get profileSectionSecurity;
+  String get profileSectionPreferences;
+  String get profileChangePhoto;
+  String get profileGoogleNote;
+  String get profileChangePassword;
+  String get profileCurrentPassword;
+  String get profileNewPassword;
+  String get profileConfirmNewPassword;
+  String get profileUpdatePassword;
+  String get profilePasswordChanged;
+  String get profilePasswordMismatch;
+  String get profileUpdateFailed;
+
   // ── Saved / Collection screen ─────────────────────────────────────────────
   String get savedScreenTitle;
   String get savedScreenSubtitle;

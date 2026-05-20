@@ -120,6 +120,8 @@ class _MeScreenState extends ConsumerState<MeScreen> {
               ],
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          SliverToBoxAdapter(child: _LogoutSection(s: s)),
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
@@ -696,6 +698,50 @@ class _LangChip extends StatelessWidget {
           style: AppTypography.amharicCaption.copyWith(
             color: selected ? Colors.white : c.textMuted,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Logout section ─────────────────────────────────────────────────────────────
+
+class _LogoutSection extends ConsumerWidget {
+  const _LogoutSection({required this.s});
+  final AppStrings s;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    if (!authState.isAuthenticated) return const SizedBox.shrink();
+
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () async {
+          await ref.read(authStateProvider.notifier).logout();
+        },
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: c.primary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.primary.withValues(alpha: 0.18)),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.logout_rounded, color: c.primary, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                s.profileLogout,
+                style: AppTypography.amharicLabel
+                    .copyWith(color: c.primary, fontSize: 14),
+              ),
+            ],
           ),
         ),
       ),

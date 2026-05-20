@@ -220,6 +220,25 @@ class EnStrings extends AppStrings {
   @override String get achievementPsalmTitle    => 'Psalm Reader';
   @override String get achievementPsalmSub      => 'Psalm Reader';
 
+  // ── Profile editing ───────────────────────────────────────────────────────
+  @override String get profileFirstName          => 'First Name';
+  @override String get profileLastName           => 'Last Name';
+  @override String get profileSaveChanges        => 'Save Changes';
+  @override String get profileSaved              => 'Profile updated';
+  @override String get profileSectionInfo        => 'Account Info';
+  @override String get profileSectionSecurity    => 'Security';
+  @override String get profileSectionPreferences => 'Preferences';
+  @override String get profileChangePhoto        => 'Change Photo';
+  @override String get profileGoogleNote         => 'Signed in with Google — email cannot be changed';
+  @override String get profileChangePassword     => 'Change Password';
+  @override String get profileCurrentPassword    => 'Current Password';
+  @override String get profileNewPassword        => 'New Password';
+  @override String get profileConfirmNewPassword => 'Confirm New Password';
+  @override String get profileUpdatePassword     => 'Update Password';
+  @override String get profilePasswordChanged    => 'Password changed successfully';
+  @override String get profilePasswordMismatch   => 'Passwords do not match';
+  @override String get profileUpdateFailed       => 'Update failed. Please try again.';
+
   // ── Saved / Collection screen ─────────────────────────────────────────────
   @override String get savedScreenTitle        => 'Collection';
   @override String get savedScreenSubtitle     => 'Your saved';

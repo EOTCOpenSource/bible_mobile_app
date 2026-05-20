@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
@@ -136,5 +137,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (token != null) await _repo.deleteAccount(token);
     await _storage.clearToken();
     state = const AuthState.unauthenticated();
+  }
+
+  Future<void> updateProfile({
+    required String name,
+    required String email,
+  }) async {
+    final token = state.token;
+    if (token == null) return;
+    final updated = await _repo.updateProfile(token, name: name, email: email);
+    state = AuthState.authenticated(updated, token);
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final token = state.token;
+    if (token == null) return;
+    await _repo.changePassword(token,
+        currentPassword: currentPassword, newPassword: newPassword);
+  }
+
+  Future<void> uploadAvatar(File file) async {
+    final token = state.token;
+    if (token == null) return;
+    final updated = await _repo.uploadAvatar(token, file);
+    final withAvatar = updated.avatar != null
+        ? updated
+        : state.user!.copyWith(avatar: null);
+    state = AuthState.authenticated(withAvatar, token);
   }
 }

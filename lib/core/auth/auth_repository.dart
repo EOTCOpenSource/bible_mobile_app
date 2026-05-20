@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../api/api_client.dart';
 import 'user_profile.dart';
@@ -63,6 +64,36 @@ class AuthRepository {
 
   Future<void> deleteAccount(String token) async {
     await _api.delete('/auth/account', token: token);
+  }
+
+  Future<UserProfile> updateProfile(
+    String token, {
+    required String name,
+    required String email,
+  }) async {
+    final res = await _api.put(
+      '/auth/profile',
+      body: {'name': name, 'email': email},
+      token: token,
+    );
+    return UserProfile.fromJson(res['data']['user'] as Map<String, dynamic>);
+  }
+
+  Future<void> changePassword(
+    String token, {
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _api.post(
+      '/auth/change-password',
+      body: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      token: token,
+    );
+  }
+
+  Future<UserProfile> uploadAvatar(String token, File file) async {
+    final res = await _api.uploadFile('/auth/avatar', file: file, token: token);
+    return UserProfile.fromJson(res['data']['user'] as Map<String, dynamic>);
   }
 
   // ── Social auth ───────────────────────────────────────────────────────────
