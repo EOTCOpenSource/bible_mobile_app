@@ -69,6 +69,7 @@ class AuthRepository {
 
   Future<(String token, String? photoUrl)> signInWithGoogle() async {
     final googleSignIn = GoogleSignIn(serverClientId: _webClientId);
+    await googleSignIn.signOut();
     final account = await googleSignIn.signIn();
     if (account == null) throw const ApiException('Google sign-in cancelled');
 
