@@ -100,9 +100,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signInWithGoogle() async {
-    final token = await _repo.signInWithGoogle();
+    final (token, photoUrl) = await _repo.signInWithGoogle();
     await _storage.saveToken(token);
-    final profile = await _repo.fetchProfile(token);
+    var profile = await _repo.fetchProfile(token);
+    if (profile.avatar == null && photoUrl != null) {
+      profile = profile.copyWith(avatar: photoUrl);
+    }
     state = AuthState.authenticated(profile, token);
     _syncAfterAuth(token);
   }

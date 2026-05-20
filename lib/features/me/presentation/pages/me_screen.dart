@@ -195,24 +195,26 @@ class _ProfileCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: c.accent,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initial,
-                  style: TextStyle(
-                    fontFamily: AppTypography.shiromeda,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: c.primary,
+              if (user!.avatar != null)
+                ClipOval(
+                  child: Image.network(
+                    user!.avatar!,
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, e, s) => _InitialsCircle(
+                      initial: initial,
+                      accent: c.accent,
+                      primary: c.primary,
+                    ),
                   ),
+                )
+              else
+                _InitialsCircle(
+                  initial: initial,
+                  accent: c.accent,
+                  primary: c.primary,
                 ),
-              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -264,6 +266,37 @@ class _ProfileCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InitialsCircle extends StatelessWidget {
+  const _InitialsCircle({
+    required this.initial,
+    required this.accent,
+    required this.primary,
+  });
+
+  final String initial;
+  final Color accent;
+  final Color primary;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          fontFamily: AppTypography.shiromeda,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: primary,
         ),
       ),
     );

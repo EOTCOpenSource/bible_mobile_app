@@ -6,6 +6,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../auth/presentation/pages/profile_screen.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key, required this.dateLabel});
@@ -49,7 +50,12 @@ class HomeHeader extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          _Avatar(user: user, colors: c),
+          GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
+            child: _Avatar(user: user, colors: c),
+          ),
         ],
       ),
     );

@@ -67,7 +67,7 @@ class AuthRepository {
 
   // ── Social auth ───────────────────────────────────────────────────────────
 
-  Future<String> signInWithGoogle() async {
+  Future<(String token, String? photoUrl)> signInWithGoogle() async {
     final googleSignIn = GoogleSignIn(serverClientId: _webClientId);
     final account = await googleSignIn.signIn();
     if (account == null) throw const ApiException('Google sign-in cancelled');
@@ -79,6 +79,6 @@ class AuthRepository {
     }
 
     final res = await _api.post('/auth/social/google', body: {'idToken': idToken});
-    return res['data']['token'] as String;
+    return (res['data']['token'] as String, account.photoUrl);
   }
 }
