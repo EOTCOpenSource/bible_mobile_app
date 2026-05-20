@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/constants/app_icons.dart';
@@ -606,6 +607,7 @@ class _SocialRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Expanded(
@@ -614,7 +616,13 @@ class _SocialRow extends StatelessWidget {
             isLoading: isGoogleLoading,
             label: 'Google',
             dark: false,
-            icon: _GoogleLogo(),
+            icon: SvgPicture.asset(
+              isDark
+                  ? 'assets/signin/web_dark_sq_na.svg'
+                  : 'assets/signin/web_light_sq_na.svg',
+              width: 22,
+              height: 22,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -624,6 +632,7 @@ class _SocialRow extends StatelessWidget {
             isLoading: false,
             label: 'Facebook',
             dark: true,
+            backgroundColor: const Color(0xFF1877F2),
             icon: const Icon(Icons.facebook_rounded, color: Colors.white, size: 20),
           ),
         ),
@@ -639,6 +648,7 @@ class _SocialButton extends StatelessWidget {
     required this.label,
     required this.dark,
     required this.icon,
+    this.backgroundColor,
   });
 
   final VoidCallback? onTap;
@@ -646,16 +656,18 @@ class _SocialButton extends StatelessWidget {
   final String label;
   final bool dark;
   final Widget icon;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final bgColor = backgroundColor ?? (dark ? const Color(0xFF1A1A1A) : c.surface);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 50,
         decoration: BoxDecoration(
-          color: dark ? const Color(0xFF1A1A1A) : c.surface,
+          color: bgColor,
           borderRadius: BorderRadius.circular(12),
           border: dark ? null : Border.all(color: c.borderSubtle, width: 1.2),
         ),
@@ -686,65 +698,6 @@ class _SocialButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _GoogleLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const _GooglePainter();
-  }
-}
-
-class _GooglePainter extends StatelessWidget {
-  const _GooglePainter();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 18,
-      height: 18,
-      child: CustomPaint(painter: _GoogleLogoPainter()),
-    );
-  }
-}
-
-class _GoogleLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final stroke = w * 0.17;
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.round;
-
-    final rect = Rect.fromLTWH(stroke / 2, stroke / 2,
-        w - stroke, h - stroke);
-
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawArc(rect, -1.57, 2.8, false, paint);
-
-    paint.color = const Color(0xFFEA4335);
-    canvas.drawArc(rect, 1.57 + 0.37, 1.2, false, paint);
-
-    paint.color = const Color(0xFFFBBC05);
-    canvas.drawArc(rect, 3.14, 0.74, false, paint);
-
-    paint.color = const Color(0xFF34A853);
-    canvas.drawArc(rect, 3.93, 0.83, false, paint);
-
-    final center = Offset(w / 2, h / 2);
-    canvas.drawRect(
-      Rect.fromLTRB(
-          center.dx, center.dy - h * 0.1, w - stroke / 2, center.dy + h * 0.1),
-      Paint()..color = const Color(0xFF4285F4),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
 // ── Register prompt ───────────────────────────────────────────────────────────
