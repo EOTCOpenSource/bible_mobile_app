@@ -6,6 +6,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 
 class HomeHeader extends ConsumerWidget {
@@ -50,12 +51,15 @@ class HomeHeader extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+          if (user == null)
+            _SignInButton(colors: c)
+          else
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              ),
+              child: _Avatar(user: user, colors: c),
             ),
-            child: _Avatar(user: user, colors: c),
-          ),
         ],
       ),
     );
@@ -70,27 +74,56 @@ class HomeHeader extends ConsumerWidget {
 
 // ── Avatar ─────────────────────────────────────────────────────────────────────
 
+class _SignInButton extends StatelessWidget {
+  const _SignInButton({required this.colors});
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    final s = L10n.of(context);
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: c.primary,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Text(
+          s.loginButton,
+          style: AppTypography.amharicLabel.copyWith(
+            color: c.textOnDark,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Avatar extends StatelessWidget {
   const _Avatar({required this.user, required this.colors});
 
-  final UserProfile? user;
+  final UserProfile user;
   final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
     final c = colors;
 
-    // Google / social login — show profile picture
-    if (user?.avatar != null) {
+    if (user.avatar != null) {
       return ClipOval(
         child: SizedBox(
           width: 50,
           height: 50,
           child: Image.network(
-            user!.avatar!,
+            user.avatar!,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) => _InitialsCircle(
-              letter: _initial(user!.name),
+              letter: _initial(user.name),
               colors: c,
             ),
           ),
@@ -98,9 +131,7 @@ class _Avatar extends StatelessWidget {
       );
     }
 
-    // Email/password login — first letter of name
-    final letter = user != null ? _initial(user!.name) : 'ን';
-    return _InitialsCircle(letter: letter, colors: c);
+    return _InitialsCircle(letter: _initial(user.name), colors: c);
   }
 
   static String _initial(String name) =>
