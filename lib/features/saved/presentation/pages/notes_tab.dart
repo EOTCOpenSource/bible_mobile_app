@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import 'saved_common.dart';
 
@@ -64,14 +65,15 @@ class _NotesTabState extends State<NotesTab> {
         .toList()
       ..sort((a, b) => a.bookNumber.compareTo(b.bookNumber));
 
+    final s = L10n.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => AnnotationPickerSheet(
-        title: 'መጽሐፍ ምረጥ',
+        title: s.savedPickBook,
         items: [
-          const AnnotationPickerItem(id: null, label: 'ሁሉም መጻሕፍ'),
+          AnnotationPickerItem(id: null, label: s.savedPickAllBooks),
           ...books.map(
               (e) => AnnotationPickerItem(id: e.bookNameEn, label: e.bookNameAm)),
         ],
@@ -90,17 +92,18 @@ class _NotesTabState extends State<NotesTab> {
   void _showChapterPicker() {
     if (_bookFilter == null) return;
     final chapters = _availableChapters.toList()..sort();
+    final s = L10n.of(context);
 
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => AnnotationPickerSheet(
-        title: 'ምዕራፍ ምረጥ',
+        title: s.savedPickChapter,
         items: [
-          const AnnotationPickerItem(id: null, label: 'ሁሉም ምዕራፍ'),
-          ...chapters
-              .map((ch) => AnnotationPickerItem(id: ch, label: 'ምዕ. $ch')),
+          AnnotationPickerItem(id: null, label: s.savedPickAllChapters),
+          ...chapters.map(
+              (ch) => AnnotationPickerItem(id: ch, label: s.savedFilterChapter(ch))),
         ],
         selectedId: _chapterFilter,
         onSelect: (id) {
@@ -113,6 +116,7 @@ class _NotesTabState extends State<NotesTab> {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final items = _filtered;
     final availableBookIds = _availableBookIds;
     final availableChapters = _availableChapters;
@@ -133,13 +137,13 @@ class _NotesTabState extends State<NotesTab> {
             child: Row(
               children: [
                 SavedFilterChip(
-                  label: 'ሁሉም',
+                  label: s.savedFilterAll,
                   active: _testamentFilter == null,
                   onTap: () => setState(() => _testamentFilter = null),
                 ),
                 const SizedBox(width: 6),
                 SavedFilterChip(
-                  label: 'ብሉይ',
+                  label: s.savedFilterOT,
                   active: _testamentFilter == 'OT',
                   onTap: () => setState(() {
                     _testamentFilter =
@@ -150,7 +154,7 @@ class _NotesTabState extends State<NotesTab> {
                 ),
                 const SizedBox(width: 6),
                 SavedFilterChip(
-                  label: 'አዲስ',
+                  label: s.savedFilterNT,
                   active: _testamentFilter == 'NT',
                   onTap: () => setState(() {
                     _testamentFilter =
@@ -162,7 +166,7 @@ class _NotesTabState extends State<NotesTab> {
                 if (availableBookIds.length > 1) ...[
                   const SizedBox(width: 6),
                   SavedFilterChip(
-                    label: currentBookEntry?.bookNameAm ?? 'ሁሉም',
+                    label: currentBookEntry?.bookNameAm ?? s.savedFilterAll,
                     active: _bookFilter != null,
                     trailing: Icons.expand_more_rounded,
                     onTap: _showBookPicker,
@@ -172,8 +176,8 @@ class _NotesTabState extends State<NotesTab> {
                   const SizedBox(width: 6),
                   SavedFilterChip(
                     label: _chapterFilter != null
-                        ? 'ምዕ. $_chapterFilter'
-                        : 'ሁሉም ምዕ.',
+                        ? s.savedFilterChapter(_chapterFilter!)
+                        : s.savedFilterAllChapters,
                     active: _chapterFilter != null,
                     trailing: Icons.expand_more_rounded,
                     onTap: _showChapterPicker,

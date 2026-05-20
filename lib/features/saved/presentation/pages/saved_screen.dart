@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/annotations/annotation_models.dart';
 import '../../../../core/auth/auth_state.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/sync/sync_repository.dart';
 import '../../../../core/sync/sync_service.dart';
@@ -178,6 +179,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final s = L10n.of(context);
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +191,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'ያቀቡት',
+                  s.savedScreenSubtitle,
                   style: AppTypography.amharicCaption.copyWith(
                     color: c.textMuted,
                     fontSize: 12,
@@ -198,7 +200,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'ስብስቤ',
+                  s.savedScreenTitle,
                   style: AppTypography.amharicHeading.copyWith(
                     color: c.textOnParchment,
                   ),
@@ -214,21 +216,21 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             child: Row(
               children: [
                 _TabLabel(
-                  label: 'ምልክቶ',
+                  label: s.savedTabHighlights,
                   count: _highlights.length,
                   active: _tab == 0,
                   onTap: () => setState(() => _tab = 0),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: 'ክታቦ',
+                  label: s.savedTabBookmarks,
                   count: _bookmarks.length,
                   active: _tab == 1,
                   onTap: () => setState(() => _tab = 1),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: 'ማስታወሻ',
+                  label: s.savedTabNotes,
                   count: _notes.length,
                   active: _tab == 2,
                   onTap: () => setState(() => _tab = 2),

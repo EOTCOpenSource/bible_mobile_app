@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/models/book_index_entry.dart';
@@ -41,15 +42,16 @@ class AnnotationCard extends StatelessWidget {
   final int tab;
   final VoidCallback onTap;
 
-  String _daysAgo() {
+  String _daysAgo(AppStrings s) {
     final diff = DateTime.now().difference(item.createdAt);
-    if (diff.inDays == 0) return 'ዛሬ';
-    if (diff.inDays == 1) return 'ትናንት';
-    return '${diff.inDays} ቀን';
+    if (diff.inDays == 0) return s.savedToday;
+    if (diff.inDays == 1) return s.savedYesterday;
+    return s.savedDaysAgo(diff.inDays);
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final c = context.colors;
     final accent = tab == 0 && item.highlightColor != null
         ? item.highlightColor!
@@ -108,7 +110,7 @@ class AnnotationCard extends StatelessWidget {
                             ),
                             const Spacer(),
                             Text(
-                              _daysAgo(),
+                              _daysAgo(s),
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
                                 color: c.textCaption,
@@ -248,21 +250,22 @@ class AnnotationEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final (icon, label, hint) = switch (tab) {
       0 => (
           Icons.format_color_fill_rounded,
-          'ምንም ምልክቶ የለም',
-          'ምንባብ ሲያነቡ ቁጥር ጎልቶ ይሰምጡ'
+          s.savedHighlightsEmpty,
+          s.savedHighlightsEmptyHint,
         ),
       1 => (
           Icons.bookmark_border_rounded,
-          'ምንም ክታቦ የለም',
-          'ምንባብ ሲያነቡ ቁጥር ያቆዩ'
+          s.savedBookmarksEmpty,
+          s.savedBookmarksEmptyHint,
         ),
       _ => (
           Icons.sticky_note_2_outlined,
-          'ምንም ማስታወሻ የለም',
-          'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ'
+          s.savedNotesEmpty,
+          s.savedNotesEmptyHint,
         ),
     };
 

@@ -262,4 +262,76 @@ class AmStrings extends AppStrings {
   @override String get otpChangePhone    => 'ስልክ ቁጥር ለውጥ';
   @override String get otpChangeEmail    => 'ኢሜል ለውጥ';
   @override String get otpResendFailed   => 'ኮድ መላክ አልተሳካም። ድጋሚ ይሞክሩ።';
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  @override String get forgotTitle            => 'የይለፍ ቃል ረሱ?';
+  @override String get forgotSubtitle         => 'ምንም አያስቡ። የተመዘገቡበትን ኢሜልዎን ያስገቡ፤ የዳግም ማስጀመሪያ ኮድ እንልካለን።';
+  @override String get forgotEmailLabel       => 'የተመዘገቡበት ኢሜል';
+  @override String get forgotEmailHelper      => 'የዳግም ማስጀመሪያ ኮዱ ወደዚህ ኢሜል ይላካል።';
+  @override String get forgotPhoneLabel       => 'የተመዘገቡ ስልክ ቁጥር';
+  @override String get forgotPhoneHelper      => 'የዳግም ማስጀመሪያ ኮዱ ወደዚህ ስልክ ቁጥር ይላካል።';
+  @override String get forgotSendButton       => 'ኮድ ላክ';
+  @override String get forgotRememberPassword => 'ኮዱን አስታወሱ? ';
+  @override String get forgotPhoneComingSoon  => 'ስልክ ቁጥር ዳግም ማስጀመሪያ — በቅርብ ይመጣል';
+  @override String get forgotTabPhone         => 'ስልክ';
+
+  // ── Reset password ────────────────────────────────────────────────────────
+  @override String get resetTitle             => 'አዲስ የይለፍ ቃል';
+  @override String get resetSubtitle          => 'የሚያስታውሱት ጠንካራ የይለፍ ቃል ለመምረጥ ይሞክሩ።';
+  @override String get resetTokenLabel        => 'ከኢሜልዎ የተቀበሉት ኮድ';
+  @override String get resetNewPasswordLabel  => 'አዲስ የይለፍ ቃል';
+  @override String get resetConfirmLabel      => 'የይለፍ ቃል ያረጋግጡ';
+  @override String get resetRequirementsTitle => 'የይለፍ ቃል መስፈርቶች';
+  @override String get resetReqLength         => 'ቢያንስ 8 ቁምፊዎች';
+  @override String get resetReqUpper          => 'አንድ ትልቅ ፊደል (A–Z)';
+  @override String get resetReqNumber         => 'አንድ ቁጥር (0–9)';
+  @override String get resetReqSpecial        => 'አንድ ልዩ ምልክት (!@#\$)';
+  @override String get resetSaveButton        => 'አስቀምጥ እና ግባ';
+  @override String get resetSuccessMessage    => 'የይለፍ ቃልዎ ተቀይሯል። እባክዎ ይግቡ።';
+
+  // ── Profile screen ────────────────────────────────────────────────────────
+  @override String get profileTitle            => 'ፕሮፋይል';
+  @override String get profileMemberBadge      => 'አባል';
+  @override String get profileLogout           => 'ውጣ';
+  @override String get profileDeleteAccount    => 'መለያ ሰርዝ';
+  @override String get profileEditButton       => 'ፕሮፋይል አስተካክል';
+  @override String get profileAchievements     => 'ስኬቶች';
+  @override String get profileStatStreak       => 'የቀን ስኬቶች';
+  @override String get profileStatBookmarks    => 'ምልክት';
+  @override String get profileStatPlan         => 'ዕቅድ';
+  @override String get profileDeleteTitle      => 'መለያ ይሰረዝ?';
+  @override String get profileDeleteMessage    => 'ሁሉም ዳታ ይጠፋል። ይህ ድርጊት ሊመለስ አይችልም።';
+  @override String get profileDeleteCancel     => 'ይቅር';
+  @override String get profileDeleteConfirm    => 'ሰርዝ';
+  @override String get achievementFirstDayTitle => 'መጀመሪያ ቀን';
+  @override String get achievementFirstDaySub   => 'First Day';
+  @override String get achievement7DayTitle     => '፯ ቀን ሰንሰለት';
+  @override String get achievement7DaySub       => '7-Day Streak';
+  @override String get achievementPsalmTitle    => 'የምዝሙሩ';
+  @override String get achievementPsalmSub      => 'Psalm Reader';
+
+  // ── Saved / Collection screen ─────────────────────────────────────────────
+  @override String get savedScreenTitle        => 'ስብስቤ';
+  @override String get savedScreenSubtitle     => 'ያቀቡት';
+  @override String get savedTabHighlights      => 'ምልክቶ';
+  @override String get savedTabBookmarks       => 'ክታቦ';
+  @override String get savedTabNotes           => 'ማስታወሻ';
+  @override String get savedHighlightsEmpty    => 'ምንም ምልክት የለም';
+  @override String get savedHighlightsEmptyHint => 'ምንባብ ሲያነቡ ምልክት ያስቀምጡ';
+  @override String get savedBookmarksEmpty     => 'ምንም ክታቦ የለም';
+  @override String get savedBookmarksEmptyHint => 'ምንባብ ሲያነቡ ክታቦ ያስቀምጡ';
+  @override String get savedNotesEmpty         => 'ምንም ማስታወሻ የለም';
+  @override String get savedNotesEmptyHint     => 'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ';
+  @override String get savedToday              => 'ዛሬ';
+  @override String get savedYesterday          => 'ትናንት';
+  @override String savedDaysAgo(int n)         => '$n ቀን';
+  @override String get savedFilterAll          => 'ሁሉም';
+  @override String get savedFilterOT           => 'ብሉይ';
+  @override String get savedFilterNT           => 'አዲስ';
+  @override String get savedFilterAllChapters  => 'ሁሉም ምዕ.';
+  @override String savedFilterChapter(int n)   => 'ምዕ. $n';
+  @override String get savedPickBook           => 'መጽሐፍ ምረጥ';
+  @override String get savedPickAllBooks       => 'ሁሉም መጻሕፍ';
+  @override String get savedPickChapter        => 'ምዕራፍ ምረጥ';
+  @override String get savedPickAllChapters    => 'ሁሉም ምዕራፍ';
 }

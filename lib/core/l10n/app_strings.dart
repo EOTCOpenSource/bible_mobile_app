@@ -180,4 +180,76 @@ String get searchScopeTitle;
   String get otpChangePhone;
   String get otpChangeEmail;
   String get otpResendFailed;
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  String get forgotTitle;
+  String get forgotSubtitle;
+  String get forgotEmailLabel;
+  String get forgotEmailHelper;
+  String get forgotPhoneLabel;
+  String get forgotPhoneHelper;
+  String get forgotSendButton;
+  String get forgotRememberPassword;
+  String get forgotPhoneComingSoon;
+  String get forgotTabPhone;
+
+  // ── Reset password ────────────────────────────────────────────────────────
+  String get resetTitle;
+  String get resetSubtitle;
+  String get resetTokenLabel;
+  String get resetNewPasswordLabel;
+  String get resetConfirmLabel;
+  String get resetRequirementsTitle;
+  String get resetReqLength;
+  String get resetReqUpper;
+  String get resetReqNumber;
+  String get resetReqSpecial;
+  String get resetSaveButton;
+  String get resetSuccessMessage;
+
+  // ── Profile screen ────────────────────────────────────────────────────────
+  String get profileTitle;
+  String get profileMemberBadge;
+  String get profileLogout;
+  String get profileDeleteAccount;
+  String get profileEditButton;
+  String get profileAchievements;
+  String get profileStatStreak;
+  String get profileStatBookmarks;
+  String get profileStatPlan;
+  String get profileDeleteTitle;
+  String get profileDeleteMessage;
+  String get profileDeleteCancel;
+  String get profileDeleteConfirm;
+  String get achievementFirstDayTitle;
+  String get achievementFirstDaySub;
+  String get achievement7DayTitle;
+  String get achievement7DaySub;
+  String get achievementPsalmTitle;
+  String get achievementPsalmSub;
+
+  // ── Saved / Collection screen ─────────────────────────────────────────────
+  String get savedScreenTitle;
+  String get savedScreenSubtitle;
+  String get savedTabHighlights;
+  String get savedTabBookmarks;
+  String get savedTabNotes;
+  String get savedHighlightsEmpty;
+  String get savedHighlightsEmptyHint;
+  String get savedBookmarksEmpty;
+  String get savedBookmarksEmptyHint;
+  String get savedNotesEmpty;
+  String get savedNotesEmptyHint;
+  String get savedToday;
+  String get savedYesterday;
+  String savedDaysAgo(int n);
+  String get savedFilterAll;
+  String get savedFilterOT;
+  String get savedFilterNT;
+  String get savedFilterAllChapters;
+  String savedFilterChapter(int n);
+  String get savedPickBook;
+  String get savedPickAllBooks;
+  String get savedPickChapter;
+  String get savedPickAllChapters;
 }

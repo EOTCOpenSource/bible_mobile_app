@@ -4,6 +4,7 @@ import 'package:kenat/kenat.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/auth/user_profile.dart';
 import '../../../../core/constants/app_icons.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/storage/app_database_provider.dart';
 import '../../../../core/theme/app_color_scheme.dart';
@@ -86,7 +87,7 @@ class _TopBar extends ConsumerWidget {
           ),
           const Spacer(),
           Text(
-            'ፕሮፋይል',
+            L10n.of(context).profileTitle,
             style: AppTypography.amharicLabel.copyWith(
               color: c.textOnParchment,
               fontSize: 15,
@@ -166,7 +167,7 @@ class _ProfileMenuSheet extends StatelessWidget {
             ),
             _SheetTile(
               icon: Icons.logout_rounded,
-              label: 'ውጣ',
+              label: L10n.of(context).profileLogout,
               color: c.textBody,
               onTap: () async {
                 Navigator.pop(ctx);
@@ -177,7 +178,7 @@ class _ProfileMenuSheet extends StatelessWidget {
             Divider(color: c.borderSubtle, height: 1, indent: 16),
             _SheetTile(
               icon: Icons.delete_outline_rounded,
-              label: 'መለያ ሰርዝ',
+              label: L10n.of(context).profileDeleteAccount,
               color: c.primary,
               onTap: () {
                 Navigator.pop(ctx);
@@ -197,13 +198,13 @@ class _ProfileMenuSheet extends StatelessWidget {
         backgroundColor: c.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'መለያ ይሰረዝ?',
+          L10n.of(ctx).profileDeleteTitle,
           style: AppTypography.amharicSubheading.copyWith(
             color: c.textOnParchment,
           ),
         ),
         content: Text(
-          'ሁሉም ውሂብዎ ይጠፋል። ይህ ድርጊት ሊቀለበስ አይችልም።',
+          L10n.of(ctx).profileDeleteMessage,
           style: AppTypography.amharicBody.copyWith(
             color: c.textMuted,
             fontSize: 13,
@@ -212,7 +213,7 @@ class _ProfileMenuSheet extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dlgCtx),
-            child: Text('ይቅር',
+            child: Text(L10n.of(ctx).profileDeleteCancel,
                 style: AppTypography.amharicLabel
                     .copyWith(color: c.textMuted)),
           ),
@@ -222,7 +223,7 @@ class _ProfileMenuSheet extends StatelessWidget {
               await ref.read(authStateProvider.notifier).deleteAccount();
               if (ctx.mounted) Navigator.of(ctx).pop();
             },
-            child: Text('ሰርዝ',
+            child: Text(L10n.of(ctx).profileDeleteConfirm,
                 style: AppTypography.amharicLabel
                     .copyWith(color: c.primary)),
           ),
@@ -349,7 +350,7 @@ class _AvatarSection extends StatelessWidget {
                   style: TextStyle(color: c.accentDeep, fontSize: 11)),
               const SizedBox(width: 6),
               Text(
-                'አባል · የቅዱስ ቤተ-ሰብ',
+                L10n.of(context).profileMemberBadge,
                 style: AppTypography.amharicCaption.copyWith(
                   color: c.primary,
                   fontSize: 11,
@@ -405,17 +406,17 @@ class _StatsRow extends ConsumerWidget {
           children: [
             _StatCell(
                 value: fmt(streak),
-                label: 'ቀን ቅ/ነዴ',
+                label: L10n.of(context).profileStatStreak,
                 colors: c),
             _StatDivider(colors: c),
             _StatCell(
                 value: fmt(bookmarks),
-                label: 'ምልክት',
+                label: L10n.of(context).profileStatBookmarks,
                 colors: c),
             _StatDivider(colors: c),
             _StatCell(
                 value: '${fmt(overallPct)}%',
-                label: 'ዕቅድ',
+                label: L10n.of(context).profileStatPlan,
                 colors: c),
           ],
         ),
@@ -504,7 +505,7 @@ class _ActionButtons extends StatelessWidget {
                     Icon(Icons.edit_outlined, color: c.primary, size: 16),
                     const SizedBox(width: 8),
                     Text(
-                      'ፕሮፋይል አስተካክል',
+                      L10n.of(context).profileEditButton,
                       style: AppTypography.amharicCaption.copyWith(
                         color: c.primary,
                         fontWeight: FontWeight.w700,
@@ -550,25 +551,26 @@ class _AchievementsSection extends ConsumerWidget {
     final hasReadAnything =
         (snapshotsAsync.value?.isNotEmpty ?? false);
 
+    final s = L10n.of(context);
     final achievements = [
       _Achievement(
         icon: AppIcons.ethiopianCross,
-        title: 'መጀመሪያ ቀን',
-        subtitle: 'First Day',
+        title: s.achievementFirstDayTitle,
+        subtitle: s.achievementFirstDaySub,
         unlocked: hasReadAnything || streak > 0,
       ),
       _Achievement(
         icon: '🔗',
-        title: '፯ ቀን ሰንሰለት',
-        subtitle: '7-Day Streak',
+        title: s.achievement7DayTitle,
+        subtitle: s.achievement7DaySub,
         unlocked: streak >= 7 || longest >= 7,
       ),
       _Achievement(
         icon: '✦',
-        title: 'የምዝሙሩ',
-        subtitle: 'Psalm Reader',
+        title: s.achievementPsalmTitle,
+        subtitle: s.achievementPsalmSub,
         unlocked: snapshotsAsync.value
-                ?.any((s) => s.entry.bookNameEn.contains('Psalm')) ??
+                ?.any((snap) => snap.entry.bookNameEn.contains('Psalm')) ??
             false,
       ),
     ];
@@ -583,7 +585,7 @@ class _AchievementsSection extends ConsumerWidget {
           child: Row(
             children: [
               Text(
-                'ስኬቶች',
+                L10n.of(context).profileAchievements,
                 style: AppTypography.amharicLabel.copyWith(
                   color: c.textOnParchment,
                 ),

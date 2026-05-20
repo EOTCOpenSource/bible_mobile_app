@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/auth/auth_state.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'login_screen.dart';
@@ -69,7 +70,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'የይለፍ ቃልዎ ተቀይሯል። እባክዎ ይግቡ።',
+              L10n.of(context).resetSuccessMessage,
               style: AppTypography.amharicCaption
                   .copyWith(color: Colors.white),
             ),
@@ -83,7 +84,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (_) {
-      setState(() => _errorMessage = 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).authConnectionError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -92,6 +93,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final s = L10n.of(context);
 
     return Scaffold(
       backgroundColor: c.parchment,
@@ -105,7 +107,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               _BackButton(),
               const SizedBox(height: 24),
               Text(
-                'አዲስ የይለፍ ቃል',
+                s.resetTitle,
                 style: AppTypography.amharicDisplay.copyWith(
                   color: c.textOnParchment,
                   fontSize: 30,
@@ -113,7 +115,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'የሚያስታውሱት ጠንካራ የይለፍ ቃል ለመምረጥ ይሞክሩ።',
+                s.resetSubtitle,
                 style: AppTypography.amharicBody.copyWith(
                   color: c.textMuted,
                   fontSize: 13,
@@ -125,7 +127,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               const SizedBox(height: 32),
 
               // Token field
-              _FieldLabel(label: 'ከኢሜልዎ የተቀበሉት ኮድ', colors: c),
+              _FieldLabel(label: s.resetTokenLabel, colors: c),
               const SizedBox(height: 6),
               _PasswordField(
                 controller: _tokenCtrl,
@@ -139,7 +141,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               const SizedBox(height: 20),
 
               // New password
-              _FieldLabel(label: 'አዲስ የይለፍ ቃል', colors: c),
+              _FieldLabel(label: s.resetNewPasswordLabel, colors: c),
               const SizedBox(height: 6),
               _PasswordField(
                 controller: _passwordCtrl,
@@ -155,7 +157,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               const SizedBox(height: 16),
 
               // Confirm password
-              _FieldLabel(label: 'የይለፍ ቃል ያረጋግጡ', colors: c),
+              _FieldLabel(label: s.resetConfirmLabel, colors: c),
               const SizedBox(height: 6),
               _PasswordField(
                 controller: _confirmCtrl,
@@ -186,7 +188,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               ],
               const SizedBox(height: 28),
               _PrimaryButton(
-                label: 'አስቀምጥ እና ግባ',
+                label: s.resetSaveButton,
                 isLoading: _isLoading,
                 onTap: (!_canSubmit || _isLoading) ? null : _submit,
               ),
@@ -230,7 +232,7 @@ class _RequirementsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'የይለፍ ቃል መስፈርቶች',
+            L10n.of(context).resetRequirementsTitle,
             style: AppTypography.amharicCaption.copyWith(
               color: c.textMuted,
               fontWeight: FontWeight.w700,
@@ -238,17 +240,13 @@ class _RequirementsCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          _Requirement(
-              met: hasLength, label: 'ቢያንስ ፰ ቁምፊዎች', colors: c),
+          _Requirement(met: hasLength, label: L10n.of(context).resetReqLength, colors: c),
           const SizedBox(height: 6),
-          _Requirement(
-              met: hasUpper, label: 'አንድ ትልቅ ፊደል (A–Z)', colors: c),
+          _Requirement(met: hasUpper, label: L10n.of(context).resetReqUpper, colors: c),
           const SizedBox(height: 6),
-          _Requirement(
-              met: hasNumber, label: 'አንድ ቁጥር (0–9)', colors: c),
+          _Requirement(met: hasNumber, label: L10n.of(context).resetReqNumber, colors: c),
           const SizedBox(height: 6),
-          _Requirement(
-              met: hasSpecial, label: 'አንድ ልዩ ምልክት (!@#\$)', colors: c),
+          _Requirement(met: hasSpecial, label: L10n.of(context).resetReqSpecial, colors: c),
         ],
       ),
     );

@@ -172,4 +172,76 @@ class EnStrings extends AppStrings {
   @override String get otpChangePhone    => 'Change phone number';
   @override String get otpChangeEmail    => 'Change email';
   @override String get otpResendFailed   => 'Failed to resend. Try again.';
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  @override String get forgotTitle            => 'Forgot Password?';
+  @override String get forgotSubtitle         => 'No worries. Enter your registered email and we\'ll send a reset code.';
+  @override String get forgotEmailLabel       => 'Registered Email';
+  @override String get forgotEmailHelper      => 'A reset code will be sent to this email.';
+  @override String get forgotPhoneLabel       => 'Registered Phone Number';
+  @override String get forgotPhoneHelper      => 'A reset code will be sent to this phone number.';
+  @override String get forgotSendButton       => 'Send Code';
+  @override String get forgotRememberPassword => 'Remember your password? ';
+  @override String get forgotPhoneComingSoon  => 'Phone reset — coming soon';
+  @override String get forgotTabPhone         => 'Phone';
+
+  // ── Reset password ────────────────────────────────────────────────────────
+  @override String get resetTitle             => 'New Password';
+  @override String get resetSubtitle          => 'Choose a strong password you\'ll remember.';
+  @override String get resetTokenLabel        => 'Code from your email';
+  @override String get resetNewPasswordLabel  => 'New Password';
+  @override String get resetConfirmLabel      => 'Confirm Password';
+  @override String get resetRequirementsTitle => 'Password Requirements';
+  @override String get resetReqLength         => 'At least 8 characters';
+  @override String get resetReqUpper          => 'One uppercase letter (A–Z)';
+  @override String get resetReqNumber         => 'One number (0–9)';
+  @override String get resetReqSpecial        => 'One special character (!@#\$)';
+  @override String get resetSaveButton        => 'Save and Sign In';
+  @override String get resetSuccessMessage    => 'Password changed. Please sign in.';
+
+  // ── Profile screen ────────────────────────────────────────────────────────
+  @override String get profileTitle            => 'Profile';
+  @override String get profileMemberBadge      => 'Member';
+  @override String get profileLogout           => 'Sign Out';
+  @override String get profileDeleteAccount    => 'Delete Account';
+  @override String get profileEditButton       => 'Edit Profile';
+  @override String get profileAchievements     => 'Achievements';
+  @override String get profileStatStreak       => 'Day Streak';
+  @override String get profileStatBookmarks    => 'Marks';
+  @override String get profileStatPlan         => 'Plan';
+  @override String get profileDeleteTitle      => 'Delete Account?';
+  @override String get profileDeleteMessage    => 'All your data will be lost. This cannot be undone.';
+  @override String get profileDeleteCancel     => 'Cancel';
+  @override String get profileDeleteConfirm    => 'Delete';
+  @override String get achievementFirstDayTitle => 'First Day';
+  @override String get achievementFirstDaySub   => 'First Day';
+  @override String get achievement7DayTitle     => '7-Day Streak';
+  @override String get achievement7DaySub       => '7-Day Streak';
+  @override String get achievementPsalmTitle    => 'Psalm Reader';
+  @override String get achievementPsalmSub      => 'Psalm Reader';
+
+  // ── Saved / Collection screen ─────────────────────────────────────────────
+  @override String get savedScreenTitle        => 'Collection';
+  @override String get savedScreenSubtitle     => 'Your saved';
+  @override String get savedTabHighlights      => 'Highlights';
+  @override String get savedTabBookmarks       => 'Bookmarks';
+  @override String get savedTabNotes           => 'Notes';
+  @override String get savedHighlightsEmpty    => 'No highlights yet';
+  @override String get savedHighlightsEmptyHint => 'Highlight verses while reading';
+  @override String get savedBookmarksEmpty     => 'No bookmarks yet';
+  @override String get savedBookmarksEmptyHint => 'Bookmark verses while reading';
+  @override String get savedNotesEmpty         => 'No notes yet';
+  @override String get savedNotesEmptyHint     => 'Write notes while reading';
+  @override String get savedToday              => 'Today';
+  @override String get savedYesterday          => 'Yesterday';
+  @override String savedDaysAgo(int n)         => '$n days ago';
+  @override String get savedFilterAll          => 'All';
+  @override String get savedFilterOT           => 'OT';
+  @override String get savedFilterNT           => 'NT';
+  @override String get savedFilterAllChapters  => 'All Chs.';
+  @override String savedFilterChapter(int n)   => 'Ch. $n';
+  @override String get savedPickBook           => 'Pick a Book';
+  @override String get savedPickAllBooks       => 'All Books';
+  @override String get savedPickChapter        => 'Pick a Chapter';
+  @override String get savedPickAllChapters    => 'All Chapters';
 }

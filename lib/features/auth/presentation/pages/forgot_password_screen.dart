@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/auth/auth_state.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'login_screen.dart';
@@ -32,11 +33,12 @@ class _ForgotPasswordScreenState
   }
 
   Future<void> _submit() async {
+    final s = L10n.of(context);
     if (!_useEmail) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'ስልክ ቁጥር ዳግም ማስጀመሪያ — በቅርብ ይመጣል',
+            s.forgotPhoneComingSoon,
             style: AppTypography.amharicCaption.copyWith(color: Colors.white),
           ),
           backgroundColor: context.colors.primary,
@@ -50,7 +52,7 @@ class _ForgotPasswordScreenState
 
     final email = _emailCtrl.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _errorMessage = 'ትክክለኛ ኢሜል ያስፈልጋል');
+      setState(() => _errorMessage = s.authEmailInvalid);
       return;
     }
 
@@ -68,7 +70,7 @@ class _ForgotPasswordScreenState
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (_) {
-      setState(() => _errorMessage = 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።');
+      setState(() => _errorMessage = L10n.of(context).authConnectionError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -77,6 +79,7 @@ class _ForgotPasswordScreenState
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final s = L10n.of(context);
 
     return Scaffold(
       backgroundColor: c.parchment,
@@ -90,7 +93,7 @@ class _ForgotPasswordScreenState
               _BackButton(),
               const SizedBox(height: 24),
               Text(
-                'የይለፍ ቃል እንረሱ?',
+                s.forgotTitle,
                 style: AppTypography.amharicDisplay.copyWith(
                   color: c.textOnParchment,
                   fontSize: 30,
@@ -98,7 +101,7 @@ class _ForgotPasswordScreenState
               ),
               const SizedBox(height: 6),
               Text(
-                'ምንም ሰሞ። የተመዘገቡ ኢሜልዎን ያስገቡ፤ የዳግም ማስጀመሪያ ኮድ እንልካለን።',
+                s.forgotSubtitle,
                 style: AppTypography.amharicBody.copyWith(
                   color: c.textMuted,
                   fontSize: 13,
@@ -119,7 +122,7 @@ class _ForgotPasswordScreenState
               const SizedBox(height: 20),
               if (_useEmail) ...[
                 _FieldLabel(
-                  label: 'የተመዘገቡ ኢሜል',
+                  label: s.forgotEmailLabel,
                   active: true,
                   colors: c,
                 ),
@@ -133,7 +136,7 @@ class _ForgotPasswordScreenState
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'የዳግም ማስጀመሪያ ኮዱ ወደዚህ ኢሜል ይላካል።',
+                  s.forgotEmailHelper,
                   style: AppTypography.amharicCaption.copyWith(
                     color: c.textCaption,
                     fontSize: 11,
@@ -141,7 +144,7 @@ class _ForgotPasswordScreenState
                 ),
               ] else ...[
                 _FieldLabel(
-                  label: 'የተመዘገቡ ስልክ ቁጥር',
+                  label: s.forgotPhoneLabel,
                   active: true,
                   colors: c,
                 ),
@@ -155,7 +158,7 @@ class _ForgotPasswordScreenState
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'የዳግም ማስጀመሪያ ኮዱ ወደዚህ ስልክ ቁጥር ይላካል።',
+                  s.forgotPhoneHelper,
                   style: AppTypography.amharicCaption.copyWith(
                     color: c.textCaption,
                     fontSize: 11,
@@ -168,7 +171,7 @@ class _ForgotPasswordScreenState
               ],
               const SizedBox(height: 32),
               _PrimaryButton(
-                label: 'አሮኝ ሊክ',
+                label: s.forgotSendButton,
                 isLoading: _isLoading,
                 onTap: _isLoading ? null : _submit,
               ),
@@ -177,7 +180,7 @@ class _ForgotPasswordScreenState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'ኮዱን አስታወሱ? ',
+                    s.forgotRememberPassword,
                     style: AppTypography.amharicCaption.copyWith(
                         color: c.textMuted, fontSize: 12),
                   ),
@@ -190,7 +193,7 @@ class _ForgotPasswordScreenState
                                   builder: (_) => const LoginScreen()),
                             ),
                     child: Text(
-                      'ይ​ግቡ',
+                      s.loginButton,
                       style: AppTypography.amharicCaption.copyWith(
                         color: c.primary,
                         fontWeight: FontWeight.w700,
@@ -235,14 +238,14 @@ class _TabSwitcher extends StatelessWidget {
         children: [
           _Tab(
             icon: Icons.email_outlined,
-            label: 'ኢሜል',
+            label: L10n.of(context).authEmail,
             active: useEmail,
             onTap: () => onChanged(true),
             colors: c,
           ),
           _Tab(
             icon: Icons.phone_outlined,
-            label: 'ስልክ',
+            label: L10n.of(context).forgotTabPhone,
             active: !useEmail,
             onTap: () => onChanged(false),
             colors: c,
