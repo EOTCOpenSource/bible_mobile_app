@@ -275,58 +275,50 @@ class _AvatarSection extends StatelessWidget {
   String get _initial =>
       user.name.isNotEmpty ? user.name.characters.first : '?';
 
+  Widget _initialsCircle(AppColorScheme c) => Container(
+        width: 96,
+        height: 96,
+        decoration: BoxDecoration(
+          color: c.primary,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          _initial,
+          style: TextStyle(
+            fontFamily: AppTypography.shiromeda,
+            fontSize: 38,
+            fontWeight: FontWeight.w700,
+            color: c.accent,
+            height: 1,
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final c = colors;
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
+        if (user.avatar != null)
+          ClipOval(
+            child: Image.network(
+              user.avatar!,
               width: 96,
               height: 96,
-              decoration: BoxDecoration(
-                color: c.primary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: c.primary.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _initial,
-                style: TextStyle(
-                  fontFamily: AppTypography.shiromeda,
-                  fontSize: 38,
-                  fontWeight: FontWeight.w700,
-                  color: c.accent,
-                  height: 1,
-                ),
-              ),
+              fit: BoxFit.cover,
+              errorBuilder: (context, e, s) => _initialsCircle(c),
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: c.accent,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: c.parchment, width: 2),
-                ),
-                alignment: Alignment.center,
-                child:
-                    Icon(Icons.camera_alt_rounded, size: 13, color: c.primary),
-              ),
-            ),
-          ],
-        ),
+          )
+        else
+          _initialsCircle(c),
         const SizedBox(height: 14),
         Text(
           user.name,
