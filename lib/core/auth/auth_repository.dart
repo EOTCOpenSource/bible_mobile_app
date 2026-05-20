@@ -3,7 +3,7 @@ import '../api/api_client.dart';
 import 'user_profile.dart';
 
 const _webClientId =
-    '1088248193729-ttstc3b946pk4fl9s02n2hm4mjqc4mh9.apps.googleusercontent.com';
+    '633243120991-2fj8v1g9ree4dkgklqe7613sdm6e6idc.apps.googleusercontent.com';
 
 class AuthRepository {
   const AuthRepository(this._api);

@@ -125,16 +125,104 @@ class SyncRepository {
     throw Exception('Cannot parse remote id for $key');
   }
 
-  // Maps local ARGB palette to the backend's accepted color names:
-  // yellow | green | pink | blue | red | purple
+  // Maps local ARGB palette to the backend's accepted color names.
   static const _colorNames = <int, String>{
-    0xFFFFEB3B: 'yellow',
-    0xFF80CBC4: 'green',  // teal → closest accepted name
-    0xFF90CAF9: 'blue',
-    0xFFEF9A9A: 'pink',   // pink-red → pink
-    0xFFCE93D8: 'purple',
+    0xFFFFE062: 'yellow',
+    0xFF3BAD49: 'green',
+    0xFFFF4B26: 'pink',
+    0xFF5778C5: 'blue',
+    0xFFB61F21: 'red',
+    0xFF704A6A: 'purple',
+  };
+
+  static const _nameToColor = <String, Color>{
+    'yellow': Color(0xFFFFE062),
+    'green':  Color(0xFF3BAD49),
+    'pink':   Color(0xFFFF4B26),
+    'blue':   Color(0xFF5778C5),
+    'red':    Color(0xFFB61F21),
+    'purple': Color(0xFF704A6A),
   };
 
   static String _colorName(Color color) =>
       _colorNames[color.toARGB32()] ?? 'yellow';
+
+  static Color _colorFromName(String name) =>
+      _nameToColor[name] ?? const Color(0xFFFFE062);
+
+  // ── Fetch (pull from server) ────────────────────────────────────────────────
+
+  Future<List<Bookmark>> fetchBookmarks() async {
+    final res = await _client.get('/bookmarks', token: _token);
+    final data = res['data'];
+    final list = (data is Map ? data['data'] : data) as List? ?? [];
+    final now = DateTime.now();
+    return list.whereType<Map<String, dynamic>>().map((m) {
+      final bookId = (m['book'] ?? m['bookId'] ?? '') as String;
+      return Bookmark(
+        bookId: bookId,
+        bookNumber: 0,
+        chapter: (m['chapter'] as num).toInt(),
+        verseStart: (m['verseStart'] as num).toInt(),
+        verseCount: (m['verseCount'] as num?)?.toInt() ?? 1,
+        createdAt: _parseDate(m['createdAt']) ?? now,
+        updatedAt: _parseDate(m['updatedAt']) ?? now,
+        syncStatus: SyncStatus.synced,
+        remoteId: m['_id'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<Highlight>> fetchHighlights() async {
+    final res = await _client.get('/highlights', token: _token);
+    final data = res['data'];
+    final list = (data is Map ? data['data'] : data) as List? ?? [];
+    final now = DateTime.now();
+    return list.whereType<Map<String, dynamic>>().map((m) {
+      final bookId = (m['book'] ?? m['bookId'] ?? '') as String;
+      final colorName = (m['color'] as String?) ?? 'yellow';
+      return Highlight(
+        bookId: bookId,
+        bookNumber: 0,
+        chapter: (m['chapter'] as num).toInt(),
+        verseStart: (m['verseStart'] as num).toInt(),
+        verseCount: (m['verseCount'] as num?)?.toInt() ?? 1,
+        color: _colorFromName(colorName),
+        note: m['note'] as String?,
+        createdAt: _parseDate(m['createdAt']) ?? now,
+        updatedAt: _parseDate(m['updatedAt']) ?? now,
+        syncStatus: SyncStatus.synced,
+        remoteId: m['_id'] as String?,
+      );
+    }).toList();
+  }
+
+  Future<List<Note>> fetchNotes() async {
+    final res = await _client.get('/notes', token: _token);
+    final data = res['data'];
+    final list = (data is Map ? data['notes'] : data) as List? ?? [];
+    final now = DateTime.now();
+    return list.whereType<Map<String, dynamic>>().map((m) {
+      final bookId = (m['bookId'] ?? m['book'] ?? '') as String;
+      return Note(
+        bookId: bookId,
+        bookNumber: 0,
+        chapter: (m['chapter'] as num).toInt(),
+        verseStart: (m['verseStart'] as num).toInt(),
+        verseCount: (m['verseCount'] as num?)?.toInt() ?? 1,
+        content: (m['content'] as String?) ?? '',
+        isPrivate: (m['visibility'] as String?) != 'public',
+        createdAt: _parseDate(m['createdAt']) ?? now,
+        updatedAt: _parseDate(m['updatedAt']) ?? now,
+        syncStatus: SyncStatus.synced,
+        remoteId: m['_id'] as String?,
+      );
+    }).where((n) => n.content.isNotEmpty).toList();
+  }
+
+  static DateTime? _parseDate(dynamic v) {
+    if (v is String) return DateTime.tryParse(v);
+    if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+    return null;
+  }
 }

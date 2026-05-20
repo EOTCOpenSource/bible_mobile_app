@@ -16,6 +16,33 @@ class SyncService {
         syncHighlights(),
       ]);
 
+  Future<void> pullAll() => Future.wait([
+        _pullBookmarks(),
+        _pullNotes(),
+        _pullHighlights(),
+      ]);
+
+  Future<void> _pullBookmarks() async {
+    try {
+      final items = await _repo.fetchBookmarks();
+      await _db.upsertServerBookmarks(items);
+    } catch (_) {}
+  }
+
+  Future<void> _pullNotes() async {
+    try {
+      final items = await _repo.fetchNotes();
+      await _db.upsertServerNotes(items);
+    } catch (_) {}
+  }
+
+  Future<void> _pullHighlights() async {
+    try {
+      final items = await _repo.fetchHighlights();
+      await _db.upsertServerHighlights(items);
+    } catch (_) {}
+  }
+
   // ── Bookmarks ──────────────────────────────────────────────────────────────
 
   Future<void> syncBookmarks() async {

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 enum SyncStatus { pendingCreate, pendingUpdate, pendingDelete, synced }
 
 const highlightPalette = <Color>[
-  Color(0xFFFFEB3B), // yellow
-  Color(0xFF80CBC4), // teal
-  Color(0xFF90CAF9), // sky blue
-  Color(0xFFEF9A9A), // pink-red
-  Color(0xFFCE93D8), // purple
+  Color(0xFFFFE062), // yellow
+  Color(0xFF3BAD49), // green
+  Color(0xFFFF4B26), // pink
+  Color(0xFF5778C5), // blue
+  Color(0xFFB61F21), // red
+  Color(0xFF704A6A), // purple
 ];
 
 // ── Bookmark ──────────────────────────────────────────────────────────────────

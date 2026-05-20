@@ -108,10 +108,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void _syncAfterAuth(String token) {
-    SyncService(
+    final svc = SyncService(
       db: _ref.read(appDatabaseProvider),
       repo: SyncRepository(_ref.read(apiClientProvider), token),
-    ).syncAll();
+    );
+    svc.pullAll().then((_) => svc.syncAll());
   }
 
   Future<void> logout() async {

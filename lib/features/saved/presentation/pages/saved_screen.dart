@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/annotations/annotation_models.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../core/services/repository_provider.dart';
+import '../../../../core/sync/sync_repository.dart';
+import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../annotations/providers/annotation_providers.dart';
@@ -49,6 +52,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   Future<void> _doLoad() async {
     final db = ref.read(annotationDbProvider);
     final repo = BibleRepositoryProvider.of(context);
+
+    final token = ref.read(authStateProvider).token;
+    if (token != null) {
+      await SyncService(
+        db: db,
+        repo: SyncRepository(ref.read(apiClientProvider), token),
+      ).pullAll();
+    }
 
     final results = await Future.wait([
       db.getAllBookmarks(),

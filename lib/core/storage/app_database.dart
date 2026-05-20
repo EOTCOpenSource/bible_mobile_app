@@ -493,6 +493,50 @@ class AppDatabase {
     return rows.map(Highlight.fromMap).toList();
   }
 
+  // ── Server pull upserts ────────────────────────────────────────────────────
+
+  Future<void> upsertServerBookmarks(List<Bookmark> items) async {
+    if (items.isEmpty) return;
+    final db = await database;
+    final knownIds = (await db.query('bookmarks', columns: ['remote_id']))
+        .map((r) => r['remote_id'] as String?)
+        .whereType<String>()
+        .toSet();
+    for (final b in items) {
+      if (b.remoteId == null || knownIds.contains(b.remoteId)) continue;
+      await db.insert('bookmarks', b.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+  }
+
+  Future<void> upsertServerHighlights(List<Highlight> items) async {
+    if (items.isEmpty) return;
+    final db = await database;
+    final knownIds = (await db.query('highlights', columns: ['remote_id']))
+        .map((r) => r['remote_id'] as String?)
+        .whereType<String>()
+        .toSet();
+    for (final h in items) {
+      if (h.remoteId == null || knownIds.contains(h.remoteId)) continue;
+      await db.insert('highlights', h.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+  }
+
+  Future<void> upsertServerNotes(List<Note> items) async {
+    if (items.isEmpty) return;
+    final db = await database;
+    final knownIds = (await db.query('notes', columns: ['remote_id']))
+        .map((r) => r['remote_id'] as String?)
+        .whereType<String>()
+        .toSet();
+    for (final n in items) {
+      if (n.remoteId == null || knownIds.contains(n.remoteId)) continue;
+      await db.insert('notes', n.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;
