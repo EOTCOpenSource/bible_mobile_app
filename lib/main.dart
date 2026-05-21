@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/deep_links/deep_link_uri.dart';
 import 'core/l10n/l10n.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/services/bible_repository_provider.dart';
 import 'core/services/repository_provider.dart';
 import 'core/settings/app_settings.dart';
@@ -16,11 +17,13 @@ import 'features/home/presentation/pages/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bibleRepository = BibleRepository();
+
+  // Initialize notification service
+  await NotificationService.instance.init(repository: bibleRepository);
+
   runApp(
     ProviderScope(
-      overrides: [
-        bibleRepositoryProvider.overrideWithValue(bibleRepository),
-      ],
+      overrides: [bibleRepositoryProvider.overrideWithValue(bibleRepository)],
       child: BibleRepositoryProvider(
         repository: bibleRepository,
         child: const BibleApp(),
@@ -64,9 +67,19 @@ class _BibleMaterialAppState extends State<_BibleMaterialApp> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = BibleRepositoryProvider.of(context);
+
+    // Set the navigator key for NotificationService to handle notification taps
+    NotificationService.instance.navigatorKey = _navigatorKey;
+
     if (!_deepLinksInitialized) {
       _deepLinksInitialized = true;
       unawaited(_initDeepLinks());
+
+      // Restore scheduled notifications based on current settings
+      final settings = Settings.of(context);
+      unawaited(
+        NotificationService.instance.restoreScheduledNotifications(settings),
+      );
     }
   }
 
@@ -89,8 +102,9 @@ class _BibleMaterialAppState extends State<_BibleMaterialApp> {
       if (target == null) {
         final ctx = _navigatorKey.currentContext;
         if (ctx != null) {
-          ScaffoldMessenger.maybeOf(ctx)
-              ?.showSnackBar(const SnackBar(content: Text('Verse link not found')));
+          ScaffoldMessenger.maybeOf(ctx)?.showSnackBar(
+            const SnackBar(content: Text('Verse link not found')),
+          );
         }
         return;
       }

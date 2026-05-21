@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -13,8 +14,6 @@ class MeScreen extends StatefulWidget {
 }
 
 class _MeScreenState extends State<MeScreen> {
-  bool _dailyVerse = true;
-
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
@@ -36,13 +35,18 @@ class _MeScreenState extends State<MeScreen> {
               amLabel: s.sectionReading,
               enLabel: 'READING',
               rows: [
-                _ArrowRow(label: s.settingTranslation, value: s.settingTranslationValue),
+                _ArrowRow(
+                  label: s.settingTranslation,
+                  value: s.settingTranslationValue,
+                ),
                 _ArrowRow(
                   label: s.settingReadingPrefs,
                   hint: s.settingReadingPrefsHint,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ReadingSettingsPage()),
+                    MaterialPageRoute(
+                      builder: (_) => const ReadingSettingsPage(),
+                    ),
                   ),
                 ),
                 _ToggleRow(
@@ -69,9 +73,7 @@ class _MeScreenState extends State<MeScreen> {
             child: _SettingsSection(
               amLabel: s.sectionLanguage,
               enLabel: 'LANGUAGE',
-              rows: [
-                _LanguageRow(s: s, isAmharic: isAmharic),
-              ],
+              rows: [_LanguageRow(s: s, isAmharic: isAmharic)],
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -102,13 +104,148 @@ class _MeScreenState extends State<MeScreen> {
               amLabel: s.sectionReminders,
               enLabel: 'REMINDERS',
               rows: [
-                _ToggleRow(
+                // Daily Verse
+                _TimePickerRow(
                   label: s.settingDailyVerse,
                   hint: s.settingDailyVerseHint,
-                  value: _dailyVerse,
-                  onChanged: (v) => setState(() => _dailyVerse = v),
+                  enabled: settings.dailyVerseNotificationEnabled,
+                  time: settings.dailyVerseNotificationTime,
+                  defaultTime: const TimeOfDay(hour: 6, minute: 0),
+                  onToggle: (v) async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notifier = Settings.notifierOf(context);
+                    if (v) {
+                      final granted = await NotificationService.instance
+                          .requestPermissions();
+                      if (!granted) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Notification permission denied'),
+                          ),
+                        );
+                        return;
+                      }
+                    }
+                    notifier.value = notifier.value.copyWith(
+                      dailyVerseNotificationEnabled: v,
+                    );
+                    if (v) {
+                      final time =
+                          settings.dailyVerseNotificationTime ??
+                          const TimeOfDay(hour: 6, minute: 0);
+                      await NotificationService.instance.scheduleDailyVerse(
+                        time,
+                        s.settingDailyVerse,
+                      );
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '✓ Daily verse set for ${time.formatted}',
+                          ),
+                        ),
+                      );
+                    } else {
+                      await NotificationService.instance.cancel(
+                        NotificationConfig.dailyVerseId,
+                      );
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Daily verse reminder off'),
+                        ),
+                      );
+                    }
+                  },
+                  onTimePicked: (picked) async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    if (!mounted) return;
+                    Settings.update(
+                      context,
+                      settings.copyWith(dailyVerseNotificationTime: picked),
+                    );
+                    await NotificationService.instance.scheduleDailyVerse(
+                      picked,
+                      s.settingDailyVerse,
+                    );
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '✓ Daily verse updated to ${picked.formatted}',
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                _ArrowRow(label: s.settingReadingTime, hint: s.settingReadingTimeHint),
+                // Reading Reminder
+                _TimePickerRow(
+                  label: s.settingReadingTime,
+                  hint: s.settingReadingTimeHint,
+                  enabled: settings.readingTimeNotificationEnabled,
+                  time: settings.readingTimeNotificationTime,
+                  defaultTime: const TimeOfDay(hour: 20, minute: 0),
+                  onToggle: (v) async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notifier = Settings.notifierOf(context);
+                    if (v) {
+                      final granted = await NotificationService.instance
+                          .requestPermissions();
+                      if (!granted) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Notification permission denied'),
+                          ),
+                        );
+                        return;
+                      }
+                    }
+                    notifier.value = notifier.value.copyWith(
+                      readingTimeNotificationEnabled: v,
+                    );
+                    if (v) {
+                      final time =
+                          settings.readingTimeNotificationTime ??
+                          const TimeOfDay(hour: 20, minute: 0);
+                      await NotificationService.instance.scheduleReadingReminder(
+                        time,
+                        s.settingReadingTime,
+                      );
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '✓ Reading reminder set for ${time.formatted}',
+                          ),
+                        ),
+                      );
+                    } else {
+                      await NotificationService.instance.cancel(
+                        NotificationConfig.readingReminderId,
+                      );
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Reading reminder off'),
+                        ),
+                      );
+                    }
+                  },
+                  onTimePicked: (picked) async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    if (!mounted) return;
+                    Settings.update(
+                      context,
+                      settings.copyWith(readingTimeNotificationTime: picked),
+                    );
+                    await NotificationService.instance.scheduleReadingReminder(
+                      picked,
+                      s.settingReadingTime,
+                    );
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '✓ Reading reminder updated to ${picked.formatted}',
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -163,96 +300,101 @@ class _ProfileCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
         onTap: () {},
-        child: Builder(builder: (context) {
-          final c = context.colors;
-          return Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: c.primary,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: c.primary.withValues(alpha: 0.28),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Avatar
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: c.accent,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  'ን',
-                  style: TextStyle(
-                    fontFamily: AppTypography.shiromeda,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: c.primary,
+        child: Builder(
+          builder: (context) {
+            final c = context.colors;
+            return Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: c.primary,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: c.primary.withValues(alpha: 0.28),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(width: 14),
-              // Name + info + badge
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'ነህምያ ተስፋዬ',
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Avatar
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: c.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'ን',
                       style: TextStyle(
                         fontFamily: AppTypography.shiromeda,
-                        fontSize: 16,
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        height: 1.3,
+                        color: c.primary,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'nehemiah@email.com  •  12 ቀናት',
-                      style: AppTypography.amharicCaption.copyWith(
-                        color: Colors.white.withValues(alpha: 0.65),
-                        fontSize: 11,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: c.accent,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        s.meProfileEditBadge,
-                        style: AppTypography.amharicCaption.copyWith(
-                          color: c.primary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(width: 14),
+                  // Name + info + badge
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'ነህምያ ተስፋዬ',
+                          style: TextStyle(
+                            fontFamily: AppTypography.shiromeda,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.3,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'nehemiah@email.com  •  12 ቀናት',
+                          style: AppTypography.amharicCaption.copyWith(
+                            color: Colors.white.withValues(alpha: 0.65),
+                            fontSize: 11,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: c.accent,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            s.meProfileEditBadge,
+                            style: AppTypography.amharicCaption.copyWith(
+                              color: c.primary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    size: 22,
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: Colors.white.withValues(alpha: 0.5),
-                size: 22,
-              ),
-            ],
-          ),
-        );
-        }),
+            );
+          },
+        ),
       ),
     );
   }
@@ -308,9 +450,7 @@ class _SettingsSection extends StatelessWidget {
             border: Border.all(color: c.borderSubtle),
           ),
           clipBehavior: Clip.hardEdge,
-          child: Column(
-            children: _separated(rows, c.borderSubtle),
-          ),
+          child: Column(children: _separated(rows, c.borderSubtle)),
         ),
       ],
     );
@@ -321,11 +461,7 @@ class _SettingsSection extends StatelessWidget {
     for (var i = 0; i < rows.length; i++) {
       result.add(rows[i]);
       if (i < rows.length - 1) {
-        result.add(Divider(
-          color: dividerColor,
-          height: 1,
-          indent: 16,
-        ));
+        result.add(Divider(color: dividerColor, height: 1, indent: 16));
       }
     }
     return result;
@@ -382,11 +518,7 @@ class _ArrowRow extends StatelessWidget {
               ),
               const SizedBox(width: 4),
             ],
-            Icon(
-              Icons.chevron_right_rounded,
-              color: c.textCaption,
-              size: 20,
-            ),
+            Icon(Icons.chevron_right_rounded, color: c.textCaption, size: 20),
           ],
         ),
       ),
@@ -492,6 +624,173 @@ class _ActionRow extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Notification time-picker row ─────────────────────────────────────────────
+
+/// A settings row combining an enable/disable [Switch] with a tappable time
+/// chip. When enabled the chip opens the system time picker; when disabled it
+/// is greyed-out and non-interactive. An internal [_busy] flag prevents double
+/// taps and shows a small [CircularProgressIndicator] while async work runs.
+class _TimePickerRow extends StatefulWidget {
+  const _TimePickerRow({
+    required this.label,
+    this.hint,
+    required this.enabled,
+    this.time,
+    required this.defaultTime,
+    required this.onToggle,
+    required this.onTimePicked,
+  });
+
+  final String label;
+  final String? hint;
+
+  /// Whether the notification is currently enabled.
+  final bool enabled;
+
+  /// Currently stored time; [defaultTime] is displayed when null.
+  final TimeOfDay? time;
+
+  /// Fallback displayed when [time] is null.
+  final TimeOfDay defaultTime;
+
+  /// Called when the switch is flipped. Owns permission requests, scheduling,
+  /// and snackbars. Return normally to confirm; the [_busy] guard is released
+  /// automatically.
+  final Future<void> Function(bool enabled) onToggle;
+
+  /// Called with the newly-chosen time after the system picker confirms.
+  final Future<void> Function(TimeOfDay time) onTimePicked;
+
+  @override
+  State<_TimePickerRow> createState() => _TimePickerRowState();
+}
+
+class _TimePickerRowState extends State<_TimePickerRow> {
+  bool _busy = false;
+
+  Future<void> _handleToggle(bool v) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await widget.onToggle(v);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _pickTime() async {
+    if (_busy || !widget.enabled) return;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: widget.time ?? widget.defaultTime,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await widget.onTimePicked(picked);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final displayTime = (widget.time ?? widget.defaultTime).formatted;
+    final isOn = widget.enabled;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+      child: Row(
+        children: [
+          // Label + hint
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.label,
+                  style: AppTypography.amharicLabel.copyWith(
+                    color: c.textOnParchment,
+                  ),
+                ),
+                if (widget.hint != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.hint!,
+                    style: AppTypography.amharicCaption.copyWith(
+                      color: c.textMuted,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Tappable time chip
+          GestureDetector(
+            onTap: isOn && !_busy ? _pickTime : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: isOn
+                    ? c.primary.withValues(alpha: 0.10)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isOn ? c.primary : c.borderSubtle,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 12,
+                    color: isOn ? c.primary : c.textCaption,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    displayTime,
+                    style: AppTypography.amharicCaption.copyWith(
+                      color: isOn ? c.primary : c.textCaption,
+                      fontWeight:
+                          isOn ? FontWeight.w700 : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Switch or loading indicator
+          if (_busy)
+            const SizedBox(
+              width: 40,
+              height: 28,
+              child: Center(
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else
+            Switch(
+              value: isOn,
+              onChanged: _handleToggle,
+              activeThumbColor: c.primary,
+              activeTrackColor: c.primaryLight.withValues(alpha: 0.4),
+            ),
         ],
       ),
     );
