@@ -22,8 +22,8 @@ class NotificationConfig {
   static const String readingReminderChannel = 'reading_reminder_channel';
   static const String channelGroupDaily = 'daily_reminders';
 
-  static const String defaultDailyVerseTitle = '📖 የዕለቱ ጥቅስ';
-  static const String defaultReadingReminderTitle = '🕯 ዛሬ አነብ';
+  static const String defaultDailyVerseTitle = ' የዕለቱ ጥቅስ';
+  static const String defaultReadingReminderTitle = ' ዛሬ አነብ';
   static const String defaultReadingReminderBody =
       'Open the app and read today.';
 
@@ -34,17 +34,7 @@ class NotificationConfig {
   /// daily but never randomly (consistent across restarts).
   static const List<String> motivationalPhrases = [
     'ቃሉ ለዕለቴ ብርሃን ነው። ዛሬ ቀጥል።',
-    'ጌታ ቃሉን ሲናገር ልብህ ተደሰተ — ዛሬም ስማ።',
-    'ቅዱሳት መጻሕፍት ነፍስህን ያቀናሉ። ዛሬ ክፈታቸው።',
-    'አንድ ምዕራፍ ዛሬ ሕይወትህን ይለውጣል።',
-    'ዛሬ ቃሉ ጠበቀህ — አሁን ንበው።',
-    'ቃሉ ላይ ትኩረት ስትሰጥ ሰላም ታገኛለህ።',
-    'ዛሬ ከእርሱ ጋር ጥቂት ደቂቃዎች አሳልፍ።',
-    'ቃሉን ለዕለቱ ስብስቡ — ሩቅ አይደለም።',
-    'ልቦናህ ቃሉን ሲጠጣ ኃይል ያገኛል።',
-    'ዛሬ ምዕራፍ ስትጨምር ሕይወትህ ይበለጽጋል።',
-    'ወደ ቃሉ ቅረብ — እርሱ ቅርብ ይሆናል።',
-    'ቃሉ ዕረፍት ይሰጣል። ዛሬ ቅደምታ ስጠው።',
+    
   ];
 
   /// Returns a motivational phrase for [date] based on day-of-year.
