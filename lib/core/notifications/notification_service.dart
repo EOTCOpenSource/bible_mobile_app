@@ -33,7 +33,7 @@ class NotificationConfig {
   /// reminder body. The phrase is chosen by day-of-year so it changes
   /// daily but never randomly (consistent across restarts).
   static const List<String> motivationalPhrases = [
-    'ቃሉ ለዕለቴ ብርሃን ነው። ዛሬ ቀጥል።',
+    'ቃሉ ለዕለቴ ብርሃን ነው ',
     
   ];
 
