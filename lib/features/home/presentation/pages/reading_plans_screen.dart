@@ -62,13 +62,13 @@ class ReadingPlansScreen extends ConsumerWidget {
   }
 }
 
-class _PlanListCard extends StatelessWidget {
+class _PlanListCard extends ConsumerWidget {
   const _PlanListCard({required this.plan});
 
   final ReadingPlan plan;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = L10n.of(context);
     final c = context.colors;
     final coverColor = testamentColor(plan.startBook);
@@ -80,7 +80,7 @@ class _PlanListCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
-        onTap: () {},
+        onTap: () => openReadingPlan(context, ref, plan),
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(

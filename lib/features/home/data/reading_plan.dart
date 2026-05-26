@@ -1,15 +1,40 @@
+class DailyReadingItem {
+  const DailyReadingItem({
+    required this.book,
+    required this.startChapter,
+    required this.endChapter,
+  });
+
+  final String book;         // kebab-case from API, e.g. "wisdom-of-solomon"
+  final int startChapter;
+  final int endChapter;
+
+  factory DailyReadingItem.fromJson(Map<String, dynamic> m) => DailyReadingItem(
+        book: (m['book'] as String?) ?? '',
+        startChapter: (m['startChapter'] as num?)?.toInt() ?? 1,
+        endChapter: (m['endChapter'] as num?)?.toInt() ?? 1,
+      );
+}
+
 class DailyReading {
   const DailyReading({
     required this.dayNumber,
     required this.isCompleted,
+    this.readings = const [],
   });
 
   final int dayNumber;
   final bool isCompleted;
+  final List<DailyReadingItem> readings;
 
   factory DailyReading.fromJson(Map<String, dynamic> m) => DailyReading(
         dayNumber: (m['dayNumber'] as num).toInt(),
         isCompleted: (m['isCompleted'] as bool?) ?? false,
+        readings: ((m['readings'] as List?) ?? [])
+            .whereType<Map<String, dynamic>>()
+            .map(DailyReadingItem.fromJson)
+            .where((r) => r.book.isNotEmpty)
+            .toList(),
       );
 }
 

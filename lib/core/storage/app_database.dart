@@ -5,7 +5,7 @@ import '../annotations/annotation_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 4;
+  static const _version = 5;
 
   Database? _db;
 
@@ -38,6 +38,9 @@ class AppDatabase {
     }
     if (oldVersion < 4) {
       await _markLegacyBookIdsPendingUpdate(db);
+    }
+    if (oldVersion < 5) {
+      await _createPlanPositionTable(db);
     }
   }
 
@@ -185,7 +188,18 @@ class AppDatabase {
       )
     ''');
     await _createReadingTables(db);
+    await _createPlanPositionTable(db);
   }
+
+  Future<void> _createPlanPositionTable(Database db) => db.execute('''
+    CREATE TABLE IF NOT EXISTS plan_position (
+      plan_id    TEXT    NOT NULL PRIMARY KEY,
+      day_number INTEGER NOT NULL,
+      book_id    TEXT    NOT NULL,
+      chapter    INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  ''');
 
   // ── Reading position / progress / streak ───────────────────────────────────
 
@@ -657,6 +671,39 @@ class AppDatabase {
             conflictAlgorithm: ConflictAlgorithm.ignore);
       }
     }
+  }
+
+  // ── Plan position ──────────────────────────────────────────────────────────
+
+  Future<Map<String, Object?>?> getPlanPosition(String planId) async {
+    final db = await database;
+    final rows = await db.query(
+      'plan_position',
+      where: 'plan_id = ?',
+      whereArgs: [planId],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<void> savePlanPosition({
+    required String planId,
+    required int dayNumber,
+    required String bookId,
+    required int chapter,
+  }) async {
+    final db = await database;
+    await db.insert(
+      'plan_position',
+      {
+        'plan_id': planId,
+        'day_number': dayNumber,
+        'book_id': bookId,
+        'chapter': chapter,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> close() async {

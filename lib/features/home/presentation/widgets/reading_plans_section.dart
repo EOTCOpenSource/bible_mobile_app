@@ -197,13 +197,13 @@ class _AuthPrompt extends StatelessWidget {
 }
 
 /// Carousel card: book cover on top, plan name + progress below.
-class _ReadingPlanCard extends StatelessWidget {
+class _ReadingPlanCard extends ConsumerWidget {
   const _ReadingPlanCard({required this.plan});
 
   final ReadingPlan plan;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = L10n.of(context);
     final c = context.colors;
     final coverColor = testamentColor(plan.startBook);
@@ -211,7 +211,9 @@ class _ReadingPlanCard extends StatelessWidget {
         ? (plan.completedDays / plan.durationInDays).clamp(0.0, 1.0)
         : 0.0;
 
-    return SizedBox(
+    return GestureDetector(
+      onTap: () => openReadingPlan(context, ref, plan),
+      child: SizedBox(
       width: 110,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,6 +253,7 @@ class _ReadingPlanCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
