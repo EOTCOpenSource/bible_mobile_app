@@ -45,6 +45,11 @@ class AmStrings extends AppStrings {
   String get viewAll => 'ሁሉንም ይመልከቱ';
   @override
   String daysCount(int n) => '$n ቀናት';
+  @override
+  String get readingPlansSyncPrompt =>
+      'የንባብ ዕቅዶዎን በሁሉም መሣሪያዎች ለማስተባበር ይግቡ';
+  @override
+  String get continueWithoutAccount => 'ያለ መለያ ቀጥል';
 
   // ── Me / Settings ─────────────────────────────────────────────────────────
   @override

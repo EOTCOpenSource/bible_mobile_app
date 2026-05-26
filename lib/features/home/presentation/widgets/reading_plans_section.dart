@@ -1,42 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../core/constants/app_icons.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../auth/presentation/pages/login_screen.dart';
+import '../../data/reading_plan.dart';
+import '../../providers/reading_plan_providers.dart';
 
-class ReadingPlansSection extends StatelessWidget {
+// Cycles through these colors for plan cards when more than one plan exists.
+const _cardColors = [
+  AppColors.primary,
+  AppColors.newTestament,
+  Color(0xFF3E5C3A),
+  Color(0xFF7A4E2D),
+];
+
+class ReadingPlansSection extends ConsumerStatefulWidget {
   const ReadingPlansSection({super.key});
 
-  // Titles are data — will come from the data layer once wired.
-  // Using Amharic names directly here since they're proper nouns.
-  static const _plans = [
-    _PlanData(
-      titleAm: 'መጽሐፈ ዘፍጥረት',
-      titleEn: 'Genesis',
-      totalDays: 30,
-      completedDays: 12,
-      color: AppColors.primary,
-    ),
-    _PlanData(
-      titleAm: 'ወንጌለ ዮሐንስ',
-      titleEn: 'Gospel of John',
-      totalDays: 21,
-      completedDays: 5,
-      color: AppColors.newTestament,
-    ),
-    _PlanData(
-      titleAm: 'መዝሙረ ዳዊት',
-      titleEn: 'Psalms',
-      totalDays: 45,
-      completedDays: 0,
-      color: Color(0xFF3E5C3A),
-    ),
-  ];
+  @override
+  ConsumerState<ReadingPlansSection> createState() =>
+      _ReadingPlansSectionState();
+}
+
+class _ReadingPlansSectionState extends ConsumerState<ReadingPlansSection> {
+  bool _dismissed = false;
 
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final c = context.colors;
+    final isAuthenticated =
+        ref.watch(authStateProvider).status == AuthStatus.authenticated;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -67,59 +65,164 @@ class ReadingPlansSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 148,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _plans.length,
-            itemBuilder: (ctx, i) => Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: _ReadingPlanCard(plan: _plans[i]),
+        if (!isAuthenticated && !_dismissed)
+          _AuthPrompt(
+            onLogin: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
             ),
-          ),
-        ),
+            onDismiss: () => setState(() => _dismissed = true),
+          )
+        else
+          _PlansList(dismissed: _dismissed),
       ],
     );
   }
 }
 
-class _PlanData {
-  final String titleAm;
-  final String titleEn;
-  final int totalDays;
-  final int completedDays;
-  final Color color;
+class _PlansList extends ConsumerWidget {
+  const _PlansList({required this.dismissed});
 
-  const _PlanData({
-    required this.titleAm,
-    required this.titleEn,
-    required this.totalDays,
-    required this.completedDays,
-    required this.color,
-  });
+  final bool dismissed;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final plansAsync = ref.watch(readingPlansProvider);
+
+    return plansAsync.when(
+      loading: () => const SizedBox(
+        height: 148,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => const SizedBox(height: 148),
+      data: (plans) {
+        if (plans.isEmpty) return const SizedBox(height: 148);
+        return SizedBox(
+          height: 148,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: plans.length,
+            itemBuilder: (ctx, i) => Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _ReadingPlanCard(
+                plan: plans[i],
+                color: _cardColors[i % _cardColors.length],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _ReadingPlanCard extends StatelessWidget {
-  const _ReadingPlanCard({required this.plan});
-  final _PlanData plan;
+class _AuthPrompt extends StatelessWidget {
+  const _AuthPrompt({required this.onLogin, required this.onDismiss});
+
+  final VoidCallback onLogin;
+  final VoidCallback onDismiss;
 
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
-    final isAmharic = s is AmStrings;
-    final progress = plan.completedDays / plan.totalDays;
+    final c = context.colors;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.primary.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.readingPlansSyncPrompt,
+                  style: AppTypography.amharicBody.copyWith(
+                    color: c.textOnParchment,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    FilledButton(
+                      onPressed: onLogin,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: c.primary,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        s.loginButton,
+                        style: AppTypography.amharicLabel.copyWith(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: onDismiss,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        s.continueWithoutAccount,
+                        style: AppTypography.amharicCaption.copyWith(
+                          color: c.textOnParchment.withValues(alpha: 0.6),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReadingPlanCard extends StatelessWidget {
+  const _ReadingPlanCard({required this.plan, required this.color});
+
+  final ReadingPlan plan;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final progress = plan.durationInDays > 0
+        ? plan.completedDays / plan.durationInDays
+        : 0.0;
 
     return Container(
       width: 158,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: plan.color,
+        color: color,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: plan.color.withValues(alpha: 0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -143,7 +246,7 @@ class _ReadingPlanCard extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            isAmharic ? plan.titleAm : plan.titleEn,
+            plan.name,
             style: AppTypography.amharicLabel.copyWith(
               color: Colors.white,
               fontSize: 13,
@@ -154,7 +257,7 @@ class _ReadingPlanCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            s.daysCount(plan.totalDays),
+            s.daysCount(plan.durationInDays),
             style: AppTypography.amharicCaption.copyWith(
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 11,
@@ -164,7 +267,7 @@ class _ReadingPlanCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: progress,
+              value: progress.clamp(0.0, 1.0),
               minHeight: 4,
               backgroundColor: Colors.white.withValues(alpha: 0.25),
               valueColor: AlwaysStoppedAnimation(context.colors.accent),

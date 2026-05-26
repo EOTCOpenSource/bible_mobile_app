@@ -31,6 +31,8 @@ abstract class AppStrings {
   String get readingPlansTitle;
   String get viewAll;
   String daysCount(int n);
+  String get readingPlansSyncPrompt;
+  String get continueWithoutAccount;
 
   // ── Me / Settings screen ──────────────────────────────────────────────────
   String get meTitle;

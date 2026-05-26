@@ -45,6 +45,11 @@ class EnStrings extends AppStrings {
   String get viewAll => 'View all';
   @override
   String daysCount(int n) => '$n days';
+  @override
+  String get readingPlansSyncPrompt =>
+      'Log in to sync your reading plans across devices';
+  @override
+  String get continueWithoutAccount => 'Continue without account';
 
   // ── Me / Settings ─────────────────────────────────────────────────────────
   @override
