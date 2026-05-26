@@ -111,8 +111,15 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
       }
     }
 
-    String getText(String bookId, int ch, int v) =>
-        textMap[bookId]?[ch]?[v] ?? '';
+    String getText(String bookId, int ch, int verseStart, [int count = 1]) {
+      final chMap = textMap[bookId]?[ch];
+      if (chMap == null) return '';
+      if (count <= 1) return chMap[verseStart] ?? '';
+      return [
+        for (var v = verseStart; v < verseStart + count; v++)
+          if (chMap[v] != null) chMap[v]!,
+      ].join('\n');
+    }
 
     if (!mounted) return;
     setState(() {
@@ -126,7 +133,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     bookEntry: e,
                     chapter: h.chapter,
                     verseStart: h.verseStart,
-                    verseText: getText(h.bookId, h.chapter, h.verseStart),
+                    verseCount: h.verseCount,
+                    verseText: getText(h.bookId, h.chapter, h.verseStart, h.verseCount),
                     createdAt: h.createdAt,
                     highlightColor: h.color,
                   );
@@ -144,7 +152,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     bookEntry: e,
                     chapter: b.chapter,
                     verseStart: b.verseStart,
-                    verseText: getText(b.bookId, b.chapter, b.verseStart),
+                    verseCount: b.verseCount,
+                    verseText: getText(b.bookId, b.chapter, b.verseStart, b.verseCount),
                     createdAt: b.createdAt,
                   );
           })
@@ -161,7 +170,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     bookEntry: e,
                     chapter: n.chapter,
                     verseStart: n.verseStart,
-                    verseText: getText(n.bookId, n.chapter, n.verseStart),
+                    verseCount: n.verseCount,
+                    verseText: getText(n.bookId, n.chapter, n.verseStart, n.verseCount),
                     createdAt: n.createdAt,
                     noteContent: n.content,
                   );

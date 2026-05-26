@@ -64,6 +64,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   int _currentChapter = 0;
 
   String? _selectedKey;
+  String? _selectionEndKey;
   final GlobalKey _spotlightKey = GlobalKey();
 
   Timer? _dwellTimer;
@@ -178,7 +179,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     } on Object catch (_) {
       return;
     }
-    final verse = _selectedVerseNum;
+    final verse = _selectionVerseStart;
     unawaited(
       container
           .read(readingProgressRepositoryProvider)
@@ -302,22 +303,68 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   void _selectVerse(String key) {
-    setState(() => _selectedKey = _selectedKey == key ? null : key);
+    setState(() {
+      if (_selectedKey == null) {
+        _selectedKey = key;
+        _selectionEndKey = null;
+      } else if (key == _selectedKey && _selectionEndKey == null) {
+        _selectedKey = null;
+      } else {
+        _selectionEndKey = key == _selectedKey ? null : key;
+      }
+    });
     _persistReadingPosition();
   }
 
-  void _deselect() => setState(() => _selectedKey = null);
+  void _deselect() => setState(() {
+    _selectedKey = null;
+    _selectionEndKey = null;
+  });
 
   String _verseKey(int chNum, int secIdx, int verseNum) =>
       '$chNum:$secIdx:$verseNum';
 
-  bool _isSelected(int chNum, int secIdx, int verseNum) =>
-      _selectedKey == _verseKey(chNum, secIdx, verseNum);
+  bool _isSelected(int chNum, int secIdx, int verseNum) {
+    if (_selectedKey == null) return false;
+    final ap = _selectedKey!.split(':');
+    if (ap.length != 3 || int.tryParse(ap[0]) != chNum) return false;
+    final anchor = int.tryParse(ap[2]);
+    if (anchor == null) return false;
+    final end = _selectionEndVerseNum;
+    if (end == null) return verseNum == anchor;
+    final lo = anchor < end ? anchor : end;
+    final hi = anchor < end ? end : anchor;
+    return verseNum >= lo && verseNum <= hi;
+  }
 
   int? get _selectedVerseNum {
     if (_selectedKey == null) return null;
     final parts = _selectedKey!.split(':');
     return parts.length == 3 ? int.tryParse(parts[2]) : null;
+  }
+
+  int? get _selectionEndVerseNum {
+    if (_selectionEndKey == null) return null;
+    final parts = _selectionEndKey!.split(':');
+    return parts.length == 3 ? int.tryParse(parts[2]) : null;
+  }
+
+  /// The smaller verse number of the selected range (anchor when single verse).
+  int? get _selectionVerseStart {
+    final anchor = _selectedVerseNum;
+    if (anchor == null) return null;
+    final end = _selectionEndVerseNum;
+    if (end == null) return anchor;
+    return anchor < end ? anchor : end;
+  }
+
+  /// Number of verses in the selection (1 for single verse).
+  int get _selectionVerseCount {
+    final anchor = _selectedVerseNum;
+    if (anchor == null) return 0;
+    final end = _selectionEndVerseNum;
+    if (end == null) return 1;
+    return (end - anchor).abs() + 1;
   }
 
   int get _currentChapterNumber {
@@ -334,17 +381,31 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final parts = _selectedKey!.split(':');
     if (parts.length != 3) return null;
     final chNum = int.tryParse(parts[0]);
-    final secIdx = int.tryParse(parts[1]);
-    final vNum = int.tryParse(parts[2]);
-    if (chNum == null || secIdx == null || vNum == null) return null;
+    if (chNum == null) return null;
+    final start = _selectionVerseStart;
+    if (start == null) return null;
+    final count = _selectionVerseCount;
     try {
       final chapter = _book!.chapters.firstWhere(
         (c) => c.chapterNumber == chNum,
       );
-      final section = chapter.sections[secIdx];
-      final verse = section.verses.firstWhere((v) => v.verseNumber == vNum);
-      final deepLink = verseDeepLinkUri(widget.entry, chNum, verse.verseNumber);
-      return '${verse.text}\n${widget.entry.bookNameAm} $chNum:${verse.verseNumber}\n$deepLink';
+      final verseMap = {
+        for (final sec in chapter.sections)
+          for (final v in sec.verses) v.verseNumber: v.text,
+      };
+      final texts = [
+        for (var v = start; v < start + count; v++)
+          if (verseMap[v] != null) verseMap[v]!,
+      ];
+      if (texts.isEmpty) return null;
+      final useGeez = settings.useGeezNumbers;
+      final startStr = useGeez ? toGeez(start) : '$start';
+      final refEnd = count > 1
+          ? '-${useGeez ? toGeez(start + count - 1) : '${start + count - 1}'}'
+          : '';
+      final ref = '${widget.entry.bookNameAm} $chNum:$startStr$refEnd';
+      final deepLink = verseDeepLinkUri(widget.entry, chNum, start);
+      return '${texts.join('\n')}\n$ref\n$deepLink';
     } catch (_) {
       return null;
     }
@@ -380,8 +441,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     AppSettings settings,
     ChapterAnnotations annotations,
   ) {
-    final verseNum = _selectedVerseNum;
+    final verseNum = _selectionVerseStart;
     if (verseNum == null) return;
+    final count = _selectionVerseCount;
 
     final isDark = settings.isDarkReader;
     final surfaceColor = isDark ? readerDarkSurface : Colors.white;
@@ -405,6 +467,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                 verseStart: verseNum,
                 bookNumber: widget.entry.bookNumber,
                 color: color,
+                verseCount: count,
               );
           if (mounted) _deselect();
         },
@@ -428,8 +491,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     AppSettings settings,
     ChapterAnnotations annotations,
   ) {
-    final verseNum = _selectedVerseNum;
+    final verseNum = _selectionVerseStart;
     if (verseNum == null) return;
+    final count = _selectionVerseCount;
 
     final isDark = settings.isDarkReader;
     final surfaceColor = isDark ? readerDarkSurface : Colors.white;
@@ -455,6 +519,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                 verseStart: verseNum,
                 bookNumber: widget.entry.bookNumber,
                 content: content,
+                verseCount: count,
               );
           if (mounted) _deselect();
         },
@@ -522,7 +587,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         onEdit: () {
           Navigator.pop(context);
           if (!mounted) return;
-          setState(() => _selectedKey = verseKey);
+          setState(() {
+            _selectedKey = verseKey;
+            _selectionEndKey = null;
+          });
           final chKey = (bookId: widget.entry.bookNameEn, chapter: chNum);
           final liveAnnotations =
               _riverpodContainer
@@ -569,7 +637,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           final annotations =
               annotationsAsync.value ?? ChapterAnnotations.empty;
 
-          final verseNum = _selectedVerseNum;
+          final verseNum = _selectionVerseStart;
           final isBookmarked =
               verseNum != null && annotations.isBookmarked(verseNum);
           final highlightColor = verseNum != null
@@ -731,6 +799,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                 verseStart: verseNum,
                                                 bookNumber:
                                                     widget.entry.bookNumber,
+                                                verseCount:
+                                                    _selectionVerseCount,
                                               );
                                           _deselect();
                                         },

@@ -254,12 +254,17 @@ class ChapterAnnotations {
 
   static const empty = ChapterAnnotations();
 
-  bool isBookmarked(int verseStart) =>
-      bookmarks.any((b) => b.verseStart == verseStart);
+  bool isBookmarked(int verseNum) => bookmarks.any(
+      (b) => verseNum >= b.verseStart && verseNum < b.verseStart + b.verseCount);
 
-  Color? highlightColor(int verseStart) =>
-      highlights.where((h) => h.verseStart == verseStart).firstOrNull?.color;
+  Color? highlightColor(int verseNum) => highlights
+      .where((h) =>
+          verseNum >= h.verseStart && verseNum < h.verseStart + h.verseCount)
+      .firstOrNull
+      ?.color;
 
-  Note? noteFor(int verseStart) =>
-      notes.where((n) => n.verseStart == verseStart).firstOrNull;
+  Note? noteFor(int verseNum) => notes
+      .where((n) =>
+          verseNum >= n.verseStart && verseNum < n.verseStart + n.verseCount)
+      .firstOrNull;
 }

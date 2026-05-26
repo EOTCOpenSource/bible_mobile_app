@@ -12,6 +12,7 @@ class AnnotationItem {
     required this.bookEntry,
     required this.chapter,
     required this.verseStart,
+    this.verseCount = 1,
     required this.verseText,
     required this.createdAt,
     this.highlightColor,
@@ -22,6 +23,7 @@ class AnnotationItem {
   final BookIndexEntry bookEntry;
   final int chapter;
   final int verseStart;
+  final int verseCount;
   final String verseText;
   final DateTime createdAt;
   final Color? highlightColor;
@@ -69,7 +71,9 @@ class AnnotationCard extends StatelessWidget {
         : tab == 1
         ? c.primary
         : c.accentDeep;
-    final chRef = '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}';
+    final chRef = item.verseCount > 1
+        ? '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}–${item.verseStart + item.verseCount - 1}'
+        : '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}';
 
     return GestureDetector(
       onTap: onTap,

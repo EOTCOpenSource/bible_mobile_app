@@ -49,6 +49,7 @@ class ChapterAnnotationsNotifier
   Future<void> toggleBookmark({
     required int verseStart,
     required int bookNumber,
+    int verseCount = 1,
   }) async {
     final annotations = state.value;
     if (annotations == null) return;
@@ -64,6 +65,7 @@ class ChapterAnnotationsNotifier
         bookNumber: bookNumber,
         chapter: _key.chapter,
         verseStart: verseStart,
+        verseCount: verseCount,
         createdAt: now,
         updatedAt: now,
       ));
@@ -76,6 +78,7 @@ class ChapterAnnotationsNotifier
     required int verseStart,
     required int bookNumber,
     required Color color,
+    int verseCount = 1,
   }) async {
     final annotations = state.value;
     if (annotations == null) return;
@@ -96,6 +99,7 @@ class ChapterAnnotationsNotifier
         bookNumber: bookNumber,
         chapter: _key.chapter,
         verseStart: verseStart,
+        verseCount: verseCount,
         color: color,
         createdAt: now,
         updatedAt: now,
@@ -121,6 +125,7 @@ class ChapterAnnotationsNotifier
     required int verseStart,
     required int bookNumber,
     required String content,
+    int verseCount = 1,
   }) async {
     final annotations = state.value;
     if (annotations == null) return;
@@ -146,6 +151,7 @@ class ChapterAnnotationsNotifier
         bookNumber: bookNumber,
         chapter: _key.chapter,
         verseStart: verseStart,
+        verseCount: verseCount,
         content: content.trim(),
         createdAt: now,
         updatedAt: now,
