@@ -66,8 +66,11 @@ class AppSettings {
 }
 
 class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
-  Settings({super.key, AppSettings? initial, required super.child})
-      : super(notifier: ValueNotifier(initial ?? const AppSettings()));
+  const Settings({
+    super.key,
+    required ValueNotifier<AppSettings> notifier,
+    required super.child,
+  }) : super(notifier: notifier);
 
   static AppSettings of(BuildContext context) {
     final s = context.dependOnInheritedWidgetOfExactType<Settings>();

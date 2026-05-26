@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../api/api_client.dart';
+import '../settings/app_settings.dart';
 import 'user_profile.dart';
 
 const _webClientId =
@@ -65,6 +66,18 @@ class AuthRepository {
   Future<void> deleteAccount(String token) async {
     await _api.delete('/auth/account', token: token);
   }
+
+  Future<void> updateProfileSettings(
+    String token, {
+    required AppSettings settings,
+  }) =>
+      _api.put('/auth/profile', body: {
+        'settings': {
+          'theme': settings.isDarkReader ? 'dark' : 'light',
+          'fontSize': settings.fontSize.round(),
+          'notificationsEnabled': true,
+        },
+      }, token: token);
 
   Future<UserProfile> updateProfile(
     String token, {
