@@ -8,6 +8,7 @@ import '../../../books/data/models/book_index_entry.dart';
 
 class AnnotationItem {
   const AnnotationItem({
+    required this.id,
     required this.bookEntry,
     required this.chapter,
     required this.verseStart,
@@ -17,6 +18,7 @@ class AnnotationItem {
     this.noteContent,
   });
 
+  final int id;
   final BookIndexEntry bookEntry;
   final int chapter;
   final int verseStart;
@@ -26,6 +28,13 @@ class AnnotationItem {
   final String? noteContent;
 
   bool get isOT => bookEntry.isOldTestament;
+
+  String bookName(AppStrings strings) =>
+      strings is EnStrings ? bookEntry.bookNameEn : bookEntry.bookNameAm;
+
+  String bookShortName(AppStrings strings) => strings is EnStrings
+      ? bookEntry.bookShortNameEn
+      : bookEntry.bookShortNameAm;
 }
 
 // ── Annotation card ──────────────────────────────────────────────────────────
@@ -36,17 +45,19 @@ class AnnotationCard extends StatelessWidget {
     required this.item,
     required this.tab,
     required this.onTap,
+    this.onLongPress,
   });
 
   final AnnotationItem item;
   final int tab;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
-  String _daysAgo(AppStrings s) {
+  String _daysAgo(AppStrings strings) {
     final diff = DateTime.now().difference(item.createdAt);
-    if (diff.inDays == 0) return s.savedToday;
-    if (diff.inDays == 1) return s.savedYesterday;
-    return s.savedDaysAgo(diff.inDays);
+    if (diff.inDays == 0) return strings.savedToday;
+    if (diff.inDays == 1) return strings.savedYesterday;
+    return strings.savedDaysAgo(diff.inDays);
   }
 
   @override
@@ -56,13 +67,13 @@ class AnnotationCard extends StatelessWidget {
     final accent = tab == 0 && item.highlightColor != null
         ? item.highlightColor!
         : tab == 1
-            ? c.primary
-            : c.accentDeep;
-    final chRef =
-        '${item.bookEntry.bookShortNameAm} ${item.chapter}:${item.verseStart}';
+        ? c.primary
+        : c.accentDeep;
+    final chRef = '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}';
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
@@ -135,12 +146,15 @@ class AnnotationCard extends StatelessWidget {
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 5),
+                              horizontal: 8,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: accent.withValues(alpha: 0.07),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                  color: accent.withValues(alpha: 0.18)),
+                                color: accent.withValues(alpha: 0.18),
+                              ),
                             ),
                             child: Text(
                               item.verseText,
@@ -157,10 +171,13 @@ class AnnotationCard extends StatelessWidget {
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 6),
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
-                              color: item.highlightColor!
-                                  .withValues(alpha: 0.20),
+                              color: item.highlightColor!.withValues(
+                                alpha: 0.20,
+                              ),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -189,19 +206,25 @@ class AnnotationCard extends StatelessWidget {
                         // Footer
                         Row(
                           children: [
-                            Icon(Icons.menu_book_outlined,
-                                size: 12, color: c.textCaption),
+                            Icon(
+                              Icons.menu_book_outlined,
+                              size: 12,
+                              color: c.textCaption,
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                              item.bookEntry.bookNameAm,
+                              item.bookName(s),
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
                                 color: c.textCaption,
                               ),
                             ),
                             const Spacer(),
-                            Icon(Icons.arrow_forward_ios_rounded,
-                                size: 11, color: c.textCaption),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 11,
+                              color: c.textCaption,
+                            ),
                           ],
                         ),
                       ],
@@ -227,8 +250,8 @@ class _TypeBadge extends StatelessWidget {
     final icon = tab == 0
         ? Icons.format_color_fill_rounded
         : tab == 1
-            ? Icons.bookmark_rounded
-            : Icons.sticky_note_2_rounded;
+        ? Icons.bookmark_rounded
+        : Icons.sticky_note_2_rounded;
 
     return Container(
       width: 22,
@@ -253,20 +276,20 @@ class AnnotationEmptyState extends StatelessWidget {
     final s = L10n.of(context);
     final (icon, label, hint) = switch (tab) {
       0 => (
-          Icons.format_color_fill_rounded,
-          s.savedHighlightsEmpty,
-          s.savedHighlightsEmptyHint,
-        ),
+        Icons.format_color_fill_rounded,
+        s.savedEmptyHighlightsTitle,
+        s.savedEmptyHighlightsHint,
+      ),
       1 => (
-          Icons.bookmark_border_rounded,
-          s.savedBookmarksEmpty,
-          s.savedBookmarksEmptyHint,
-        ),
+        Icons.bookmark_border_rounded,
+        s.savedEmptyBookmarksTitle,
+        s.savedEmptyBookmarksHint,
+      ),
       _ => (
-          Icons.sticky_note_2_outlined,
-          s.savedNotesEmpty,
-          s.savedNotesEmptyHint,
-        ),
+        Icons.sticky_note_2_outlined,
+        s.savedEmptyNotesTitle,
+        s.savedEmptyNotesHint,
+      ),
     };
 
     final c = context.colors;
@@ -328,9 +351,7 @@ class SavedFilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: active ? c.primary : c.surfaceDim,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: active ? c.primary : c.borderSubtle,
-          ),
+          border: Border.all(color: active ? c.primary : c.borderSubtle),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -344,8 +365,11 @@ class SavedFilterChip extends StatelessWidget {
             ),
             if (trailing != null) ...[
               const SizedBox(width: 2),
-              Icon(trailing, size: 16,
-                  color: active ? Colors.white : c.textMuted),
+              Icon(
+                trailing,
+                size: 16,
+                color: active ? Colors.white : c.textMuted,
+              ),
             ],
           ],
         ),
@@ -412,8 +436,8 @@ class AnnotationPickerSheet extends StatelessWidget {
               shrinkWrap: true,
               padding: const EdgeInsets.only(bottom: 32),
               itemCount: items.length,
-              separatorBuilder: (_, idx) => Divider(
-                  color: c.borderSubtle, height: 1, indent: 20),
+              separatorBuilder: (_, idx) =>
+                  Divider(color: c.borderSubtle, height: 1, indent: 20),
               itemBuilder: (_, i) {
                 final it = items[i];
                 final isSelected = it.id == selectedId;
@@ -428,9 +452,7 @@ class AnnotationPickerSheet extends StatelessWidget {
                             it.label,
                             style: AppTypography.amharicLabel.copyWith(
                               fontSize: 14,
-                              color: isSelected
-                                  ? c.primary
-                                  : c.textOnParchment,
+                              color: isSelected ? c.primary : c.textOnParchment,
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w400,
@@ -438,8 +460,7 @@ class AnnotationPickerSheet extends StatelessWidget {
                           ),
                         ),
                         if (isSelected)
-                          Icon(Icons.check_rounded,
-                              size: 18, color: c.primary),
+                          Icon(Icons.check_rounded, size: 18, color: c.primary),
                       ],
                     ),
                   ),

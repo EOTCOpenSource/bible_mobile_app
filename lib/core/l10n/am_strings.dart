@@ -195,6 +195,81 @@ class AmStrings extends AppStrings {
   @override
   String get searchOrPickBook => 'ወይም መጽሐፍ ምረጥ';
 
+  // ── Saved / Collection ───────────────────────────────────────────────────
+  @override
+  String get savedEyebrow => 'ያቀቡት';
+  @override
+  String get savedTitle => 'ስብስቤ';
+  @override
+  String get savedHighlights => 'ምልክቶ';
+  @override
+  String get savedBookmarks => 'ክታቦ';
+  @override
+  String get savedNotes => 'ማስታወሻ';
+  @override
+  String get savedFilterAll => 'ሁሉም';
+  @override
+  String get savedFilterOld => 'ብሉይ';
+  @override
+  String get savedFilterNew => 'አዲስ';
+  @override
+  String get savedPickBook => 'መጽሐፍ ምረጥ';
+  @override
+  String get savedAllBooks => 'ሁሉም መጻሕፍ';
+  @override
+  String get savedPickChapter => 'ምዕራፍ ምረጥ';
+  @override
+  String get savedAllChapters => 'ሁሉም ምዕራፍ';
+  @override
+  String get savedAllChaptersShort => 'ሁሉም ምዕ.';
+  @override
+  String savedChapterLabel(int chapter) => 'ምዕ. $chapter';
+  @override
+  String get savedToday => 'ዛሬ';
+  @override
+  String get savedYesterday => 'ትናንት';
+  @override
+  String savedDaysAgo(int days) => '$days ቀን';
+  @override
+  String get savedEmptyHighlightsTitle => 'ምንም ምልክቶ የለም';
+  @override
+  String get savedEmptyHighlightsHint => 'ምንባብ ሲያነቡ ቁጥር ጎልቶ ይሰምጡ';
+  @override
+  String get savedEmptyBookmarksTitle => 'ምንም ክታቦ የለም';
+  @override
+  String get savedEmptyBookmarksHint => 'ምንባብ ሲያነቡ ቁጥር ያቆዩ';
+  @override
+  String get savedEmptyNotesTitle => 'ምንም ማስታወሻ የለም';
+  @override
+  String get savedEmptyNotesHint => 'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ';
+  @override
+  String get savedEdit => 'አስተካክል';
+  @override
+  String get savedDelete => 'ሰርዝ';
+  @override
+  String get savedDeleteNoteTitle => 'ማስታወሻ ሰርዝ';
+  @override
+  String savedDeleteNoteMessage(String reference) =>
+      'ማስታወሻዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedDeleteBookmarkTitle => 'ክታቦ ሰርዝ';
+  @override
+  String savedDeleteBookmarkMessage(String reference) =>
+      'ክታቦዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedDeleteHighlightTitle => 'ምልክቶ ሰርዝ';
+  @override
+  String savedDeleteHighlightMessage(String reference) =>
+      'ምልክቶዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedCancel => 'ተወው';
+  @override
+  String get savedNoteDeleted => 'ማስታወሻ ተሰርዟል';
+  @override
+  String get savedBookmarkDeleted => 'ክታቦ ተሰርዟል';
+  @override
+  String get savedHighlightDeleted => 'ምልክቶ ተሰርዟል';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override
   String get chapterAbbr => 'ምዕ';
@@ -329,28 +404,4 @@ class AmStrings extends AppStrings {
   @override String get profilePasswordMismatch   => 'ይለፍ ቃሎቹ አይዛመዱም';
   @override String get profileUpdateFailed       => 'ማዘምን አልተሳካም። እንደገና ይሞክሩ።';
 
-  // ── Saved / Collection screen ─────────────────────────────────────────────
-  @override String get savedScreenTitle        => 'ስብስቤ';
-  @override String get savedScreenSubtitle     => 'ያቀቡት';
-  @override String get savedTabHighlights      => 'ምልክቶ';
-  @override String get savedTabBookmarks       => 'ክታቦ';
-  @override String get savedTabNotes           => 'ማስታወሻ';
-  @override String get savedHighlightsEmpty    => 'ምንም ምልክት የለም';
-  @override String get savedHighlightsEmptyHint => 'ምንባብ ሲያነቡ ምልክት ያስቀምጡ';
-  @override String get savedBookmarksEmpty     => 'ምንም ክታቦ የለም';
-  @override String get savedBookmarksEmptyHint => 'ምንባብ ሲያነቡ ክታቦ ያስቀምጡ';
-  @override String get savedNotesEmpty         => 'ምንም ማስታወሻ የለም';
-  @override String get savedNotesEmptyHint     => 'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ';
-  @override String get savedToday              => 'ዛሬ';
-  @override String get savedYesterday          => 'ትናንት';
-  @override String savedDaysAgo(int n)         => '$n ቀን';
-  @override String get savedFilterAll          => 'ሁሉም';
-  @override String get savedFilterOT           => 'ብሉይ';
-  @override String get savedFilterNT           => 'አዲስ';
-  @override String get savedFilterAllChapters  => 'ሁሉም ምዕ.';
-  @override String savedFilterChapter(int n)   => 'ምዕ. $n';
-  @override String get savedPickBook           => 'መጽሐፍ ምረጥ';
-  @override String get savedPickAllBooks       => 'ሁሉም መጻሕፍ';
-  @override String get savedPickChapter        => 'ምዕራፍ ምረጥ';
-  @override String get savedPickAllChapters    => 'ሁሉም ምዕራፍ';
 }

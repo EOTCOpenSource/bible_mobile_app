@@ -79,7 +79,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     };
 
     if (bookIds.isEmpty) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _highlights = [];
+          _bookmarks = [];
+          _notes = [];
+          _loading = false;
+        });
+      }
       return;
     }
 
@@ -115,6 +122,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             return e == null
                 ? null
                 : AnnotationItem(
+                    id: h.id!,
                     bookEntry: e,
                     chapter: h.chapter,
                     verseStart: h.verseStart,
@@ -132,6 +140,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             return e == null
                 ? null
                 : AnnotationItem(
+                    id: b.id!,
                     bookEntry: e,
                     chapter: b.chapter,
                     verseStart: b.verseStart,
@@ -148,6 +157,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             return e == null
                 ? null
                 : AnnotationItem(
+                    id: n.id!,
                     bookEntry: e,
                     chapter: n.chapter,
                     verseStart: n.verseStart,
@@ -178,8 +188,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
     final s = L10n.of(context);
+    final c = context.colors;
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +201,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  s.savedScreenSubtitle,
+                  s.savedEyebrow,
                   style: AppTypography.amharicCaption.copyWith(
                     color: c.textMuted,
                     fontSize: 12,
@@ -200,7 +210,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  s.savedScreenTitle,
+                  s.savedTitle,
                   style: AppTypography.amharicHeading.copyWith(
                     color: c.textOnParchment,
                   ),
@@ -216,21 +226,21 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             child: Row(
               children: [
                 _TabLabel(
-                  label: s.savedTabHighlights,
+                  label: s.savedHighlights,
                   count: _highlights.length,
                   active: _tab == 0,
                   onTap: () => setState(() => _tab = 0),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedTabBookmarks,
+                  label: s.savedBookmarks,
                   count: _bookmarks.length,
                   active: _tab == 1,
                   onTap: () => setState(() => _tab = 1),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedTabNotes,
+                  label: s.savedNotes,
                   count: _notes.length,
                   active: _tab == 2,
                   onTap: () => setState(() => _tab = 2),
@@ -244,9 +254,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
           // ── Tab content ───────────────────────────────────────────────────
           Expanded(
             child: _loading
-                ? Center(
-                    child:
-                        CircularProgressIndicator(color: c.primary))
+                ? Center(child: CircularProgressIndicator(color: c.primary))
                 : IndexedStack(
                     index: _tab,
                     children: [
@@ -312,8 +320,10 @@ class _TabLabel extends StatelessWidget {
               const SizedBox(width: 5),
               if (count > 0)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: active ? c.primary : c.surfaceDim,
                     borderRadius: BorderRadius.circular(10),
