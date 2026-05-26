@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/annotations/annotation_models.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
+import '../../../../core/sync/sync_repository.dart';
+import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../annotations/providers/annotation_providers.dart';
@@ -50,6 +53,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   Future<void> _doLoad() async {
     final db = ref.read(annotationDbProvider);
     final repo = BibleRepositoryProvider.of(context);
+
+    final token = ref.read(authStateProvider).token;
+    if (token != null) {
+      await SyncService(
+        db: db,
+        repo: SyncRepository(ref.read(apiClientProvider), token),
+      ).pullAll();
+    }
 
     final results = await Future.wait([
       db.getAllBookmarks(),
@@ -100,8 +111,15 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
       }
     }
 
-    String getText(String bookId, int ch, int v) =>
-        textMap[bookId]?[ch]?[v] ?? '';
+    String getText(String bookId, int ch, int verseStart, [int count = 1]) {
+      final chMap = textMap[bookId]?[ch];
+      if (chMap == null) return '';
+      if (count <= 1) return chMap[verseStart] ?? '';
+      return [
+        for (var v = verseStart; v < verseStart + count; v++)
+          if (chMap[v] != null) chMap[v]!,
+      ].join('\n');
+    }
 
     if (!mounted) return;
     setState(() {
@@ -115,7 +133,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     bookEntry: e,
                     chapter: h.chapter,
                     verseStart: h.verseStart,
-                    verseText: getText(h.bookId, h.chapter, h.verseStart),
+                    verseCount: h.verseCount,
+                    verseText: getText(h.bookId, h.chapter, h.verseStart, h.verseCount),
                     createdAt: h.createdAt,
                     highlightColor: h.color,
                   );
@@ -133,7 +152,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     bookEntry: e,
                     chapter: b.chapter,
                     verseStart: b.verseStart,
-                    verseText: getText(b.bookId, b.chapter, b.verseStart),
+                    verseCount: b.verseCount,
+                    verseText: getText(b.bookId, b.chapter, b.verseStart, b.verseCount),
                     createdAt: b.createdAt,
                   );
           })
@@ -150,7 +170,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     bookEntry: e,
                     chapter: n.chapter,
                     verseStart: n.verseStart,
-                    verseText: getText(n.bookId, n.chapter, n.verseStart),
+                    verseCount: n.verseCount,
+                    verseText: getText(n.bookId, n.chapter, n.verseStart, n.verseCount),
                     createdAt: n.createdAt,
                     noteContent: n.content,
                   );

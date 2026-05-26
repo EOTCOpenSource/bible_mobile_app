@@ -5,7 +5,7 @@ import '../annotations/annotation_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 3;
+  static const _version = 5;
 
   Database? _db;
 
@@ -35,6 +35,27 @@ class AppDatabase {
     }
     if (oldVersion < 3) {
       await _migrateReadingPositionToMultiBook(db);
+    }
+    if (oldVersion < 4) {
+      await _markLegacyBookIdsPendingUpdate(db);
+    }
+    if (oldVersion < 5) {
+      await _createPlanPositionTable(db);
+    }
+  }
+
+  /// v3→v4: annotation items pushed with title-case bookId (e.g. "Genesis")
+  /// instead of the API's kebab-case ("genesis") need to be re-pushed so the
+  /// server stores the correct format the web frontend can find.
+  Future<void> _markLegacyBookIdsPendingUpdate(Database db) async {
+    const sql = '''
+      UPDATE {table} SET sync_status = 'pendingUpdate'
+      WHERE remote_id IS NOT NULL
+        AND sync_status = 'synced'
+        AND (book_id != lower(book_id) OR book_id LIKE '% %')
+    ''';
+    for (final table in ['bookmarks', 'highlights', 'notes']) {
+      await db.execute(sql.replaceFirst('{table}', table));
     }
   }
 
@@ -167,7 +188,18 @@ class AppDatabase {
       )
     ''');
     await _createReadingTables(db);
+    await _createPlanPositionTable(db);
   }
+
+  Future<void> _createPlanPositionTable(Database db) => db.execute('''
+    CREATE TABLE IF NOT EXISTS plan_position (
+      plan_id    TEXT    NOT NULL PRIMARY KEY,
+      day_number INTEGER NOT NULL,
+      book_id    TEXT    NOT NULL,
+      chapter    INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  ''');
 
   // ── Reading position / progress / streak ───────────────────────────────────
 
@@ -393,6 +425,285 @@ class AppDatabase {
       orderBy: 'book_number ASC, chapter ASC, verse_start ASC',
     );
     return rows.map(Note.fromMap).toList();
+  }
+
+  // ── Sync helpers ───────────────────────────────────────────────────────────
+
+  Future<void> updateAnnotationSync(
+    String table,
+    int id,
+    SyncStatus status, {
+    String? remoteId,
+  }) async {
+    final db = await database;
+    final values = <String, dynamic>{'sync_status': status.name};
+    if (remoteId != null) values['remote_id'] = remoteId;
+    await db.update(table, values, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> softDeleteBookmark(int id, {required bool hasRemoteId}) async {
+    final db = await database;
+    if (hasRemoteId) {
+      await db.update(
+        'bookmarks',
+        {'sync_status': SyncStatus.pendingDelete.name},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } else {
+      await db.delete('bookmarks', where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  Future<void> softDeleteHighlight(int id, {required bool hasRemoteId}) async {
+    final db = await database;
+    if (hasRemoteId) {
+      await db.update(
+        'highlights',
+        {'sync_status': SyncStatus.pendingDelete.name},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } else {
+      await db.delete('highlights', where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  Future<void> softDeleteNote(int id, {required bool hasRemoteId}) async {
+    final db = await database;
+    if (hasRemoteId) {
+      await db.update(
+        'notes',
+        {'sync_status': SyncStatus.pendingDelete.name},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } else {
+      await db.delete('notes', where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  Future<List<Bookmark>> getPendingBookmarks() async {
+    final db = await database;
+    final rows = await db.query(
+      'bookmarks',
+      where: 'sync_status IN (?, ?, ?)',
+      whereArgs: [
+        SyncStatus.pendingCreate.name,
+        SyncStatus.pendingUpdate.name,
+        SyncStatus.pendingDelete.name,
+      ],
+    );
+    return rows.map(Bookmark.fromMap).toList();
+  }
+
+  Future<List<Note>> getPendingNotes() async {
+    final db = await database;
+    final rows = await db.query(
+      'notes',
+      where: 'sync_status IN (?, ?, ?)',
+      whereArgs: [
+        SyncStatus.pendingCreate.name,
+        SyncStatus.pendingUpdate.name,
+        SyncStatus.pendingDelete.name,
+      ],
+    );
+    return rows.map(Note.fromMap).toList();
+  }
+
+  Future<List<Highlight>> getPendingHighlights() async {
+    final db = await database;
+    final rows = await db.query(
+      'highlights',
+      where: 'sync_status IN (?, ?, ?)',
+      whereArgs: [
+        SyncStatus.pendingCreate.name,
+        SyncStatus.pendingUpdate.name,
+        SyncStatus.pendingDelete.name,
+      ],
+    );
+    return rows.map(Highlight.fromMap).toList();
+  }
+
+  // ── Server pull upserts ────────────────────────────────────────────────────
+
+  Future<void> upsertServerBookmarks(List<Bookmark> items) async {
+    if (items.isEmpty) return;
+    final db = await database;
+    for (final b in items) {
+      if (b.remoteId == null) continue;
+
+      // Already tracked by remoteId — fix book_id if it was stored in the
+      // wrong case from a previous pull
+      final byRemoteId = await db.query(
+        'bookmarks', where: 'remote_id = ?', whereArgs: [b.remoteId], limit: 1,
+      );
+      if (byRemoteId.isNotEmpty) {
+        if ((byRemoteId.first['book_id'] as String) != b.bookId) {
+          await db.update('bookmarks', {'book_id': b.bookId},
+              where: 'remote_id = ?', whereArgs: [b.remoteId]);
+        }
+        continue;
+      }
+
+      // Same verse exists locally (e.g. pendingCreate offline) — assign remoteId
+      final byVerse = await db.query(
+        'bookmarks',
+        where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+        whereArgs: [b.bookId, b.chapter, b.verseStart],
+        limit: 1,
+      );
+      if (byVerse.isNotEmpty) {
+        await db.update(
+          'bookmarks',
+          {'remote_id': b.remoteId, 'sync_status': SyncStatus.synced.name},
+          where: 'id = ?',
+          whereArgs: [byVerse.first['id'] as int],
+        );
+      } else {
+        await db.insert('bookmarks', b.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    }
+  }
+
+  Future<void> upsertServerHighlights(List<Highlight> items) async {
+    if (items.isEmpty) return;
+    final db = await database;
+    for (final h in items) {
+      if (h.remoteId == null) continue;
+
+      // Already tracked by remoteId — update color/note if not locally modified;
+      // also normalize book_id in case it was stored in wrong case
+      final byRemoteId = await db.query(
+        'highlights', where: 'remote_id = ?', whereArgs: [h.remoteId], limit: 1,
+      );
+      if (byRemoteId.isNotEmpty) {
+        final updates = <String, dynamic>{};
+        if ((byRemoteId.first['book_id'] as String) != h.bookId) {
+          updates['book_id'] = h.bookId;
+        }
+        if ((byRemoteId.first['sync_status'] as String) == SyncStatus.synced.name) {
+          updates['color'] = h.color.toARGB32();
+          updates['note'] = h.note;
+        }
+        if (updates.isNotEmpty) {
+          await db.update('highlights', updates,
+              where: 'remote_id = ?', whereArgs: [h.remoteId]);
+        }
+        continue;
+      }
+
+      // Same verse exists locally — assign remoteId and sync server color
+      final byVerse = await db.query(
+        'highlights',
+        where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+        whereArgs: [h.bookId, h.chapter, h.verseStart],
+        limit: 1,
+      );
+      if (byVerse.isNotEmpty) {
+        await db.update(
+          'highlights',
+          {
+            'remote_id': h.remoteId,
+            'sync_status': SyncStatus.synced.name,
+            'color': h.color.toARGB32(),
+            'note': h.note,
+          },
+          where: 'id = ?',
+          whereArgs: [byVerse.first['id'] as int],
+        );
+      } else {
+        await db.insert('highlights', h.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    }
+  }
+
+  Future<void> upsertServerNotes(List<Note> items) async {
+    if (items.isEmpty) return;
+    final db = await database;
+    for (final n in items) {
+      if (n.remoteId == null) continue;
+
+      // Already tracked by remoteId — update content if not locally modified;
+      // also normalize book_id in case it was stored in wrong case
+      final byRemoteId = await db.query(
+        'notes', where: 'remote_id = ?', whereArgs: [n.remoteId], limit: 1,
+      );
+      if (byRemoteId.isNotEmpty) {
+        final updates = <String, dynamic>{};
+        if ((byRemoteId.first['book_id'] as String) != n.bookId) {
+          updates['book_id'] = n.bookId;
+        }
+        if ((byRemoteId.first['sync_status'] as String) == SyncStatus.synced.name) {
+          updates['content'] = n.content;
+          updates['is_private'] = n.isPrivate ? 1 : 0;
+        }
+        if (updates.isNotEmpty) {
+          await db.update('notes', updates,
+              where: 'remote_id = ?', whereArgs: [n.remoteId]);
+        }
+        continue;
+      }
+
+      // Same verse exists locally — assign remoteId and sync server content
+      final byVerse = await db.query(
+        'notes',
+        where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+        whereArgs: [n.bookId, n.chapter, n.verseStart],
+        limit: 1,
+      );
+      if (byVerse.isNotEmpty) {
+        await db.update(
+          'notes',
+          {
+            'remote_id': n.remoteId,
+            'sync_status': SyncStatus.synced.name,
+            'content': n.content,
+            'is_private': n.isPrivate ? 1 : 0,
+          },
+          where: 'id = ?',
+          whereArgs: [byVerse.first['id'] as int],
+        );
+      } else {
+        await db.insert('notes', n.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    }
+  }
+
+  // ── Plan position ──────────────────────────────────────────────────────────
+
+  Future<Map<String, Object?>?> getPlanPosition(String planId) async {
+    final db = await database;
+    final rows = await db.query(
+      'plan_position',
+      where: 'plan_id = ?',
+      whereArgs: [planId],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<void> savePlanPosition({
+    required String planId,
+    required int dayNumber,
+    required String bookId,
+    required int chapter,
+  }) async {
+    final db = await database;
+    await db.insert(
+      'plan_position',
+      {
+        'plan_id': planId,
+        'day_number': dayNumber,
+        'book_id': bookId,
+        'chapter': chapter,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> close() async {

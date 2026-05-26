@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 enum SyncStatus { pendingCreate, pendingUpdate, pendingDelete, synced }
 
 const highlightPalette = <Color>[
-  Color(0xFFFFEB3B), // yellow
-  Color(0xFF80CBC4), // teal
-  Color(0xFF90CAF9), // sky blue
-  Color(0xFFEF9A9A), // pink-red
-  Color(0xFFCE93D8), // purple
+  Color(0xFFFFE062), // yellow
+  Color(0xFF3BAD49), // green
+  Color(0xFFFF4B26), // pink
+  Color(0xFF5778C5), // blue
+  Color(0xFFB61F21), // red
+  Color(0xFF704A6A), // purple
 ];
 
 // ── Bookmark ──────────────────────────────────────────────────────────────────
@@ -253,12 +254,17 @@ class ChapterAnnotations {
 
   static const empty = ChapterAnnotations();
 
-  bool isBookmarked(int verseStart) =>
-      bookmarks.any((b) => b.verseStart == verseStart);
+  bool isBookmarked(int verseNum) => bookmarks.any(
+      (b) => verseNum >= b.verseStart && verseNum < b.verseStart + b.verseCount);
 
-  Color? highlightColor(int verseStart) =>
-      highlights.where((h) => h.verseStart == verseStart).firstOrNull?.color;
+  Color? highlightColor(int verseNum) => highlights
+      .where((h) =>
+          verseNum >= h.verseStart && verseNum < h.verseStart + h.verseCount)
+      .firstOrNull
+      ?.color;
 
-  Note? noteFor(int verseStart) =>
-      notes.where((n) => n.verseStart == verseStart).firstOrNull;
+  Note? noteFor(int verseNum) => notes
+      .where((n) =>
+          verseNum >= n.verseStart && verseNum < n.verseStart + n.verseCount)
+      .firstOrNull;
 }

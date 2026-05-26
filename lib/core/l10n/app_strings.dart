@@ -31,6 +31,8 @@ abstract class AppStrings {
   String get readingPlansTitle;
   String get viewAll;
   String daysCount(int n);
+  String get readingPlansSyncPrompt;
+  String get continueWithoutAccount;
 
   // ── Me / Settings screen ──────────────────────────────────────────────────
   String get meTitle;
@@ -165,4 +167,123 @@ abstract class AppStrings {
   String get verseCopy;
   String get verseShare;
   String get comingSoon;
+
+  // ── Auth — shared ─────────────────────────────────────────────────────────
+  String get authEmail;
+  String get authEmailRequired;
+  String get authEmailInvalid;
+  String get authPassword;
+  String get authPasswordRequired;
+  String get authConnectionError;
+
+  // ── Auth — login ──────────────────────────────────────────────────────────
+  String get loginTitle;
+  String get loginSubtitle;
+  String get loginRememberMe;
+  String get loginForgotPassword;
+  String get loginButton;
+  String get loginOrDivider;
+  String get loginNoAccount;
+  String get loginRegisterLink;
+  String get loginVerseQuote;
+  String get loginAccountLocked;
+  String get loginGoogleFailed;
+  String get loginFacebookComingSoon;
+
+  // ── Auth — register ───────────────────────────────────────────────────────
+  String get registerTitle;
+  String get registerSubtitle;
+  String get registerFullName;
+  String get registerFullNameRequired;
+  String get registerFullNameTooShort;
+  String get registerPasswordTooShort;
+  String get registerAcceptTerms;
+  String get registerButton;
+  String get registerHaveAccount;
+  String get registerLoginLink;
+  String get registerTermsText;
+  String get passwordWeak;
+  String get passwordFair;
+  String get passwordGood;
+  String get passwordStrong;
+
+  // ── Auth — OTP ────────────────────────────────────────────────────────────
+  String get otpTitle;
+  String get otpSentPrefix;
+  String get otpSentSuffix;
+  String otpDigitsRequired(int n);
+  String get otpNotReceived;
+  String otpResendIn(String t);
+  String get otpResend;
+  String get otpVerifyButton;
+  String get otpChangePhone;
+  String get otpChangeEmail;
+  String get otpResendFailed;
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  String get forgotTitle;
+  String get forgotSubtitle;
+  String get forgotEmailLabel;
+  String get forgotEmailHelper;
+  String get forgotPhoneLabel;
+  String get forgotPhoneHelper;
+  String get forgotSendButton;
+  String get forgotRememberPassword;
+  String get forgotPhoneComingSoon;
+  String get forgotTabPhone;
+
+  // ── Reset password ────────────────────────────────────────────────────────
+  String get resetTitle;
+  String get resetSubtitle;
+  String get resetTokenLabel;
+  String get resetNewPasswordLabel;
+  String get resetConfirmLabel;
+  String get resetRequirementsTitle;
+  String get resetReqLength;
+  String get resetReqUpper;
+  String get resetReqNumber;
+  String get resetReqSpecial;
+  String get resetSaveButton;
+  String get resetSuccessMessage;
+
+  // ── Profile screen ────────────────────────────────────────────────────────
+  String get profileTitle;
+  String get profileMemberBadge;
+  String get profileLogout;
+  String get profileDeleteAccount;
+  String get profileEditButton;
+  String get profileAchievements;
+  String get profileStatStreak;
+  String get profileStatBookmarks;
+  String get profileStatPlan;
+  String get profileDeleteTitle;
+  String get profileDeleteMessage;
+  String get profileDeleteCancel;
+  String get profileDeleteConfirm;
+  String get achievementFirstDayTitle;
+  String get achievementFirstDaySub;
+  String get achievement7DayTitle;
+  String get achievement7DaySub;
+  String get achievementPsalmTitle;
+  String get achievementPsalmSub;
+
+  // ── Profile editing ───────────────────────────────────────────────────────
+  String get profileFirstName;
+  String get profileLastName;
+  String get profileSaveChanges;
+  String get profileSaved;
+  String get profileSectionInfo;
+  String get profileSectionSecurity;
+  String get profileSectionPreferences;
+  String get profileChangePhoto;
+  String get profileGoogleNote;
+  String get profileChangePassword;
+  String get profileCurrentPassword;
+  String get profileNewPassword;
+  String get profileConfirmNewPassword;
+  String get profileUpdatePassword;
+  String get profilePasswordChanged;
+  String get profilePasswordMismatch;
+  String get profileUpdateFailed;
+
 }
