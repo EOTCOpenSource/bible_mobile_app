@@ -19,6 +19,7 @@ class ReadingPlan {
     required this.name,
     required this.durationInDays,
     required this.dailyReadings,
+    this.startBook = '',
     this.status,
   });
 
@@ -26,6 +27,7 @@ class ReadingPlan {
   final String name;
   final int durationInDays;
   final List<DailyReading> dailyReadings;
+  final String startBook;
   final String? status;
 
   int get completedDays => dailyReadings.where((d) => d.isCompleted).length;
@@ -38,6 +40,7 @@ class ReadingPlan {
             .whereType<Map<String, dynamic>>()
             .map(DailyReading.fromJson)
             .toList(),
+        startBook: (m['startBook'] as String?) ?? '',
         status: m['status'] as String?,
       );
 }

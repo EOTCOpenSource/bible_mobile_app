@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/auth_state.dart';
-import '../../../../core/constants/app_icons.dart';
 import '../../../../core/l10n/l10n.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/book_cover.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../data/reading_plan.dart';
 import '../../providers/reading_plan_providers.dart';
-
-// Cycles through these colors for plan cards when more than one plan exists.
-const _cardColors = [
-  AppColors.primary,
-  AppColors.newTestament,
-  Color(0xFF3E5C3A),
-  Color(0xFF7A4E2D),
-];
+import '../pages/reading_plans_screen.dart';
 
 class ReadingPlansSection extends ConsumerStatefulWidget {
   const ReadingPlansSection({super.key});
@@ -52,7 +45,11 @@ class _ReadingPlansSectionState extends ConsumerState<ReadingPlansSection> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () {},
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ReadingPlansScreen()),
+                ),
                 child: Text(
                   s.viewAll,
                   style: AppTypography.amharicCaption.copyWith(
@@ -74,42 +71,40 @@ class _ReadingPlansSectionState extends ConsumerState<ReadingPlansSection> {
             onDismiss: () => setState(() => _dismissed = true),
           )
         else
-          _PlansList(dismissed: _dismissed),
+          _PlansList(),
       ],
     );
   }
 }
 
 class _PlansList extends ConsumerWidget {
-  const _PlansList({required this.dismissed});
-
-  final bool dismissed;
+  const _PlansList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = context.colors;
     final plansAsync = ref.watch(readingPlansProvider);
 
     return plansAsync.when(
-      loading: () => const SizedBox(
-        height: 148,
-        child: Center(child: CircularProgressIndicator()),
+      loading: () => SizedBox(
+        height: 172,
+        child: Center(
+          child: CircularProgressIndicator(color: c.primary, strokeWidth: 2),
+        ),
       ),
-      error: (e, _) => const SizedBox(height: 148),
+      error: (e, _) => const SizedBox(height: 172),
       data: (plans) {
-        if (plans.isEmpty) return const SizedBox(height: 148);
+        if (plans.isEmpty) return const SizedBox(height: 172);
         return SizedBox(
-          height: 148,
+          height: 172,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: plans.length,
             itemBuilder: (ctx, i) => Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: _ReadingPlanCard(
-                plan: plans[i],
-                color: _cardColors[i % _cardColors.length],
-              ),
+              padding: const EdgeInsets.only(right: 14),
+              child: _ReadingPlanCard(plan: plans[i]),
             ),
           ),
         );
@@ -201,55 +196,33 @@ class _AuthPrompt extends StatelessWidget {
   }
 }
 
+/// Carousel card: book cover on top, plan name + progress below.
 class _ReadingPlanCard extends StatelessWidget {
-  const _ReadingPlanCard({required this.plan, required this.color});
+  const _ReadingPlanCard({required this.plan});
 
   final ReadingPlan plan;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
-    final progress = plan.durationInDays > 0
-        ? plan.completedDays / plan.durationInDays
+    final c = context.colors;
+    final coverColor = testamentColor(plan.startBook);
+    final pct = plan.durationInDays > 0
+        ? (plan.completedDays / plan.durationInDays).clamp(0.0, 1.0)
         : 0.0;
 
-    return Container(
-      width: 158,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return SizedBox(
+      width: 110,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              AppIcons.ethiopianCross,
-              style: TextStyle(color: context.colors.accent, fontSize: 16),
-            ),
-          ),
-          const Spacer(),
+          BookCover(coverColor: coverColor, width: 66, height: 98),
+          const SizedBox(height: 6),
           Text(
             plan.name,
             style: AppTypography.amharicLabel.copyWith(
-              color: Colors.white,
-              fontSize: 13,
+              color: c.textOnParchment,
+              fontSize: 12,
               height: 1.3,
             ),
             maxLines: 2,
@@ -258,19 +231,19 @@ class _ReadingPlanCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             s.daysCount(plan.durationInDays),
-            style: AppTypography.amharicCaption.copyWith(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 11,
+            style: AppTypography.englishCaption.copyWith(
+              color: c.textMuted,
+              fontSize: 10,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
+              value: pct,
               minHeight: 4,
-              backgroundColor: Colors.white.withValues(alpha: 0.25),
-              valueColor: AlwaysStoppedAnimation(context.colors.accent),
+              backgroundColor: c.parchmentDark,
+              valueColor: AlwaysStoppedAnimation(coverColor),
             ),
           ),
         ],
