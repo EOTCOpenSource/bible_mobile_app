@@ -87,16 +87,16 @@ class _PlansList extends ConsumerWidget {
 
     return plansAsync.when(
       loading: () => SizedBox(
-        height: 172,
+        height: 176,
         child: Center(
           child: CircularProgressIndicator(color: c.primary, strokeWidth: 2),
         ),
       ),
-      error: (e, _) => const SizedBox(height: 172),
+      error: (e, _) => const SizedBox(height: 176),
       data: (plans) {
-        if (plans.isEmpty) return const SizedBox(height: 172);
+        if (plans.isEmpty) return const SizedBox(height: 176);
         return SizedBox(
-          height: 172,
+          height: 176,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
