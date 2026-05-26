@@ -218,15 +218,18 @@ class _ReadingPlanCard extends StatelessWidget {
         children: [
           BookCover(coverColor: coverColor, width: 66, height: 98),
           const SizedBox(height: 6),
-          Text(
-            plan.name,
-            style: AppTypography.amharicLabel.copyWith(
-              color: c.textOnParchment,
-              fontSize: 12,
-              height: 1.3,
+          SizedBox(
+            height: 32,
+            child: Text(
+              plan.name,
+              style: AppTypography.amharicLabel.copyWith(
+                color: c.textOnParchment,
+                fontSize: 12,
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
