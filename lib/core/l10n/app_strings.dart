@@ -148,8 +148,14 @@ abstract class AppStrings {
   String get savedDelete;
   String get savedDeleteNoteTitle;
   String savedDeleteNoteMessage(String reference);
+  String get savedDeleteBookmarkTitle;
+  String savedDeleteBookmarkMessage(String reference);
+  String get savedDeleteHighlightTitle;
+  String savedDeleteHighlightMessage(String reference);
   String get savedCancel;
   String get savedNoteDeleted;
+  String get savedBookmarkDeleted;
+  String get savedHighlightDeleted;
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"

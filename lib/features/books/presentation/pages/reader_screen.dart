@@ -38,7 +38,6 @@ class ReaderScreen extends ConsumerStatefulWidget {
     this.initialChapter = 0,
     this.initialChapterNumber,
     this.initialVerse,
-     this.openNoteSheet = false,
   });
 
   final BookIndexEntry entry;
@@ -49,7 +48,6 @@ class ReaderScreen extends ConsumerStatefulWidget {
   /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
   final int? initialChapterNumber;
   final int? initialVerse;
-   final bool openNoteSheet;
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();

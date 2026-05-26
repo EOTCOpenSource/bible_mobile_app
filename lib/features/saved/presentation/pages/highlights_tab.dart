@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/annotations/annotation_models.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../annotations/providers/annotation_providers.dart';
 import 'saved_common.dart';
 
-class HighlightsTab extends StatefulWidget {
+class HighlightsTab extends ConsumerStatefulWidget {
   const HighlightsTab({
     super.key,
     required this.items,
@@ -17,10 +20,10 @@ class HighlightsTab extends StatefulWidget {
   final Future<void> Function() onRefresh;
 
   @override
-  State<HighlightsTab> createState() => _HighlightsTabState();
+  ConsumerState<HighlightsTab> createState() => _HighlightsTabState();
 }
 
-class _HighlightsTabState extends State<HighlightsTab> {
+class _HighlightsTabState extends ConsumerState<HighlightsTab> {
   Color? _colorFilter;
   String? _testamentFilter;
   String? _bookFilter;
@@ -134,6 +137,66 @@ class _HighlightsTabState extends State<HighlightsTab> {
     );
   }
 
+  void _deleteHighlight(AnnotationItem item) async {
+    final s = L10n.of(context);
+    final c = context.colors;
+    final reference = '${item.bookName(s)} ${item.chapter}:${item.verseStart}';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          s.savedDeleteHighlightTitle,
+          style: AppTypography.amharicLabel.copyWith(
+            color: c.textOnParchment,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          s.savedDeleteHighlightMessage(reference),
+          style: AppTypography.amharicBody.copyWith(
+            color: c.textMuted,
+            fontSize: 15,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              s.savedCancel,
+              style: AppTypography.amharicLabel.copyWith(color: c.textMuted),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(
+              s.savedDelete,
+              style: AppTypography.amharicLabel.copyWith(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final db = ref.read(annotationDbProvider);
+      await db.deleteHighlight(item.id);
+      await widget.onRefresh();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.savedHighlightDeleted)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
@@ -241,6 +304,7 @@ class _HighlightsTabState extends State<HighlightsTab> {
                         item: items[i],
                         tab: 0,
                         onTap: () => widget.onOpen(items[i]),
+                        onLongPress: () => _deleteHighlight(items[i]),
                       ),
                     ),
                   ),

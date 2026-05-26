@@ -252,9 +252,23 @@ class EnStrings extends AppStrings {
   String savedDeleteNoteMessage(String reference) =>
       'Do you want to delete this note?\n$reference';
   @override
+  String get savedDeleteBookmarkTitle => 'Delete bookmark';
+  @override
+  String savedDeleteBookmarkMessage(String reference) =>
+      'Delete this bookmark?\n$reference';
+  @override
+  String get savedDeleteHighlightTitle => 'Delete highlight';
+  @override
+  String savedDeleteHighlightMessage(String reference) =>
+      'Delete this highlight?\n$reference';
+  @override
   String get savedCancel => 'Cancel';
   @override
   String get savedNoteDeleted => 'Note deleted';
+  @override
+  String get savedBookmarkDeleted => 'Bookmark deleted';
+  @override
+  String get savedHighlightDeleted => 'Highlight deleted';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

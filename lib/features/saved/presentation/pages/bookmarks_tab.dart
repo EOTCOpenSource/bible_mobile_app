@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../annotations/providers/annotation_providers.dart';
 import 'saved_common.dart';
 
-class BookmarksTab extends StatefulWidget {
+class BookmarksTab extends ConsumerStatefulWidget {
   const BookmarksTab({
     super.key,
     required this.items,
@@ -16,10 +19,10 @@ class BookmarksTab extends StatefulWidget {
   final Future<void> Function() onRefresh;
 
   @override
-  State<BookmarksTab> createState() => _BookmarksTabState();
+  ConsumerState<BookmarksTab> createState() => _BookmarksTabState();
 }
 
-class _BookmarksTabState extends State<BookmarksTab> {
+class _BookmarksTabState extends ConsumerState<BookmarksTab> {
   String? _testamentFilter;
   String? _bookFilter;
   int? _chapterFilter;
@@ -124,6 +127,66 @@ class _BookmarksTabState extends State<BookmarksTab> {
     );
   }
 
+  void _deleteBookmark(AnnotationItem item) async {
+    final s = L10n.of(context);
+    final c = context.colors;
+    final reference = '${item.bookName(s)} ${item.chapter}:${item.verseStart}';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          s.savedDeleteBookmarkTitle,
+          style: AppTypography.amharicLabel.copyWith(
+            color: c.textOnParchment,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          s.savedDeleteBookmarkMessage(reference),
+          style: AppTypography.amharicBody.copyWith(
+            color: c.textMuted,
+            fontSize: 15,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              s.savedCancel,
+              style: AppTypography.amharicLabel.copyWith(color: c.textMuted),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(
+              s.savedDelete,
+              style: AppTypography.amharicLabel.copyWith(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final db = ref.read(annotationDbProvider);
+      await db.deleteBookmark(item.id);
+      await widget.onRefresh();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.savedBookmarkDeleted)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
@@ -211,6 +274,7 @@ class _BookmarksTabState extends State<BookmarksTab> {
                         item: items[i],
                         tab: 1,
                         onTap: () => widget.onOpen(items[i]),
+                        onLongPress: () => _deleteBookmark(items[i]),
                       ),
                     ),
                   ),

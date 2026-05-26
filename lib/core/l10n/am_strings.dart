@@ -252,9 +252,23 @@ class AmStrings extends AppStrings {
   String savedDeleteNoteMessage(String reference) =>
       'ማስታወሻዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
   @override
+  String get savedDeleteBookmarkTitle => 'ክታቦ ሰርዝ';
+  @override
+  String savedDeleteBookmarkMessage(String reference) =>
+      'ክታቦዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedDeleteHighlightTitle => 'ምልክቶ ሰርዝ';
+  @override
+  String savedDeleteHighlightMessage(String reference) =>
+      'ምልክቶዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
   String get savedCancel => 'ተወው';
   @override
   String get savedNoteDeleted => 'ማስታወሻ ተሰርዟል';
+  @override
+  String get savedBookmarkDeleted => 'ክታቦ ተሰርዟል';
+  @override
+  String get savedHighlightDeleted => 'ምልክቶ ተሰርዟል';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

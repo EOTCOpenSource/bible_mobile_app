@@ -195,7 +195,6 @@ class _NotesTabState extends ConsumerState<NotesTab> {
           entry: item.bookEntry,
           initialChapter: (item.chapter - 1).clamp(0, 999),
           initialVerse: item.verseStart,
-          openNoteSheet: true,
         ),
       ),
     ).then((_) => widget.onRefresh());
