@@ -11,11 +11,12 @@ class SyncRepository {
   // ── Bookmarks ──────────────────────────────────────────────────────────────
 
   Future<String> createBookmark(Bookmark b) async {
+    final apiId = _toApiBookId(b.bookId);
     final res = await _client.post(
       '/bookmarks',
       body: {
-        'book': b.bookId,
-        'bookId': b.bookId,
+        'book': apiId,
+        'bookId': apiId,
         'chapter': b.chapter,
         'verseStart': b.verseStart,
         'verseCount': b.verseCount,
@@ -25,17 +26,20 @@ class SyncRepository {
     return _remoteId(res, 'bookmark');
   }
 
-  Future<void> updateBookmark(String remoteId, Bookmark b) => _client.put(
-        '/bookmarks/$remoteId',
-        body: {
-          'book': b.bookId,
-          'bookId': b.bookId,
-          'chapter': b.chapter,
-          'verseStart': b.verseStart,
-          'verseCount': b.verseCount,
-        },
-        token: _token,
-      );
+  Future<void> updateBookmark(String remoteId, Bookmark b) {
+    final apiId = _toApiBookId(b.bookId);
+    return _client.put(
+      '/bookmarks/$remoteId',
+      body: {
+        'book': apiId,
+        'bookId': apiId,
+        'chapter': b.chapter,
+        'verseStart': b.verseStart,
+        'verseCount': b.verseCount,
+      },
+      token: _token,
+    );
+  }
 
   Future<void> deleteBookmark(String remoteId) =>
       _client.delete('/bookmarks/$remoteId', token: _token);
@@ -46,7 +50,7 @@ class SyncRepository {
     final res = await _client.post(
       '/notes',
       body: {
-        'bookId': n.bookId,
+        'bookId': _toApiBookId(n.bookId),
         'chapter': n.chapter,
         'verseStart': n.verseStart,
         'verseCount': n.verseCount,
@@ -61,6 +65,10 @@ class SyncRepository {
   Future<void> updateNote(String remoteId, Note n) => _client.put(
         '/notes/$remoteId',
         body: {
+          'bookId': _toApiBookId(n.bookId),
+          'chapter': n.chapter,
+          'verseStart': n.verseStart,
+          'verseCount': n.verseCount,
           'content': n.content,
           'visibility': n.isPrivate ? 'private' : 'public',
         },
@@ -73,11 +81,12 @@ class SyncRepository {
   // ── Highlights ─────────────────────────────────────────────────────────────
 
   Future<String> createHighlight(Highlight h) async {
+    final apiId = _toApiBookId(h.bookId);
     final res = await _client.post(
       '/highlights',
       body: {
-        'book': h.bookId,
-        'bookId': h.bookId,
+        'book': apiId,
+        'bookId': apiId,
         'chapter': h.chapter,
         'verseStart': h.verseStart,
         'verseCount': h.verseCount,
@@ -109,7 +118,7 @@ class SyncRepository {
   }) =>
       _client.post(
         '/progress/log-reading',
-        body: {'bookId': bookId, 'chapter': chapter},
+        body: {'bookId': _toApiBookId(bookId), 'chapter': chapter},
         token: _token,
       );
 
@@ -121,8 +130,11 @@ class SyncRepository {
       final obj = data[key];
       if (obj is Map && obj['_id'] is String) return obj['_id'] as String;
       if (data['_id'] is String) return data['_id'] as String;
+      // Some endpoints wrap inside data.data
+      final inner = data['data'];
+      if (inner is Map && inner['_id'] is String) return inner['_id'] as String;
     }
-    throw Exception('Cannot parse remote id for $key');
+    throw Exception('Cannot parse remote id for $key: ${res['data']}');
   }
 
   // Maps local ARGB palette to the backend's accepted color names.
@@ -150,15 +162,66 @@ class SyncRepository {
   static Color _colorFromName(String name) =>
       _nameToColor[name] ?? const Color(0xFFFFE062);
 
+  // Reverse lookup: server kebab-case bookId → local bookNameEn.
+  // Web FE sends lowercase-hyphen (e.g. "1-samuel"); mobile stores title-case
+  // (e.g. "1 Samuel"). This map converts between the two directions.
+  static const _bookIdToName = <String, String>{
+    'genesis': 'Genesis', 'exodus': 'Exodus', 'leviticus': 'Leviticus',
+    'numbers': 'Numbers', 'deuteronomy': 'Deuteronomy', 'joshua': 'Joshua',
+    'judges': 'Judges', 'ruth': 'Ruth', '1-samuel': '1 Samuel',
+    '2-samuel': '2 Samuel', '1-kings': '1 Kings', '2-kings': '2 Kings',
+    '1-chronicles': '1 Chronicles', '2-chronicles': '2 Chronicles',
+    'jubilees': 'Jubilees', 'enoch': 'Enoch', 'ezra': 'Ezra',
+    'nehemiah': 'Nehemiah', '3-book-of-ezra': '3 Book of Ezra',
+    '2nd-book-of-ezra': '2nd Book of Ezra', 'book-of-tobit': 'Book of Tobit',
+    'book-of-judith': 'Book of Judith', 'esther': 'Esther',
+    '1-maccabees': '1 Maccabees', '2-maccabees': '2 Maccabees',
+    '3-maccabees': '3 Maccabees', 'job': 'Job', 'psalms': 'Psalms',
+    'proverbs': 'Proverbs', 'book-of-admonition': 'Book of Admonition',
+    'wisdom-of-solomon': 'Wisdom of Solomon', 'ecclesiastes': 'Ecclesiastes',
+    'song-of-solomon': 'Song of Solomon', 'book-of-sirach': 'book of sirach',
+    'isaiah': 'Isaiah', 'jeremiah': 'Jeremiah', 'baruch': 'Baruch',
+    'lamentations': 'Lamentations',
+    'thr-letter-of-jeremiah': 'Thr letter of Jeremiah',
+    'teref-baruch': 'Teref Baruch', 'ezekiel': 'Ezekiel', 'daniel': 'Daniel',
+    'hosea': 'Hosea', 'amos': 'Amos', 'micah': 'Micah', 'joel': 'Joel',
+    'obadiah': 'Obadiah', 'jonah': 'Jonah', 'nahum': 'Nahum',
+    'habakkuk': 'Habakkuk', 'zephaniah': 'Zephaniah', 'haggai': 'Haggai',
+    'zechariah': 'Zechariah', 'malachi': 'Malachi', 'matthew': 'Matthew',
+    'mark': 'Mark', 'luke': 'Luke', 'john': 'John', 'acts': 'Acts',
+    'romans': 'Romans', '1-corinthians': '1 Corinthians',
+    '2-corinthians': '2 Corinthians', 'galatians': 'Galatians',
+    'ephesians': 'Ephesians', 'philippians': 'Philippians',
+    'colossians': 'Colossians', '1-thessalonians': '1 Thessalonians',
+    '2-thessalonians': '2 Thessalonians', '1-timothy': '1 Timothy',
+    '2-timothy': '2 Timothy', 'titus': 'Titus', 'philemon': 'Philemon',
+    'hebrews': 'Hebrews', '1-peter': '1 Peter', '2-peter': '2 Peter',
+    '1-john': '1 John', '2-john': '2 John', '3-john': '3 John',
+    'james': 'James', 'jude': 'Jude', 'revelation': 'Revelation',
+  };
+
+  /// Convert server kebab-case bookId to local bookNameEn.
+  /// Handles both web format ("genesis") and mobile format ("Genesis").
+  static String _normalizeBookId(String raw) {
+    if (raw.isEmpty) return raw;
+    final kebab = raw.toLowerCase().replaceAll(' ', '-');
+    return _bookIdToName[kebab] ?? raw;
+  }
+
+  /// Convert local bookNameEn to the API's kebab-case format.
+  static String _toApiBookId(String bookNameEn) =>
+      bookNameEn.toLowerCase().replaceAll(' ', '-');
+
   // ── Fetch (pull from server) ────────────────────────────────────────────────
 
   Future<List<Bookmark>> fetchBookmarks() async {
     final res = await _client.get('/bookmarks', token: _token);
     final data = res['data'];
-    final list = (data is Map ? data['data'] : data) as List? ?? [];
+    final list = (data is Map ? (data['data'] ?? data) : data) as List? ?? [];
     final now = DateTime.now();
     return list.whereType<Map<String, dynamic>>().map((m) {
-      final bookId = (m['book'] ?? m['bookId'] ?? '') as String;
+      final raw = (m['book'] ?? m['bookId'] ?? '') as String;
+      final bookId = _normalizeBookId(raw);
       return Bookmark(
         bookId: bookId,
         bookNumber: 0,
@@ -170,23 +233,28 @@ class SyncRepository {
         syncStatus: SyncStatus.synced,
         remoteId: m['_id'] as String?,
       );
-    }).toList();
+    }).where((b) => b.bookId.isNotEmpty).toList();
   }
 
   Future<List<Highlight>> fetchHighlights() async {
     final res = await _client.get('/highlights', token: _token);
     final data = res['data'];
-    final list = (data is Map ? data['data'] : data) as List? ?? [];
+    final list = (data is Map ? (data['data'] ?? data) : data) as List? ?? [];
     final now = DateTime.now();
     return list.whereType<Map<String, dynamic>>().map((m) {
-      final bookId = (m['book'] ?? m['bookId'] ?? '') as String;
+      final verseRef = m['verseRef'] as Map<String, dynamic>?;
+      final raw = (verseRef?['book'] ?? m['book'] ?? m['bookId'] ?? '') as String;
+      final bookId = _normalizeBookId(raw);
+      final chapter = ((verseRef?['chapter'] ?? m['chapter']) as num?)?.toInt() ?? 0;
+      final verseStart = ((verseRef?['verseStart'] ?? verseRef?['verse'] ?? m['verseStart']) as num?)?.toInt() ?? 1;
+      final verseCount = ((verseRef?['verseCount'] ?? m['verseCount']) as num?)?.toInt() ?? 1;
       final colorName = (m['color'] as String?) ?? 'yellow';
       return Highlight(
         bookId: bookId,
         bookNumber: 0,
-        chapter: (m['chapter'] as num).toInt(),
-        verseStart: (m['verseStart'] as num).toInt(),
-        verseCount: (m['verseCount'] as num?)?.toInt() ?? 1,
+        chapter: chapter,
+        verseStart: verseStart,
+        verseCount: verseCount,
         color: _colorFromName(colorName),
         note: m['note'] as String?,
         createdAt: _parseDate(m['createdAt']) ?? now,
@@ -194,22 +262,30 @@ class SyncRepository {
         syncStatus: SyncStatus.synced,
         remoteId: m['_id'] as String?,
       );
-    }).toList();
+    }).where((h) => h.bookId.isNotEmpty && h.chapter > 0).toList();
   }
 
   Future<List<Note>> fetchNotes() async {
     final res = await _client.get('/notes', token: _token);
     final data = res['data'];
-    final list = (data is Map ? data['notes'] : data) as List? ?? [];
+    final list = (data is Map
+        ? (data['notes'] ?? data['data'] ?? data)
+        : data) as List? ?? [];
     final now = DateTime.now();
     return list.whereType<Map<String, dynamic>>().map((m) {
-      final bookId = (m['bookId'] ?? m['book'] ?? '') as String;
+      // Handle both flat and nested verseRef structures
+      final verseRef = m['verseRef'] as Map<String, dynamic>?;
+      final raw = (verseRef?['book'] ?? m['bookId'] ?? m['book'] ?? '') as String;
+      final bookId = _normalizeBookId(raw);
+      final chapter = ((verseRef?['chapter'] ?? m['chapter']) as num?)?.toInt() ?? 0;
+      final verseStart = ((verseRef?['verseStart'] ?? verseRef?['verse'] ?? m['verseStart']) as num?)?.toInt() ?? 1;
+      final verseCount = ((verseRef?['verseCount'] ?? m['verseCount']) as num?)?.toInt() ?? 1;
       return Note(
         bookId: bookId,
         bookNumber: 0,
-        chapter: (m['chapter'] as num).toInt(),
-        verseStart: (m['verseStart'] as num).toInt(),
-        verseCount: (m['verseCount'] as num?)?.toInt() ?? 1,
+        chapter: chapter,
+        verseStart: verseStart,
+        verseCount: verseCount,
         content: (m['content'] as String?) ?? '',
         isPrivate: (m['visibility'] as String?) != 'public',
         createdAt: _parseDate(m['createdAt']) ?? now,
@@ -217,7 +293,7 @@ class SyncRepository {
         syncStatus: SyncStatus.synced,
         remoteId: m['_id'] as String?,
       );
-    }).where((n) => n.content.isNotEmpty).toList();
+    }).where((n) => n.content.isNotEmpty && n.bookId.isNotEmpty && n.chapter > 0).toList();
   }
 
   static DateTime? _parseDate(dynamic v) {
