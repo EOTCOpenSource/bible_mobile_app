@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/auth/auth_state.dart';
+import '../../../../core/auth/user_profile.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../auth/presentation/pages/login_screen.dart';
+import '../../../auth/presentation/pages/profile_screen.dart';
 import 'reading_settings_page.dart';
 
-class MeScreen extends StatefulWidget {
+class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
 
   @override
-  State<MeScreen> createState() => _MeScreenState();
+  ConsumerState<MeScreen> createState() => _MeScreenState();
 }
 
-class _MeScreenState extends State<MeScreen> {
+class _MeScreenState extends ConsumerState<MeScreen> {
+
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final settings = Settings.of(context);
     final isAmharic = s is AmStrings;
+    final authState = ref.watch(authStateProvider);
 
     return SafeArea(
       child: CustomScrollView(
@@ -26,7 +33,9 @@ class _MeScreenState extends State<MeScreen> {
         slivers: [
           SliverToBoxAdapter(child: _MeAppBar(s: s)),
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
-          SliverToBoxAdapter(child: _ProfileCard(s: s)),
+          SliverToBoxAdapter(
+            child: _ProfileCard(s: s, user: authState.user),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
           // ── Reading ──────────────────────────────────────────────────────
@@ -113,21 +122,22 @@ class _MeScreenState extends State<MeScreen> {
                   defaultTime: const TimeOfDay(hour: 6, minute: 0),
                   onToggle: (v) async {
                     final messenger = ScaffoldMessenger.of(context);
-                    final notifier = Settings.notifierOf(context);
                     if (v) {
                       final granted = await NotificationService.instance
                           .requestPermissions();
                       if (!granted) {
                         messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Notification permission denied'),
+                          SnackBar(
+                            content: Text(s.notificationPermissionDenied),
                           ),
                         );
                         return;
                       }
                     }
-                    notifier.value = notifier.value.copyWith(
-                      dailyVerseNotificationEnabled: v,
+                    if (!context.mounted) return;
+                    Settings.update(
+                      context,
+                      settings.copyWith(dailyVerseNotificationEnabled: v),
                     );
                     if (v) {
                       final time =
@@ -139,9 +149,7 @@ class _MeScreenState extends State<MeScreen> {
                       );
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text(
-                            '✓ Daily verse set for ${time.formatted}',
-                          ),
+                          content: Text(s.dailyVerseSet(time.formatted)),
                         ),
                       );
                     } else {
@@ -149,8 +157,8 @@ class _MeScreenState extends State<MeScreen> {
                         NotificationConfig.dailyVerseId,
                       );
                       messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Daily verse reminder off'),
+                        SnackBar(
+                          content: Text(s.dailyVerseOff),
                         ),
                       );
                     }
@@ -168,9 +176,7 @@ class _MeScreenState extends State<MeScreen> {
                     );
                     messenger.showSnackBar(
                       SnackBar(
-                        content: Text(
-                          '✓ Daily verse updated to ${picked.formatted}',
-                        ),
+                        content: Text(s.dailyVerseUpdated(picked.formatted)),
                       ),
                     );
                   },
@@ -184,21 +190,22 @@ class _MeScreenState extends State<MeScreen> {
                   defaultTime: const TimeOfDay(hour: 20, minute: 0),
                   onToggle: (v) async {
                     final messenger = ScaffoldMessenger.of(context);
-                    final notifier = Settings.notifierOf(context);
                     if (v) {
                       final granted = await NotificationService.instance
                           .requestPermissions();
                       if (!granted) {
                         messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Notification permission denied'),
+                          SnackBar(
+                            content: Text(s.notificationPermissionDenied),
                           ),
                         );
                         return;
                       }
                     }
-                    notifier.value = notifier.value.copyWith(
-                      readingTimeNotificationEnabled: v,
+                    if (!context.mounted) return;
+                    Settings.update(
+                      context,
+                      settings.copyWith(readingTimeNotificationEnabled: v),
                     );
                     if (v) {
                       final time =
@@ -210,9 +217,7 @@ class _MeScreenState extends State<MeScreen> {
                       );
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text(
-                            '✓ Reading reminder set for ${time.formatted}',
-                          ),
+                          content: Text(s.readingReminderSet(time.formatted)),
                         ),
                       );
                     } else {
@@ -220,8 +225,8 @@ class _MeScreenState extends State<MeScreen> {
                         NotificationConfig.readingReminderId,
                       );
                       messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Reading reminder off'),
+                        SnackBar(
+                          content: Text(s.readingReminderOff),
                         ),
                       );
                     }
@@ -239,9 +244,7 @@ class _MeScreenState extends State<MeScreen> {
                     );
                     messenger.showSnackBar(
                       SnackBar(
-                        content: Text(
-                          '✓ Reading reminder updated to ${picked.formatted}',
-                        ),
+                        content: Text(s.readingReminderUpdated(picked.formatted)),
                       ),
                     );
                   },
@@ -249,6 +252,8 @@ class _MeScreenState extends State<MeScreen> {
               ],
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          SliverToBoxAdapter(child: _LogoutSection(s: s)),
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
@@ -291,109 +296,223 @@ class _MeAppBar extends StatelessWidget {
 // ── Profile card ───────────────────────────────────────────────────────────────
 
 class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.s});
+  const _ProfileCard({required this.s, required this.user});
   final AppStrings s;
+  final UserProfile? user;
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    if (user == null) return _GuestCard(s: s, colors: c);
+    final initial = user!.name.isNotEmpty ? user!.name.characters.first : '?';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
-        onTap: () {},
-        child: Builder(
-          builder: (context) {
-            final c = context.colors;
-            return Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: c.primary,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: c.primary.withValues(alpha: 0.28),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: c.primary,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: c.primary.withValues(alpha: 0.28),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Avatar
-                  Container(
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (user!.avatar != null)
+                ClipOval(
+                  child: Image.network(
+                    user!.avatar!,
                     width: 52,
                     height: 52,
-                    decoration: BoxDecoration(
-                      color: c.accent,
-                      shape: BoxShape.circle,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, e, s) => _InitialsCircle(
+                      initial: initial,
+                      accent: c.accent,
+                      primary: c.primary,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'ን',
-                      style: TextStyle(
+                  ),
+                )
+              else
+                _InitialsCircle(
+                  initial: initial,
+                  accent: c.accent,
+                  primary: c.primary,
+                ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user!.name,
+                      style: const TextStyle(
                         fontFamily: AppTypography.shiromeda,
-                        fontSize: 22,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: c.primary,
+                        color: Colors.white,
+                        height: 1.3,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 14),
-                  // Name + info + badge
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ነህምያ ተስፋዬ',
-                          style: TextStyle(
-                            fontFamily: AppTypography.shiromeda,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            height: 1.3,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'nehemiah@email.com  •  12 ቀናት',
-                          style: AppTypography.amharicCaption.copyWith(
-                            color: Colors.white.withValues(alpha: 0.65),
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: c.accent,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            s.meProfileEditBadge,
-                            style: AppTypography.amharicCaption.copyWith(
-                              color: c.primary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    Text(
+                      user!.email,
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
-                    size: 22,
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: c.accent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        s.meProfileEditBadge,
+                        style: AppTypography.amharicCaption.copyWith(
+                          color: c.primary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            );
-          },
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.5),
+                size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InitialsCircle extends StatelessWidget {
+  const _InitialsCircle({
+    required this.initial,
+    required this.accent,
+    required this.primary,
+  });
+
+  final String initial;
+  final Color accent;
+  final Color primary;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          fontFamily: AppTypography.shiromeda,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: primary,
+        ),
+      ),
+    );
+  }
+}
+
+class _GuestCard extends StatelessWidget {
+  const _GuestCard({required this.s, required this.colors});
+  final AppStrings s;
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: c.primary,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: c.primary.withValues(alpha: 0.28),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: c.accent.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: c.accent.withValues(alpha: 0.4), width: 1.5),
+                ),
+                alignment: Alignment.center,
+                child: Icon(Icons.person_outline_rounded,
+                    color: c.accent, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ግባ ወይም ተመዝገብ',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.shiromeda,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'ማስታወሻዎትን ወደ ደመና ያስቀምጡ',
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.5),
+                size: 22,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -868,6 +987,50 @@ class _LangChip extends StatelessWidget {
           style: AppTypography.amharicCaption.copyWith(
             color: selected ? Colors.white : c.textMuted,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Logout section ─────────────────────────────────────────────────────────────
+
+class _LogoutSection extends ConsumerWidget {
+  const _LogoutSection({required this.s});
+  final AppStrings s;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    if (!authState.isAuthenticated) return const SizedBox.shrink();
+
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () async {
+          await ref.read(authStateProvider.notifier).logout();
+        },
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: c.primary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.primary.withValues(alpha: 0.18)),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.logout_rounded, color: c.primary, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                s.profileLogout,
+                style: AppTypography.amharicLabel
+                    .copyWith(color: c.primary, fontSize: 14),
+              ),
+            ],
           ),
         ),
       ),

@@ -9,6 +9,8 @@ import 'core/notifications/notification_service.dart';
 import 'core/services/bible_repository_provider.dart';
 import 'core/services/repository_provider.dart';
 import 'core/settings/app_settings.dart';
+import 'core/settings/settings_provider.dart';
+import 'core/storage/app_database.dart';
 import 'core/theme/app_theme.dart';
 import 'features/books/data/repositories/bible_repository.dart';
 import 'features/books/presentation/pages/reader_screen.dart';
@@ -17,13 +19,34 @@ import 'features/home/presentation/pages/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bibleRepository = BibleRepository();
-
-  // Initialize notification service
+  
   await NotificationService.instance.init(repository: bibleRepository);
+  final db = AppDatabase();
+  
+  // Load saved settings
+  final saved = await db.getSavedNotificationSettings();
+  AppSettings initialSettings = const AppSettings();
+  if (saved != null) {
+    initialSettings = AppSettings(
+      dailyVerseNotificationEnabled: saved['daily_verse_enabled'] == 1,
+      readingTimeNotificationEnabled: saved['reading_time_enabled'] == 1,
+      dailyVerseNotificationTime: saved['daily_verse_hour'] != null
+          ? TimeOfDay(hour: saved['daily_verse_hour'] as int, minute: saved['daily_verse_minute'] as int)
+          : null,
+      readingTimeNotificationTime: saved['reading_time_hour'] != null
+          ? TimeOfDay(hour: saved['reading_time_hour'] as int, minute: saved['reading_time_minute'] as int)
+          : null,
+    );
+  }
 
+  final settingsNotifier = ValueNotifier<AppSettings>(initialSettings);
+  
   runApp(
     ProviderScope(
-      overrides: [bibleRepositoryProvider.overrideWithValue(bibleRepository)],
+      overrides: [
+        bibleRepositoryProvider.overrideWithValue(bibleRepository),
+        settingsNotifierProvider.overrideWithValue(settingsNotifier),
+      ],
       child: BibleRepositoryProvider(
         repository: bibleRepository,
         child: const BibleApp(),
@@ -32,14 +55,15 @@ void main() async {
   );
 }
 
-class BibleApp extends StatelessWidget {
+class BibleApp extends ConsumerWidget {
   const BibleApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // BibleRepositoryProvider is already provided by main() with the same
     // instance that's registered in ProviderScope — don't create a second one.
     return Settings(
+      notifier: ref.read(settingsNotifierProvider),
       child: L10n(
         initialLanguage: AppLanguage.amharic,
         child: const _BibleMaterialApp(),

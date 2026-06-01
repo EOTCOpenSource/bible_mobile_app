@@ -28,20 +28,6 @@ class NotificationConfig {
       'Open the app and read today.';
 
   static const Duration permissionCacheDuration = Duration(hours: 24);
-
-  /// Rotating list of Amharic motivational phrases used for the reading
-  /// reminder body. The phrase is chosen by day-of-year so it changes
-  /// daily but never randomly (consistent across restarts).
-  static const List<String> motivationalPhrases = [
-    'ቃሉ ለዕለቴ ብርሃን ነው ',
-    
-  ];
-
-  /// Returns a motivational phrase for [date] based on day-of-year.
-  static String motivationalPhraseFor(DateTime date) {
-    final dayOfYear = date.difference(DateTime(date.year)).inDays;
-    return motivationalPhrases[dayOfYear % motivationalPhrases.length];
-  }
 }
 
 class NotificationService {
@@ -359,8 +345,7 @@ class NotificationService {
   }
 
   /// Schedule a reading time reminder notification.
-  /// The body rotates through [NotificationConfig.motivationalPhrases]
-  /// using today's date so the text is fresh each day.
+  /// The body contains today's daily verse reference and text snippet.
   /// Always cancels any existing reading reminder notification first.
   Future<void> scheduleReadingReminder(TimeOfDay time, String title) async {
     try {
@@ -368,7 +353,14 @@ class NotificationService {
         '[NotificationService] Scheduling reading reminder at ${time.hour}:${time.minute}',
       );
 
-      final body = NotificationConfig.motivationalPhraseFor(DateTime.now());
+      final et = Kenat.now().getEthiopian();
+      final month = et['month'] as int;
+      final day = et['day'] as int;
+
+      final result = await _repository.loadDailyVerse(month, day);
+      final body = result != null
+          ? '${result.bookNameAm} ${result.chapter}:${result.verse} — ${result.text.length > 80 ? '${result.text.substring(0, 80)}…' : result.text}'
+          : NotificationConfig.defaultReadingReminderBody;
 
       await scheduleDailyAt(
         NotificationConfig.readingReminderId,

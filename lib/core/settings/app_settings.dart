@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../storage/app_database.dart';
 
 class AppSettings {
   const AppSettings({
@@ -101,8 +102,11 @@ class AppSettings {
 }
 
 class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
-  Settings({super.key, AppSettings? initial, required super.child})
-    : super(notifier: ValueNotifier(initial ?? const AppSettings()));
+  const Settings({
+    super.key,
+    required ValueNotifier<AppSettings> notifier,
+    required super.child,
+  }) : super(notifier: notifier);
 
   static AppSettings of(BuildContext context) {
     final s = context.dependOnInheritedWidgetOfExactType<Settings>();
@@ -113,10 +117,22 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
     return s!.notifier!.value;
   }
 
-  static void update(BuildContext context, AppSettings updated) {
+
+
+static void update(BuildContext context, AppSettings updated) {
     final s = context.getInheritedWidgetOfExactType<Settings>();
     assert(s != null, 'No Settings found in widget tree.');
     s!.notifier!.value = updated;
+    
+    // Asynchronously persist to database
+    AppDatabase().saveNotificationSettings(
+      dailyVerseEnabled: updated.dailyVerseNotificationEnabled,
+      readingTimeEnabled: updated.readingTimeNotificationEnabled,
+      dailyVerseHour: updated.dailyVerseNotificationTime?.hour,
+      dailyVerseMinute: updated.dailyVerseNotificationTime?.minute,
+      readingTimeHour: updated.readingTimeNotificationTime?.hour,
+      readingTimeMinute: updated.readingTimeNotificationTime?.minute,
+    );
   }
 
   /// Returns the underlying [ValueNotifier] without an [InheritedWidget]

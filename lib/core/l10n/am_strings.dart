@@ -45,6 +45,11 @@ class AmStrings extends AppStrings {
   String get viewAll => 'ሁሉንም ይመልከቱ';
   @override
   String daysCount(int n) => '$n ቀናት';
+  @override
+  String get readingPlansSyncPrompt =>
+      'የንባብ ዕቅዶዎን በሁሉም መሣሪያዎች ለማስተባበር ይግቡ';
+  @override
+  String get continueWithoutAccount => 'ያለ መለያ ቀጥል';
 
   // ── Me / Settings ─────────────────────────────────────────────────────────
   @override
@@ -195,6 +200,81 @@ class AmStrings extends AppStrings {
   @override
   String get searchOrPickBook => 'ወይም መጽሐፍ ምረጥ';
 
+  // ── Saved / Collection ───────────────────────────────────────────────────
+  @override
+  String get savedEyebrow => 'ያቀቡት';
+  @override
+  String get savedTitle => 'ስብስቤ';
+  @override
+  String get savedHighlights => 'ምልክቶ';
+  @override
+  String get savedBookmarks => 'ክታቦ';
+  @override
+  String get savedNotes => 'ማስታወሻ';
+  @override
+  String get savedFilterAll => 'ሁሉም';
+  @override
+  String get savedFilterOld => 'ብሉይ';
+  @override
+  String get savedFilterNew => 'አዲስ';
+  @override
+  String get savedPickBook => 'መጽሐፍ ምረጥ';
+  @override
+  String get savedAllBooks => 'ሁሉም መጻሕፍ';
+  @override
+  String get savedPickChapter => 'ምዕራፍ ምረጥ';
+  @override
+  String get savedAllChapters => 'ሁሉም ምዕራፍ';
+  @override
+  String get savedAllChaptersShort => 'ሁሉም ምዕ.';
+  @override
+  String savedChapterLabel(int chapter) => 'ምዕ. $chapter';
+  @override
+  String get savedToday => 'ዛሬ';
+  @override
+  String get savedYesterday => 'ትናንት';
+  @override
+  String savedDaysAgo(int days) => '$days ቀን';
+  @override
+  String get savedEmptyHighlightsTitle => 'ምንም ምልክቶ የለም';
+  @override
+  String get savedEmptyHighlightsHint => 'ምንባብ ሲያነቡ ቁጥር ጎልቶ ይሰምጡ';
+  @override
+  String get savedEmptyBookmarksTitle => 'ምንም ክታቦ የለም';
+  @override
+  String get savedEmptyBookmarksHint => 'ምንባብ ሲያነቡ ቁጥር ያቆዩ';
+  @override
+  String get savedEmptyNotesTitle => 'ምንም ማስታወሻ የለም';
+  @override
+  String get savedEmptyNotesHint => 'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ';
+  @override
+  String get savedEdit => 'አስተካክል';
+  @override
+  String get savedDelete => 'ሰርዝ';
+  @override
+  String get savedDeleteNoteTitle => 'ማስታወሻ ሰርዝ';
+  @override
+  String savedDeleteNoteMessage(String reference) =>
+      'ማስታወሻዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedDeleteBookmarkTitle => 'ክታቦ ሰርዝ';
+  @override
+  String savedDeleteBookmarkMessage(String reference) =>
+      'ክታቦዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedDeleteHighlightTitle => 'ምልክቶ ሰርዝ';
+  @override
+  String savedDeleteHighlightMessage(String reference) =>
+      'ምልክቶዎን ለመሰረዝ ይፈልጋሉ?\n$reference';
+  @override
+  String get savedCancel => 'ተወው';
+  @override
+  String get savedNoteDeleted => 'ማስታወሻ ተሰርዟል';
+  @override
+  String get savedBookmarkDeleted => 'ክታቦ ተሰርዟል';
+  @override
+  String get savedHighlightDeleted => 'ምልክቶ ተሰርዟል';
+
   // ── Reader ────────────────────────────────────────────────────────────────
   @override
   String get chapterAbbr => 'ምዕ';
@@ -210,4 +290,141 @@ class AmStrings extends AppStrings {
   String get verseShare => 'አጋራ';
   @override
   String get comingSoon => 'በቅርቡ ይመጣል';
+
+  // ── Auth — shared ─────────────────────────────────────────────────────────
+  @override String get authEmail             => 'ኢሜል';
+  @override String get authEmailRequired     => 'ኢሜል ያስፈልጋል';
+  @override String get authEmailInvalid      => 'ትክክለኛ ኢሜል ያስገቡ';
+  @override String get authPassword          => 'የይለፍ ቃል';
+  @override String get authPasswordRequired  => 'የይለፍ ቃል ያስፈልጋል';
+  @override String get authConnectionError   => 'ግንኙነት አልተሳካም። ድጋሚ ይሞክሩ።';
+
+  // ── Auth — login ──────────────────────────────────────────────────────────
+  @override String get loginTitle            => 'እንኳን ደህና መጡ';
+  @override String get loginSubtitle         => 'መጽሐፍ ቅዱስ ማንበብ ለመቀጠል ይግቡ።';
+  @override String get loginRememberMe       => 'አስታወስኝ';
+  @override String get loginForgotPassword   => 'የይለፍ ቃል ረሳህ?';
+  @override String get loginButton           => 'ግባ';
+  @override String get loginOrDivider        => 'ወይም በነዚህ ይግቡ';
+  @override String get loginNoAccount        => 'አካውንት የለዎትም? ';
+  @override String get loginRegisterLink     => 'ይ​መዝ​ገቡ';
+  @override String get loginVerseQuote       => 'ቃልህ ለመንገዴ ብርሃን ነው';
+  @override String get loginAccountLocked    => 'መለያዎ ተቆልፏል። ከ2 ሰዓት በኋላ ይሞክሩ።';
+  @override String get loginGoogleFailed     => 'Google ግባ አልተሳካም። ድጋሚ ይሞክሩ።';
+  @override String get loginFacebookComingSoon => 'Facebook Sign In — በቅርብ ይመጣል';
+
+  // ── Auth — register ───────────────────────────────────────────────────────
+  @override String get registerTitle             => 'አካውንት ይፍጠሩ';
+  @override String get registerSubtitle          => 'የ ንባብ ሂደቶን፣ ኖቶቹን፣ እና ቀለሞችን ';
+  @override String get registerFullName          => 'ሙሉ ስም';
+  @override String get registerFullNameRequired  => 'ሙሉ ስም ያስፈልጋል';
+  @override String get registerFullNameTooShort  => 'ስም ቢያንስ 2 ፊደላት ያስፈልጋሉ';
+  @override String get registerPasswordTooShort  => 'ቢያንስ 8 ቁምፊዎች ያስፈልጋሉ';
+  @override String get registerAcceptTerms       => 'ውሎቹን እና ሁኔታዎቹን ይቀበሉ';
+  @override String get registerButton            => 'ይ​መዝ​ጋቡ';
+  @override String get registerHaveAccount       => 'መለያ አለዎት? ';
+  @override String get registerLoginLink         => 'ይ​ግቡ';
+  @override String get registerTermsText         => 'I accept the Community Terms and Privacy Policy.';
+  @override String get passwordWeak              => 'ደካማ';
+  @override String get passwordFair              => 'መካከለኛ';
+  @override String get passwordGood              => 'ጥሩ';
+  @override String get passwordStrong            => 'ጠንካራ';
+
+  // ── Auth — OTP ────────────────────────────────────────────────────────────
+  @override String get otpTitle          => 'ኮድዎን ያረጋግጡ';
+  @override String get otpSentPrefix     => 'ወደ ';
+  @override String get otpSentSuffix     => ' 6 አሃዝ ኮድ ልከናል። አባክዎ ከታች ያስገቡ።';
+  @override String otpDigitsRequired(int n) => 'የ$n ቁጥር ኮድ ያስፈልጋል';
+  @override String get otpNotReceived    => 'ኮድ አልደረሰዎትም? ';
+  @override String otpResendIn(String t) => 'ድጋሚ ላክ $t';
+  @override String get otpResend         => 'ድጋሚ ላክ';
+  @override String get otpVerifyButton   => 'አረጋጥ';
+  @override String get otpChangePhone    => 'ስልክ ቁጥር ለውጥ';
+  @override String get otpChangeEmail    => 'ኢሜል ለውጥ';
+  @override String get otpResendFailed   => 'ኮድ መላክ አልተሳካም። ድጋሚ ይሞክሩ።';
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  @override String get forgotTitle            => 'የይለፍ ቃል ረሱ?';
+  @override String get forgotSubtitle         => 'ምንም አያስቡ። የተመዘገቡበትን ኢሜልዎን ያስገቡ፤ የዳግም ማስጀመሪያ ኮድ እንልካለን።';
+  @override String get forgotEmailLabel       => 'የተመዘገቡበት ኢሜል';
+  @override String get forgotEmailHelper      => 'የዳግም ማስጀመሪያ ኮዱ ወደዚህ ኢሜል ይላካል።';
+  @override String get forgotPhoneLabel       => 'የተመዘገቡ ስልክ ቁጥር';
+  @override String get forgotPhoneHelper      => 'የዳግም ማስጀመሪያ ኮዱ ወደዚህ ስልክ ቁጥር ይላካል።';
+  @override String get forgotSendButton       => 'ኮድ ላክ';
+  @override String get forgotRememberPassword => 'ኮዱን አስታወሱ? ';
+  @override String get forgotPhoneComingSoon  => 'ስልክ ቁጥር ዳግም ማስጀመሪያ — በቅርብ ይመጣል';
+  @override String get forgotTabPhone         => 'ስልክ';
+
+  // ── Reset password ────────────────────────────────────────────────────────
+  @override String get resetTitle             => 'አዲስ የይለፍ ቃል';
+  @override String get resetSubtitle          => 'የሚያስታውሱት ጠንካራ የይለፍ ቃል ለመምረጥ ይሞክሩ።';
+  @override String get resetTokenLabel        => 'ከኢሜልዎ የተቀበሉት ኮድ';
+  @override String get resetNewPasswordLabel  => 'አዲስ የይለፍ ቃል';
+  @override String get resetConfirmLabel      => 'የይለፍ ቃል ያረጋግጡ';
+  @override String get resetRequirementsTitle => 'የይለፍ ቃል መስፈርቶች';
+  @override String get resetReqLength         => 'ቢያንስ 8 ቁምፊዎች';
+  @override String get resetReqUpper          => 'አንድ ትልቅ ፊደል (A–Z)';
+  @override String get resetReqNumber         => 'አንድ ቁጥር (0–9)';
+  @override String get resetReqSpecial        => 'አንድ ልዩ ምልክት (!@#\$)';
+  @override String get resetSaveButton        => 'አስቀምጥ እና ግባ';
+  @override String get resetSuccessMessage    => 'የይለፍ ቃልዎ ተቀይሯል። እባክዎ ይግቡ።';
+
+  // ── Profile screen ────────────────────────────────────────────────────────
+  @override String get profileTitle            => 'ፕሮፋይል';
+  @override String get profileMemberBadge      => 'አባል';
+  @override String get profileLogout           => 'ውጣ';
+  @override String get profileDeleteAccount    => 'መለያ ሰርዝ';
+  @override String get profileEditButton       => 'ፕሮፋይል አስተካክል';
+  @override String get profileAchievements     => 'ስኬቶች';
+  @override String get profileStatStreak       => 'የቀን ስኬቶች';
+  @override String get profileStatBookmarks    => 'ምልክት';
+  @override String get profileStatPlan         => 'ዕቅድ';
+  @override String get profileDeleteTitle      => 'መለያ ይሰረዝ?';
+  @override String get profileDeleteMessage    => 'ሁሉም ዳታ ይጠፋል። ይህ ድርጊት ሊመለስ አይችልም።';
+  @override String get profileDeleteCancel     => 'ይቅር';
+  @override String get profileDeleteConfirm    => 'ሰርዝ';
+  @override String get achievementFirstDayTitle => 'መጀመሪያ ቀን';
+  @override String get achievementFirstDaySub   => 'First Day';
+  @override String get achievement7DayTitle     => '፯ ቀን ሰንሰለት';
+  @override String get achievement7DaySub       => '7-Day Streak';
+  @override String get achievementPsalmTitle    => 'የምዝሙሩ';
+  @override String get achievementPsalmSub      => 'Psalm Reader';
+
+  // ── Profile editing ───────────────────────────────────────────────────────
+  @override String get profileFirstName          => 'ስም';
+  @override String get profileLastName           => 'ያባት ስም';
+  @override String get profileSaveChanges        => 'ለውጦች አስቀምጥ';
+  @override String get profileSaved              => 'ፕሮፋይሉ ተዘምኗል';
+  @override String get profileSectionInfo        => 'የመለያ መረጃ';
+  @override String get profileSectionSecurity    => 'ደህንነት';
+  @override String get profileSectionPreferences => 'ምርጫዎች';
+  @override String get profileChangePhoto        => 'ፎቶ ቀይር';
+  @override String get profileGoogleNote         => 'Google አካውንት ነዎት — ኢሜይሉ ሊቀየር አይችልም';
+  @override String get profileChangePassword     => 'ይለፍ ቃሉን ቀይር';
+  @override String get profileCurrentPassword    => 'አሁን ያለ ይለፍ ቃሉ';
+  @override String get profileNewPassword        => 'አዲስ ይለፍ ቃሉ';
+  @override String get profileConfirmNewPassword => 'ይለፍ ቃሉን ያረጋግጡ';
+  @override String get profileUpdatePassword     => 'ይለፍ ቃሉን ዘምን';
+  @override String get profilePasswordChanged    => 'ይለፍ ቃሉ ተቀይሯል';
+  @override String get profilePasswordMismatch   => 'ይለፍ ቃሎቹ አይዛመዱም';
+  @override String get profileUpdateFailed       => 'ማዘምን አልተሳካም። እንደገና ይሞክሩ።';
+
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+    @override
+    String get notificationPermissionDenied => 'ማሳወቂያዎችን ለመላክ ፈቃድ አልተሰጠም';
+    @override
+    String dailyVerseSet(String time) => 'የዕለቱ ጥቅስ ማሳወቂያ በ $time ተዘጋጅቷል';
+    @override
+    String get dailyVerseOff => 'የዕለቱ ጥቅስ ማሳወቂያ ጠፍቷል';
+    @override
+    String dailyVerseUpdated(String time) => 'የዕለቱ ጥቅስ ማሳወቂያ ወደ $time ተቀይሯል';
+    @override
+    String get readingReminderOff => 'የንባብ ሰዓት ማሳወቂያ ጠፍቷል';
+    @override
+    String readingReminderSet(String time) => 'የንባብ ሰዓት ማሳወቂያ በ $time ተዘጋጅቷል';
+    @override
+    String readingReminderUpdated(String time) => 'የንባብ ሰዓት ማሳወቂያ ወደ $time ተቀይሯል';
+
+
 }
