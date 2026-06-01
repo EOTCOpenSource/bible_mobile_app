@@ -409,4 +409,27 @@ class AmStrings extends AppStrings {
   @override String get profilePasswordMismatch   => 'ይለፍ ቃሎቹ አይዛመዱም';
   @override String get profileUpdateFailed       => 'ማዘምን አልተሳካም። እንደገና ይሞክሩ።';
 
+  // ── Verse card sheet ──────────────────────────────────────────────────────
+  @override String get cardSheetTitle      => 'ቅጥ እና አካፍል';
+  @override String get cardTabBackground   => 'ዳራ';
+  @override String get cardTabText         => 'ጽሑፍ';
+  @override String get cardTabReference    => 'ምንጭ';
+  @override String get cardTabRatio        => 'መጠን';
+  @override String get cardShare           => 'አጋራ';
+  @override String get cardSaveToGallery   => 'አስቀምጥ';
+  @override String get cardSaved           => 'ወደ ጋለሪ ተቀምጧል';
+  @override String get cardSaveFailed      => 'ማስቀመጥ አልተሳካም';
+  @override String get cardBgColours       => 'ቀለማት';
+  @override String get cardBgGradients     => 'ቅብ';
+  @override String get cardBgGallery       => 'ጋለሪ';
+  @override String get cardBgFrame         => 'ክፈፍ';
+  @override String get cardFontLabel       => 'ፊደል';
+  @override String get cardSizeLabel       => 'መጠን';
+  @override String get cardColorLight      => 'ብርሃን';
+  @override String get cardColorDark       => 'ጨለማ';
+  @override String get cardRefGeez         => 'ግዕዝ';
+  @override String get cardRefArabic       => '123';
+  @override String get cardRefAmharic      => 'አማርኛ';
+  @override String get cardRefEnglish      => 'English';
+  @override String get cardRefShow         => 'ምንጩን አሳይ';
 }

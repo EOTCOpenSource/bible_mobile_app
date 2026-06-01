@@ -286,4 +286,27 @@ abstract class AppStrings {
   String get profilePasswordMismatch;
   String get profileUpdateFailed;
 
+  // ── Verse card sheet ──────────────────────────────────────────────────────
+  String get cardSheetTitle;
+  String get cardTabBackground;
+  String get cardTabText;
+  String get cardTabReference;
+  String get cardTabRatio;
+  String get cardShare;
+  String get cardSaveToGallery;
+  String get cardSaved;
+  String get cardSaveFailed;
+  String get cardBgColours;
+  String get cardBgGradients;
+  String get cardBgGallery;
+  String get cardBgFrame;
+  String get cardFontLabel;
+  String get cardSizeLabel;
+  String get cardColorLight;
+  String get cardColorDark;
+  String get cardRefGeez;
+  String get cardRefArabic;
+  String get cardRefAmharic;
+  String get cardRefEnglish;
+  String get cardRefShow;
 }
