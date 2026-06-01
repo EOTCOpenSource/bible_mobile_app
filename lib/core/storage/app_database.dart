@@ -193,6 +193,7 @@ class AppDatabase {
     ''');
     await _createReadingTables(db);
     await _createPlanPositionTable(db);
+    await _createSettingsTable(db);
   }
 
   Future<void> _createPlanPositionTable(Database db) => db.execute('''
