@@ -28,7 +28,7 @@ class BackgroundPicker extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to pick image')),
+          SnackBar(content: Text(L10n.of(context).cardImagePickFailed)),
         );
       }
     }
@@ -81,7 +81,7 @@ class BackgroundPicker extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: ChoiceChip(
-                    label: Text(_getFrameLabel(frame)),
+                    label: Text(_getFrameLabel(frame, s)),
                     selected: isSelected,
                     onSelected: (val) {
                       if (val) onChanged(state.copyWith(frameStyle: frame));
@@ -284,16 +284,16 @@ class BackgroundPicker extends StatelessWidget {
     }
   }
 
-  String _getFrameLabel(CardFrameStyle frame) {
+  String _getFrameLabel(CardFrameStyle frame, dynamic s) {
     switch (frame) {
       case CardFrameStyle.none:
-        return 'None';
+        return s.cardFrameNone;
       case CardFrameStyle.line:
-        return 'Simple';
+        return s.cardFrameSimple;
       case CardFrameStyle.ornate:
-        return 'Ornate';
+        return s.cardFrameOrnate;
       case CardFrameStyle.manuscript:
-        return 'Manuscript';
+        return s.cardFrameManuscript;
     }
   }
 }

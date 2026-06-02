@@ -11,6 +11,7 @@ class AppSettings {
     this.cardBgType = 0,
     this.cardSolidColorIndex = 0,
     this.cardGradientIndex = 0,
+    this.cardFrameStyleIndex = 0,
     this.cardFontIndex = 0,
     this.cardAspectRatio = 0,
   });
@@ -36,6 +37,7 @@ class AppSettings {
   final int cardBgType;
   final int cardSolidColorIndex;
   final int cardGradientIndex;
+  final int cardFrameStyleIndex;
   final int cardFontIndex;
   final int cardAspectRatio;
 
@@ -49,6 +51,7 @@ class AppSettings {
     int? cardBgType,
     int? cardSolidColorIndex,
     int? cardGradientIndex,
+    int? cardFrameStyleIndex,
     int? cardFontIndex,
     int? cardAspectRatio,
   }) =>
@@ -62,6 +65,7 @@ class AppSettings {
         cardBgType: cardBgType ?? this.cardBgType,
         cardSolidColorIndex: cardSolidColorIndex ?? this.cardSolidColorIndex,
         cardGradientIndex: cardGradientIndex ?? this.cardGradientIndex,
+        cardFrameStyleIndex: cardFrameStyleIndex ?? this.cardFrameStyleIndex,
         cardFontIndex: cardFontIndex ?? this.cardFontIndex,
         cardAspectRatio: cardAspectRatio ?? this.cardAspectRatio,
       );
@@ -78,6 +82,7 @@ class AppSettings {
       other.cardBgType == cardBgType &&
       other.cardSolidColorIndex == cardSolidColorIndex &&
       other.cardGradientIndex == cardGradientIndex &&
+      other.cardFrameStyleIndex == cardFrameStyleIndex &&
       other.cardFontIndex == cardFontIndex &&
       other.cardAspectRatio == cardAspectRatio;
 
@@ -92,6 +97,7 @@ class AppSettings {
         cardBgType,
         cardSolidColorIndex,
         cardGradientIndex,
+        cardFrameStyleIndex,
         cardFontIndex,
         cardAspectRatio,
       );

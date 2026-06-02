@@ -58,6 +58,7 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
         initialBgType: settings.cardBgType,
         initialSolidColorIndex: settings.cardSolidColorIndex,
         initialGradientIndex: settings.cardGradientIndex,
+        initialFrameStyleIndex: settings.cardFrameStyleIndex,
         initialFontIndex: settings.cardFontIndex,
         initialAspectRatioIndex: settings.cardAspectRatio,
         defaultGeez: settings.useGeezNumbers,
@@ -86,6 +87,7 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
         cardBgType: newState.bgType.index,
         cardSolidColorIndex: newState.solidColorIndex,
         cardGradientIndex: newState.gradientIndex,
+        cardFrameStyleIndex: newState.frameStyle.index,
         cardFontIndex: newState.fontIndex,
         cardAspectRatio: newState.aspectRatio.index,
       ),
@@ -145,25 +147,23 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
           name: "verse_card_${DateTime.now().millisecondsSinceEpoch}",
         );
 
-        if (context.mounted) {
-          final isSuccess = result != null && (result['isSuccess'] == true || result == true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(isSuccess ? s.cardSaved : s.cardSaveFailed),
-              backgroundColor: isSuccess ? AppColors.accentDeep : Colors.redAccent,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
+        if (!mounted) return;
+        final isSuccess = result != null && (result['isSuccess'] == true || result == true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${s.cardSaveFailed}: $e'),
-            backgroundColor: Colors.redAccent,
+            content: Text(isSuccess ? s.cardSaved : s.cardSaveFailed),
+            backgroundColor: isSuccess ? AppColors.accentDeep : Colors.redAccent,
           ),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${s.cardSaveFailed}: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -184,27 +184,27 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
         final file = await File('${tempDir.path}/verse_share_${DateTime.now().millisecondsSinceEpoch}.png').create();
         await file.writeAsBytes(imageBytes);
 
-        if (context.mounted) {
-          final box = context.findRenderObject() as RenderBox?;
-          final sharePositionOrigin = box != null
-              ? Rect.fromLTWH(0, 0, box.size.width, box.size.height / 2)
-              : null;
+        if (!mounted) return;
+        final box = context.findRenderObject() as RenderBox?;
+        final sharePositionOrigin = box != null
+            ? Rect.fromLTWH(0, 0, box.size.width, box.size.height / 2)
+            : null;
 
-          await Share.shareXFiles(
-            [XFile(file.path)],
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
             sharePositionOrigin: sharePositionOrigin,
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${s.cardSaveFailed}: $e'),
-            backgroundColor: Colors.redAccent,
           ),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${s.cardSaveFailed}: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }

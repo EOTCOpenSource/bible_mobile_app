@@ -309,4 +309,23 @@ abstract class AppStrings {
   String get cardRefAmharic;
   String get cardRefEnglish;
   String get cardRefShow;
+  // reference_picker
+  String get cardRefNumeralStyle;
+  String get cardRefNumeralHint;
+  String get cardRefBookLang;
+  String get cardRefBookLangHint;
+  // text_picker
+  String get cardTextColour;
+  String get cardTextAlignment;
+  // ratio_picker
+  String get cardRatioSquare;
+  String get cardRatioPortrait;
+  String get cardRatioStory;
+  // background_picker frame labels
+  String get cardFrameNone;
+  String get cardFrameSimple;
+  String get cardFrameOrnate;
+  String get cardFrameManuscript;
+  // background_picker snackbar
+  String get cardImagePickFailed;
 }

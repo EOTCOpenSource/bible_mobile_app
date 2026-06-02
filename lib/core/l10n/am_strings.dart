@@ -432,4 +432,18 @@ class AmStrings extends AppStrings {
   @override String get cardRefAmharic      => 'አማርኛ';
   @override String get cardRefEnglish      => 'English';
   @override String get cardRefShow         => 'ምንጩን አሳይ';
+  @override String get cardRefNumeralStyle => 'የቁጥር ዘይቤ';
+  @override String get cardRefNumeralHint  => 'የቁጥር ስርዓት ይምረጡ';
+  @override String get cardRefBookLang     => 'የመጽሐፍ ስም ቋንቋ';
+  @override String get cardRefBookLangHint => 'የምንጭ መጽሐፍ ማሳያ ቋንቋ';
+  @override String get cardTextColour      => 'ቀለም';
+  @override String get cardTextAlignment   => 'አሰላለፍ';
+  @override String get cardRatioSquare     => 'ካሬ';
+  @override String get cardRatioPortrait   => 'ቁመት';
+  @override String get cardRatioStory      => 'ስቶሪ';
+  @override String get cardFrameNone       => 'ያለ ፍሬም';
+  @override String get cardFrameSimple     => 'ቀላል';
+  @override String get cardFrameOrnate     => 'ያጌጠ';
+  @override String get cardFrameManuscript => 'ብራና';
+  @override String get cardImagePickFailed => 'ምስል መምረጥ አልተቻለም';
 }

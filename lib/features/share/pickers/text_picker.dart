@@ -103,7 +103,7 @@ class TextPicker extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Colour',
+                      s.cardTextColour,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -140,7 +140,7 @@ class TextPicker extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Alignment',
+                      s.cardTextAlignment,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

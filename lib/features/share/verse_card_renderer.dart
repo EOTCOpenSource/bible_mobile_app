@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../books/presentation/widgets/reader/constants.dart';
 import 'verse_card_models.dart';
 import 'verse_card_state.dart';
@@ -69,16 +68,6 @@ class VerseCardRenderer extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Ornate top divider decoration for premium look
-                    if (state.frameStyle == CardFrameStyle.ornate || state.frameStyle == CardFrameStyle.manuscript) ...[
-                      Icon(
-                        Icons.brightness_5_outlined,
-                        size: 16,
-                        color: textColor.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
                     Flexible(
                       child: SingleChildScrollView(
                         physics: const NeverScrollableScrollPhysics(),
@@ -178,104 +167,122 @@ void paint(Canvas canvas, Size size) {
     canvas.drawRect(rect, paint);
   } 
   else if (style == CardFrameStyle.ornate) {
-    final outerRect = Rect.fromLTRB(16, 16, size.width - 16, size.height - 16);
-    final innerRect = Rect.fromLTRB(22, 22, size.width - 22, size.height - 22);
+    final double margin = 24.0;
+    final double starRadius = 6.0;
+    final double dotSpacing = 8.0;
+    final double dotRadius = 1.5;
 
+    final topLeft = Offset(margin, margin);
+    final topRight = Offset(size.width - margin, margin);
+    final bottomLeft = Offset(margin, size.height - margin);
+    final bottomRight = Offset(size.width - margin, size.height - margin);
+
+    // Draw 4-pointed stars
+    void drawStar(Offset center) {
+      final path = Path();
+      path.moveTo(center.dx, center.dy - starRadius);
+      path.quadraticBezierTo(center.dx, center.dy, center.dx + starRadius, center.dy);
+      path.quadraticBezierTo(center.dx, center.dy, center.dx, center.dy + starRadius);
+      path.quadraticBezierTo(center.dx, center.dy, center.dx - starRadius, center.dy);
+      path.close();
+      
+      final fillPaint = Paint()
+        ..color = color
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(path, fillPaint);
+    }
+
+    drawStar(topLeft);
+    drawStar(topRight);
+    drawStar(bottomLeft);
+    drawStar(bottomRight);
+
+    paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 1.0;
-    canvas.drawRect(outerRect, paint);
 
-    paint.strokeWidth = 0.5;
-    canvas.drawRect(innerRect, paint);
+    void drawDot(Offset offset) {
+      final fillPaint = Paint()
+        ..color = color
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(offset, dotRadius, fillPaint);
+    }
 
-    paint.strokeWidth = 1.5;
+    // Top Edge
+    drawDot(Offset(topLeft.dx + dotSpacing * 1.5, topLeft.dy));
+    drawDot(Offset(topLeft.dx + dotSpacing * 3, topLeft.dy));
+    drawDot(Offset(topRight.dx - dotSpacing * 1.5, topRight.dy));
+    drawDot(Offset(topRight.dx - dotSpacing * 3, topRight.dy));
+    canvas.drawLine(
+        Offset(topLeft.dx + dotSpacing * 4.5, topLeft.dy),
+        Offset(topRight.dx - dotSpacing * 4.5, topRight.dy), paint);
 
-    // Top Left
-    canvas.drawLine(Offset(10, 16), Offset(28, 16), paint);
-    canvas.drawLine(Offset(16, 10), Offset(16, 28), paint);
+    // Bottom Edge
+    drawDot(Offset(bottomLeft.dx + dotSpacing * 1.5, bottomLeft.dy));
+    drawDot(Offset(bottomLeft.dx + dotSpacing * 3, bottomLeft.dy));
+    drawDot(Offset(bottomRight.dx - dotSpacing * 1.5, bottomRight.dy));
+    drawDot(Offset(bottomRight.dx - dotSpacing * 3, bottomRight.dy));
+    canvas.drawLine(
+        Offset(bottomLeft.dx + dotSpacing * 4.5, bottomLeft.dy),
+        Offset(bottomRight.dx - dotSpacing * 4.5, bottomRight.dy), paint);
 
-    // Top Right
+    // Left Edge
+    drawDot(Offset(topLeft.dx, topLeft.dy + dotSpacing * 1.5));
+    drawDot(Offset(topLeft.dx, topLeft.dy + dotSpacing * 3));
+    drawDot(Offset(bottomLeft.dx, bottomLeft.dy - dotSpacing * 1.5));
+    drawDot(Offset(bottomLeft.dx, bottomLeft.dy - dotSpacing * 3));
     canvas.drawLine(
-      Offset(size.width - 10, 16),
-      Offset(size.width - 28, 16),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(size.width - 16, 10),
-      Offset(size.width - 16, 28),
-      paint,
-    );
+        Offset(topLeft.dx, topLeft.dy + dotSpacing * 4.5),
+        Offset(bottomLeft.dx, bottomLeft.dy - dotSpacing * 4.5), paint);
 
-    // Bottom Left
+    // Right Edge
+    drawDot(Offset(topRight.dx, topRight.dy + dotSpacing * 1.5));
+    drawDot(Offset(topRight.dx, topRight.dy + dotSpacing * 3));
+    drawDot(Offset(bottomRight.dx, bottomRight.dy - dotSpacing * 1.5));
+    drawDot(Offset(bottomRight.dx, bottomRight.dy - dotSpacing * 3));
     canvas.drawLine(
-      Offset(10, size.height - 16),
-      Offset(28, size.height - 16),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(16, size.height - 10),
-      Offset(16, size.height - 28),
-      paint,
-    );
-
-    // Bottom Right
-    canvas.drawLine(
-      Offset(size.width - 10, size.height - 16),
-      Offset(size.width - 28, size.height - 16),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(size.width - 16, size.height - 10),
-      Offset(size.width - 16, size.height - 28),
-      paint,
-    );
+        Offset(topRight.dx, topRight.dy + dotSpacing * 4.5),
+        Offset(bottomRight.dx, bottomRight.dy - dotSpacing * 4.5), paint);
   } 
   else if (style == CardFrameStyle.manuscript) {
+    paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2.0;
 
-    final rect = Rect.fromLTRB(20, 20, size.width - 20, size.height - 20);
-    canvas.drawRect(rect, paint);
+    final path = Path();
+    final margin = 20.0;
+    
+    // Top scroll roll
+    path.moveTo(margin, margin + 15);
+    path.quadraticBezierTo(size.width / 2, margin - 15, size.width - margin, margin + 15);
+    
+    // Right wavy edge
+    path.quadraticBezierTo(size.width - margin + 8, size.height / 3, size.width - margin - 4, size.height / 2);
+    path.quadraticBezierTo(size.width - margin + 6, size.height * 2 / 3, size.width - margin, size.height - margin - 15);
+
+    // Bottom scroll roll
+    path.quadraticBezierTo(size.width / 2, size.height - margin + 15, margin, size.height - margin - 15);
+
+    // Left wavy edge
+    path.quadraticBezierTo(margin - 8, size.height * 2 / 3, margin + 4, size.height / 2);
+    path.quadraticBezierTo(margin - 6, size.height / 3, margin, margin + 15);
+
+    canvas.drawPath(path, paint);
+
+    // Inner scroll lines (curls)
+    final innerPath = Path();
+    innerPath.moveTo(margin, margin + 15);
+    innerPath.quadraticBezierTo(margin + 15, margin + 25, margin + 30, margin + 10);
+    
+    innerPath.moveTo(size.width - margin, margin + 15);
+    innerPath.quadraticBezierTo(size.width - margin - 15, margin + 25, size.width - margin - 30, margin + 10);
+
+    innerPath.moveTo(margin, size.height - margin - 15);
+    innerPath.quadraticBezierTo(margin + 15, size.height - margin - 25, margin + 30, size.height - margin - 10);
+
+    innerPath.moveTo(size.width - margin, size.height - margin - 15);
+    innerPath.quadraticBezierTo(size.width - margin - 15, size.height - margin - 25, size.width - margin - 30, size.height - margin - 10);
 
     paint.strokeWidth = 1.0;
-
-    // Top-left
-    canvas.drawLine(Offset(14, 14), Offset(32, 14), paint);
-    canvas.drawLine(Offset(14, 14), Offset(14, 32), paint);
-
-    // Top-right
-    canvas.drawLine(
-      Offset(size.width - 14, 14),
-      Offset(size.width - 32, 14),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(size.width - 14, 14),
-      Offset(size.width - 14, 32),
-      paint,
-    );
-
-    // Bottom-left
-    canvas.drawLine(
-      Offset(14, size.height - 14),
-      Offset(32, size.height - 14),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(14, size.height - 14),
-      Offset(14, size.height - 32),
-      paint,
-    );
-
-    // Bottom-right
-    canvas.drawLine(
-      Offset(size.width - 14, size.height - 14),
-      Offset(size.width - 32, size.height - 14),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(size.width - 14, size.height - 14),
-      Offset(size.width - 14, size.height - 32),
-      paint,
-    );
+    canvas.drawPath(innerPath, paint);
   }
 }
   

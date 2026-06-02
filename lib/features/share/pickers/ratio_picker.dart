@@ -67,7 +67,7 @@ class RatioPicker extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _getRatioLabel(aspectRatio),
+                            _getRatioLabel(aspectRatio, s),
                             style: TextStyle(
                               fontSize: 10,
                               color: isDark ? Colors.white38 : Colors.black38,
@@ -97,14 +97,14 @@ class RatioPicker extends StatelessWidget {
     }
   }
 
-  String _getRatioLabel(CardAspectRatio ratio) {
+  String _getRatioLabel(CardAspectRatio ratio, dynamic s) {
     switch (ratio) {
       case CardAspectRatio.square:
-        return 'Square';
+        return s.cardRatioSquare;
       case CardAspectRatio.portrait:
-        return 'Portrait (Tall)';
+        return s.cardRatioPortrait;
       case CardAspectRatio.story:
-        return 'Story / Status';
+        return s.cardRatioStory;
     }
   }
 }

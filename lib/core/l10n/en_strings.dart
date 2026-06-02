@@ -432,4 +432,18 @@ class EnStrings extends AppStrings {
   @override String get cardRefAmharic      => 'Amharic';
   @override String get cardRefEnglish      => 'English';
   @override String get cardRefShow         => 'Show reference';
+  @override String get cardRefNumeralStyle => 'Numeral Style';
+  @override String get cardRefNumeralHint  => 'Choose numeral system';
+  @override String get cardRefBookLang     => 'Book Name Language';
+  @override String get cardRefBookLangHint => 'Display language of source book';
+  @override String get cardTextColour      => 'Colour';
+  @override String get cardTextAlignment   => 'Alignment';
+  @override String get cardRatioSquare     => 'Square';
+  @override String get cardRatioPortrait   => 'Portrait (Tall)';
+  @override String get cardRatioStory      => 'Story / Status';
+  @override String get cardFrameNone       => 'None';
+  @override String get cardFrameSimple     => 'Simple';
+  @override String get cardFrameOrnate     => 'Ornate';
+  @override String get cardFrameManuscript => 'Manuscript';
+  @override String get cardImagePickFailed => 'Failed to pick image';
 }

@@ -17,7 +17,7 @@ class ReferencePicker extends StatelessWidget {
     final s = L10n.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Column(
         children: [
@@ -29,7 +29,7 @@ class ReferencePicker extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70  : Colors.black.withOpacity(0.85),
+                  color: isDark ? Colors.white70  : Colors.black.withValues(alpha: 0.85),
                 ),
               ),
               const Spacer(),
@@ -54,13 +54,13 @@ class ReferencePicker extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Numeral Style',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          Text(
+                            s.cardRefNumeralStyle,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Choose numeral system',
+                            s.cardRefNumeralHint,
                             style: TextStyle(fontSize: 11, color: isDark ? Colors.white54 : Colors.black54),
                           ),
                         ],
@@ -88,13 +88,13 @@ class ReferencePicker extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Book Name Language',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          Text(
+                            s.cardRefBookLang,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Display language of source book',
+                            s.cardRefBookLangHint,
                             style: TextStyle(fontSize: 11, color: isDark ? Colors.white54 : Colors.black54),
                           ),
                         ],
