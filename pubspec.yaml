@@ -76,6 +76,8 @@ flutter:
   assets:
     - assets/bibledata/
     - assets/signin/
+    - assets/eotc.jpg
+  
 
   fonts:
     - family: Shiromeda

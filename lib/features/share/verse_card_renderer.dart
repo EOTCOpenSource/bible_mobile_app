@@ -140,24 +140,42 @@ class VerseCardRenderer extends StatelessWidget {
             Positioned(
               bottom: 12,
               right: 16,
-              child: Text(
-                'Nehemiyah',
-                style: TextStyle(
-                  fontFamily: 'Inter', // clean font for watermark
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
-                  color: textColor.withValues(alpha: 0.3),
-                  shadows: state.textColorMode == CardTextColorMode.light
-                      ? [
-                          Shadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            offset: const Offset(0, 1),
-                            blurRadius: 2.0,
-                          )
-                        ]
-                      : null,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Opacity(
+                    opacity: 0.6,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(3.0),
+                      child: Image.asset(
+                        'assets/eotc.jpg',
+                        width: 14,
+                        height: 14,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Nehemiyah',
+                    style: TextStyle(
+                      fontFamily: 'Inter', // clean font for watermark
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                      color: textColor.withValues(alpha: 0.3),
+                      shadows: state.textColorMode == CardTextColorMode.light
+                          ? [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                offset: const Offset(0, 1),
+                                blurRadius: 2.0,
+                              )
+                            ]
+                          : null,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
