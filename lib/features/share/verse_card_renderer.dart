@@ -69,27 +69,35 @@ class VerseCardRenderer extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        child: Text(
-                          verseText,
-                          textAlign: state.textAlign,
-                          style: TextStyle(
-                            fontFamily: fontName,
-                            fontSize: state.fontSize,
-                            color: textColor,
-                            height: 1.5,
-                            shadows: state.textColorMode == CardTextColorMode.light
-                                ? [
-                                    Shadow(
-                                      color: Colors.black.withValues(alpha: 0.4),
-                                      offset: const Offset(0, 1.5),
-                                      blurRadius: 3.0,
-                                    )
-                                  ]
-                                : null,
-                          ),
-                        ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.center,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                              child: Text(
+                                verseText,
+                                textAlign: state.textAlign,
+                                style: TextStyle(
+                                  fontFamily: fontName,
+                                  fontSize: state.fontSize,
+                                  color: textColor,
+                                  height: 1.5,
+                                  shadows: state.textColorMode == CardTextColorMode.light
+                                      ? [
+                                          Shadow(
+                                            color: Colors.black.withValues(alpha: 0.4),
+                                            offset: const Offset(0, 1.5),
+                                            blurRadius: 3.0,
+                                          )
+                                        ]
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
 
@@ -124,6 +132,31 @@ class VerseCardRenderer extends StatelessWidget {
                       ),
                     ],
                   ],
+                ),
+              ),
+            ),
+            
+            // App Watermark
+            Positioned(
+              bottom: 12,
+              right: 16,
+              child: Text(
+                'Nehemiyah',
+                style: TextStyle(
+                  fontFamily: 'Inter', // clean font for watermark
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                  color: textColor.withValues(alpha: 0.3),
+                  shadows: state.textColorMode == CardTextColorMode.light
+                      ? [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: const Offset(0, 1),
+                            blurRadius: 2.0,
+                          )
+                        ]
+                      : null,
                 ),
               ),
             ),
