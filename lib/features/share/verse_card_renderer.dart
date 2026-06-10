@@ -68,70 +68,65 @@ class VerseCardRenderer extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            width: constraints.maxWidth,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  verseText,
-                                  textAlign: state.textAlign,
-                                  style: TextStyle(
-                                    fontFamily: fontName,
-                                    fontSize: state.fontSize,
-                                    color: textColor,
-                                    height: 1.5,
-                                    shadows: state.textColorMode == CardTextColorMode.light
-                                        ? [
-                                            Shadow(
-                                              color: Colors.black.withValues(alpha: 0.4),
-                                              offset: const Offset(0, 1.5),
-                                              blurRadius: 3.0,
-                                            )
-                                          ]
-                                        : null,
-                                  ),
-                                ),
-
-                                if (state.showReference) ...[
-                                  const SizedBox(height: 20),
-                                  Container(
-                                    width: 40,
-                                    height: 1,
-                                    color: textColor.withValues(alpha: 0.3),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    reference,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: fontName,
-                                      fontSize: (state.fontSize - 4).clamp(12.0, 24.0),
-                                      fontWeight: FontWeight.w600,
-                                      color: textColor.withValues(alpha: 0.85),
-                                      letterSpacing: 0.5,
-                                      shadows: state.textColorMode == CardTextColorMode.light
-                                          ? [
-                                              Shadow(
-                                                color: Colors.black.withValues(alpha: 0.4),
-                                                offset: const Offset(0, 1),
-                                                blurRadius: 2.0,
-                                              )
-                                            ]
-                                          : null,
-                                    ),
-                                  ),
-                                ],
-                              ],
+                    child: ClipRect(
+                      child: OverflowBox(
+                        maxHeight: double.infinity,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              verseText,
+                              textAlign: state.textAlign,
+                              style: TextStyle(
+                                fontFamily: fontName,
+                                fontSize: state.fontSize,
+                                color: textColor,
+                                height: 1.5,
+                                shadows: state.textColorMode == CardTextColorMode.light
+                                    ? [
+                                        Shadow(
+                                          color: Colors.black.withValues(alpha: 0.4),
+                                          offset: const Offset(0, 1.5),
+                                          blurRadius: 3.0,
+                                        )
+                                      ]
+                                    : null,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+
+                            if (state.showReference) ...[
+                              const SizedBox(height: 20),
+                              Container(
+                                width: 40,
+                                height: 1,
+                                color: textColor.withValues(alpha: 0.3),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                reference,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: fontName,
+                                  fontSize: (state.fontSize - 4).clamp(12.0, 24.0),
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor.withValues(alpha: 0.85),
+                                  letterSpacing: 0.5,
+                                  shadows: state.textColorMode == CardTextColorMode.light
+                                      ? [
+                                          Shadow(
+                                            color: Colors.black.withValues(alpha: 0.4),
+                                            offset: const Offset(0, 1),
+                                            blurRadius: 2.0,
+                                          )
+                                        ]
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
                   ),
 
@@ -142,7 +137,7 @@ class VerseCardRenderer extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Opacity(
-                        opacity: 0.6,
+                        opacity: 1.0,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(3.0),
                           child: Image.asset(
