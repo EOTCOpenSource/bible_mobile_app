@@ -56,7 +56,7 @@ class ReferencePicker extends StatelessWidget {
                         children: [
                           Text(
                             s.cardRefNumeralStyle,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87),
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -74,8 +74,8 @@ class ReferencePicker extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         constraints: const BoxConstraints(minHeight: 32, minWidth: 60),
                         children: [
-                          Text(s.cardRefGeez, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                          Text(s.cardRefArabic, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          Text(s.cardRefGeez, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
+                          Text(s.cardRefArabic, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
                         ],
                       ),
                     ],
@@ -90,7 +90,7 @@ class ReferencePicker extends StatelessWidget {
                         children: [
                           Text(
                             s.cardRefBookLang,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87),
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -108,8 +108,8 @@ class ReferencePicker extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         constraints: const BoxConstraints(minHeight: 32, minWidth: 70),
                         children: [
-                          Text(s.cardRefAmharic, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                          Text(s.cardRefEnglish, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          Text(s.cardRefAmharic, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
+                          Text(s.cardRefEnglish, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
                         ],
                       ),
                     ],
