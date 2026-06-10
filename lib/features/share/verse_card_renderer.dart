@@ -163,7 +163,7 @@ class VerseCardRenderer extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.8,
-                      color: textColor.withValues(alpha: 0.3),
+                      color: textColor.withValues(alpha: 0.6),
                       shadows: state.textColorMode == CardTextColorMode.light
                           ? [
                               Shadow(
@@ -213,10 +213,12 @@ void paint(Canvas canvas, Size size) {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1.5;
 
+  const double watermarkClearance = 36.0;
+
   if (style == CardFrameStyle.line) {
-    final rect = Rect.fromLTRB(16, 16, size.width - 16, size.height - 16);
+    final rect = Rect.fromLTRB(16, 16, size.width - 16, size.height - watermarkClearance);
     canvas.drawRect(rect, paint);
-  } 
+  }
   else if (style == CardFrameStyle.ornate) {
     final double margin = 24.0;
     final double starRadius = 6.0;
@@ -225,8 +227,8 @@ void paint(Canvas canvas, Size size) {
 
     final topLeft = Offset(margin, margin);
     final topRight = Offset(size.width - margin, margin);
-    final bottomLeft = Offset(margin, size.height - margin);
-    final bottomRight = Offset(size.width - margin, size.height - margin);
+    final bottomLeft = Offset(margin, size.height - watermarkClearance);
+    final bottomRight = Offset(size.width - margin, size.height - watermarkClearance);
 
     // Draw 4-pointed stars
     void drawStar(Offset center) {
@@ -309,8 +311,10 @@ void paint(Canvas canvas, Size size) {
     path.quadraticBezierTo(size.width - margin + 8, size.height / 3, size.width - margin - 4, size.height / 2);
     path.quadraticBezierTo(size.width - margin + 6, size.height * 2 / 3, size.width - margin, size.height - margin - 15);
 
+    final bottomY = size.height - watermarkClearance;
+
     // Bottom scroll roll
-    path.quadraticBezierTo(size.width / 2, size.height - margin + 15, margin, size.height - margin - 15);
+    path.quadraticBezierTo(size.width / 2, bottomY + 15, margin, bottomY - 15);
 
     // Left wavy edge
     path.quadraticBezierTo(margin - 8, size.height * 2 / 3, margin + 4, size.height / 2);
@@ -322,15 +326,15 @@ void paint(Canvas canvas, Size size) {
     final innerPath = Path();
     innerPath.moveTo(margin, margin + 15);
     innerPath.quadraticBezierTo(margin + 15, margin + 25, margin + 30, margin + 10);
-    
+
     innerPath.moveTo(size.width - margin, margin + 15);
     innerPath.quadraticBezierTo(size.width - margin - 15, margin + 25, size.width - margin - 30, margin + 10);
 
-    innerPath.moveTo(margin, size.height - margin - 15);
-    innerPath.quadraticBezierTo(margin + 15, size.height - margin - 25, margin + 30, size.height - margin - 10);
+    innerPath.moveTo(margin, bottomY - 15);
+    innerPath.quadraticBezierTo(margin + 15, bottomY - 25, margin + 30, bottomY - 10);
 
-    innerPath.moveTo(size.width - margin, size.height - margin - 15);
-    innerPath.quadraticBezierTo(size.width - margin - 15, size.height - margin - 25, size.width - margin - 30, size.height - margin - 10);
+    innerPath.moveTo(size.width - margin, bottomY - 15);
+    innerPath.quadraticBezierTo(size.width - margin - 15, bottomY - 25, size.width - margin - 30, bottomY - 10);
 
     paint.strokeWidth = 1.0;
     canvas.drawPath(innerPath, paint);

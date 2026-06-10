@@ -51,6 +51,9 @@ class TextPicker extends StatelessWidget {
                         fontFamily: readerFonts[index],
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : (isDark ? Colors.white70 : Colors.black87),
                       ),
                     ),
                     selected: isSelected,

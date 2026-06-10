@@ -276,31 +276,32 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
                   // Card Preview Panel with bounded size
                   Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.38,
-                      ),
-                      child: Center(
-                        child: Screenshot(
-                          controller: _screenshotController,
-                          child: Material(
-                            elevation: 8,
-                            borderRadius: BorderRadius.circular(16),
-                            clipBehavior: Clip.antiAlias,
-                            child: Container(
-                              width: 270, // Fixed preview width for UI layout
-                              decoration: BoxDecoration(
+                    child: Builder(
+                      builder: (context) {
+                        final maxPreviewH = MediaQuery.of(context).size.height * 0.38;
+                        final previewWidth = (maxPreviewH * _state.aspectRatio.value).clamp(0.0, 270.0);
+                        return SizedBox(
+                          height: maxPreviewH,
+                          child: Center(
+                            child: Screenshot(
+                              controller: _screenshotController,
+                              child: Material(
+                                elevation: 8,
                                 borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: VerseCardRenderer(
-                                state: _state,
-                                verseText: verseText,
-                                reference: reference,
+                                clipBehavior: Clip.antiAlias,
+                                child: SizedBox(
+                                  width: previewWidth,
+                                  child: VerseCardRenderer(
+                                    state: _state,
+                                    verseText: verseText,
+                                    reference: reference,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
 
