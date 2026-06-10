@@ -60,107 +60,120 @@ class VerseCardRenderer extends StatelessWidget {
                 ),
               ),
 
-            // Content
+            // Content + watermark as a single flow so Expanded centers
+            // verse text in only the space above the watermark.
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 36.0),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      verseText,
-                      textAlign: state.textAlign,
-                      style: TextStyle(
-                        fontFamily: fontName,
-                        fontSize: state.fontSize,
-                        color: textColor,
-                        height: 1.5,
-                        shadows: state.textColorMode == CardTextColorMode.light
-                            ? [
-                                Shadow(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  offset: const Offset(0, 1.5),
-                                  blurRadius: 3.0,
-                                )
-                              ]
-                            : null,
-                      ),
-                    ),
+              padding: const EdgeInsets.fromLTRB(40, 36, 40, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.center,
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  verseText,
+                                  textAlign: state.textAlign,
+                                  style: TextStyle(
+                                    fontFamily: fontName,
+                                    fontSize: state.fontSize,
+                                    color: textColor,
+                                    height: 1.5,
+                                    shadows: state.textColorMode == CardTextColorMode.light
+                                        ? [
+                                            Shadow(
+                                              color: Colors.black.withValues(alpha: 0.4),
+                                              offset: const Offset(0, 1.5),
+                                              blurRadius: 3.0,
+                                            )
+                                          ]
+                                        : null,
+                                  ),
+                                ),
 
-                    if (state.showReference) ...[
-                      const SizedBox(height: 20),
-                      // Decorative line above reference
-                      Container(
-                        width: 40,
-                        height: 1,
-                        color: textColor.withValues(alpha: 0.3),
+                                if (state.showReference) ...[
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    width: 40,
+                                    height: 1,
+                                    color: textColor.withValues(alpha: 0.3),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    reference,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: fontName,
+                                      fontSize: (state.fontSize - 4).clamp(12.0, 24.0),
+                                      fontWeight: FontWeight.w600,
+                                      color: textColor.withValues(alpha: 0.85),
+                                      letterSpacing: 0.5,
+                                      shadows: state.textColorMode == CardTextColorMode.light
+                                          ? [
+                                              Shadow(
+                                                color: Colors.black.withValues(alpha: 0.4),
+                                                offset: const Offset(0, 1),
+                                                blurRadius: 2.0,
+                                              )
+                                            ]
+                                          : null,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Watermark in flow — Expanded above sizes to the space
+                  // above this, so FittedBox centers content correctly.
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Opacity(
+                        opacity: 0.6,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3.0),
+                          child: Image.asset(
+                            'assets/eotc.jpg',
+                            width: 14,
+                            height: 14,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(width: 6),
                       Text(
-                        reference,
-                        textAlign: TextAlign.center,
+                        'Nehemiyah',
                         style: TextStyle(
-                          fontFamily: fontName,
-                          fontSize: (state.fontSize - 4).clamp(12.0, 24.0),
-                          fontWeight: FontWeight.w600,
-                          color: textColor.withValues(alpha: 0.85),
-                          letterSpacing: 0.5,
+                          fontFamily: 'Inter',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: textColor.withValues(alpha: 0.6),
                           shadows: state.textColorMode == CardTextColorMode.light
-                                ? [
-                                    Shadow(
-                                      color: Colors.black.withValues(alpha: 0.4),
-                                      offset: const Offset(0, 1),
-                                      blurRadius: 2.0,
-                                    )
-                                  ]
-                                : null,
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    offset: const Offset(0, 1),
+                                    blurRadius: 2.0,
+                                  )
+                                ]
+                              : null,
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ),
-            ),
-            
-            // App Watermark
-            Positioned(
-              bottom: 12,
-              right: 16,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Opacity(
-                    opacity: 0.6,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3.0),
-                      child: Image.asset(
-                        'assets/eotc.jpg',
-                        width: 14,
-                        height: 14,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Nehemiyah',
-                    style: TextStyle(
-                      fontFamily: 'Inter', // clean font for watermark
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
-                      color: textColor.withValues(alpha: 0.6),
-                      shadows: state.textColorMode == CardTextColorMode.light
-                          ? [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                offset: const Offset(0, 1),
-                                blurRadius: 2.0,
-                              )
-                            ]
-                          : null,
-                    ),
                   ),
                 ],
               ),
