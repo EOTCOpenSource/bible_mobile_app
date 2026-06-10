@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../storage/app_database.dart';
 
 class AppSettings {
   const AppSettings({
@@ -14,6 +15,10 @@ class AppSettings {
     this.cardFrameStyleIndex = 0,
     this.cardFontIndex = 0,
     this.cardAspectRatio = 0,
+    this.dailyVerseNotificationEnabled = false,
+    this.readingTimeNotificationEnabled = false,
+    this.dailyVerseNotificationTime,
+    this.readingTimeNotificationTime,
   });
 
   final bool useGeezNumbers;
@@ -41,6 +46,18 @@ class AppSettings {
   final int cardFontIndex;
   final int cardAspectRatio;
 
+  /// Whether daily verse notifications are enabled.
+  final bool dailyVerseNotificationEnabled;
+
+  /// Whether reading time reminder notifications are enabled.
+  final bool readingTimeNotificationEnabled;
+
+  /// Preferred time for the daily verse notification (nullable, defaults to 6:00 AM if null).
+  final TimeOfDay? dailyVerseNotificationTime;
+
+  /// Preferred time for the reading time reminder (nullable, defaults to 8:00 PM if null).
+  final TimeOfDay? readingTimeNotificationTime;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
@@ -54,6 +71,10 @@ class AppSettings {
     int? cardFrameStyleIndex,
     int? cardFontIndex,
     int? cardAspectRatio,
+    bool? dailyVerseNotificationEnabled,
+    bool? readingTimeNotificationEnabled,
+    TimeOfDay? dailyVerseNotificationTime,
+    TimeOfDay? readingTimeNotificationTime,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -68,6 +89,14 @@ class AppSettings {
         cardFrameStyleIndex: cardFrameStyleIndex ?? this.cardFrameStyleIndex,
         cardFontIndex: cardFontIndex ?? this.cardFontIndex,
         cardAspectRatio: cardAspectRatio ?? this.cardAspectRatio,
+        dailyVerseNotificationEnabled:
+            dailyVerseNotificationEnabled ?? this.dailyVerseNotificationEnabled,
+        readingTimeNotificationEnabled:
+            readingTimeNotificationEnabled ?? this.readingTimeNotificationEnabled,
+        dailyVerseNotificationTime:
+            dailyVerseNotificationTime ?? this.dailyVerseNotificationTime,
+        readingTimeNotificationTime:
+            readingTimeNotificationTime ?? this.readingTimeNotificationTime,
       );
 
   @override
@@ -84,7 +113,11 @@ class AppSettings {
       other.cardGradientIndex == cardGradientIndex &&
       other.cardFrameStyleIndex == cardFrameStyleIndex &&
       other.cardFontIndex == cardFontIndex &&
-      other.cardAspectRatio == cardAspectRatio;
+      other.cardAspectRatio == cardAspectRatio &&
+      other.dailyVerseNotificationEnabled == dailyVerseNotificationEnabled &&
+      other.readingTimeNotificationEnabled == readingTimeNotificationEnabled &&
+      other.dailyVerseNotificationTime == dailyVerseNotificationTime &&
+      other.readingTimeNotificationTime == readingTimeNotificationTime;
 
   @override
   int get hashCode => Object.hash(
@@ -100,6 +133,10 @@ class AppSettings {
         cardFrameStyleIndex,
         cardFontIndex,
         cardAspectRatio,
+        dailyVerseNotificationEnabled,
+        readingTimeNotificationEnabled,
+        dailyVerseNotificationTime,
+        readingTimeNotificationTime,
       );
 }
 
@@ -112,17 +149,53 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
 
   static AppSettings of(BuildContext context) {
     final s = context.dependOnInheritedWidgetOfExactType<Settings>();
-    assert(s != null, 'No Settings found in widget tree. Wrap your app with Settings().');
+    assert(
+      s != null,
+      'No Settings found in widget tree. Wrap your app with Settings().',
+    );
     return s!.notifier!.value;
   }
 
-  static void update(BuildContext context, AppSettings updated) {
+
+
+static void update(BuildContext context, AppSettings updated) {
     final s = context.getInheritedWidgetOfExactType<Settings>();
     assert(s != null, 'No Settings found in widget tree.');
     s!.notifier!.value = updated;
+    
+    // Asynchronously persist to database
+    AppDatabase().saveNotificationSettings(
+      dailyVerseEnabled: updated.dailyVerseNotificationEnabled,
+      readingTimeEnabled: updated.readingTimeNotificationEnabled,
+      dailyVerseHour: updated.dailyVerseNotificationTime?.hour,
+      dailyVerseMinute: updated.dailyVerseNotificationTime?.minute,
+      readingTimeHour: updated.readingTimeNotificationTime?.hour,
+      readingTimeMinute: updated.readingTimeNotificationTime?.minute,
+    );
+  }
+
+  /// Returns the underlying [ValueNotifier] without an [InheritedWidget]
+  /// lookup on every rebuild. Capture this **before** any `await` to safely
+  /// mutate settings across async gaps without using [BuildContext] after
+  /// the gap.
+  static ValueNotifier<AppSettings> notifierOf(BuildContext context) {
+    final s = context.getInheritedWidgetOfExactType<Settings>();
+    assert(s != null, 'No Settings found in widget tree.');
+    return s!.notifier!;
   }
 
   @override
   bool updateShouldNotify(Settings oldWidget) =>
       notifier!.value != oldWidget.notifier!.value;
+}
+
+/// Convenience extension for displaying a [TimeOfDay] as a readable string.
+/// Example: TimeOfDay(hour: 6, minute: 0).formatted → "6:00 AM"
+extension TimeOfDayX on TimeOfDay {
+  String get formatted {
+    final h = hourOfPeriod == 0 ? 12 : hourOfPeriod;
+    final m = minute.toString().padLeft(2, '0');
+    final p = period == DayPeriod.am ? 'AM' : 'PM';
+    return '$h:$m $p';
+  }
 }

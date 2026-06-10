@@ -285,6 +285,15 @@ abstract class AppStrings {
   String get profilePasswordChanged;
   String get profilePasswordMismatch;
   String get profileUpdateFailed;
+  // ── Notifications ─────────────────────────────────────────────────────────
+  String get notificationPermissionDenied;
+String dailyVerseSet(String time);
+String get dailyVerseOff;
+String dailyVerseUpdated(String time);
+String get readingReminderOff;
+String readingReminderSet(String time);
+String readingReminderUpdated(String time);
+
 
   // ── Verse card sheet ──────────────────────────────────────────────────────
   String get cardSheetTitle;

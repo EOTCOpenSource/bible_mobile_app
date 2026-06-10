@@ -2,7 +2,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-
+    <!-- Required for scheduling exact alarms and restoring on boot -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:label="bibleflutter"
         android:name="${applicationName}"
@@ -46,6 +48,28 @@
                     android:pathPrefix="/openinapp/"/>
             </intent-filter>
         </activity>
+
+        <!-- flutter_local_notifications: fires scheduled notifications that were
+             already triggered but the app was not running at fire time. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+
+        <!-- flutter_local_notifications: reschedules recurring notifications
+             after device reboot, quick-boot (HTC/ASUS), and package replace
+             (i.e. app update). RECEIVE_BOOT_COMPLETED is declared above. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <!-- HTC devices -->
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

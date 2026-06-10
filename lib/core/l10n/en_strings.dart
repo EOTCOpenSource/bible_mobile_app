@@ -447,4 +447,20 @@ class EnStrings extends AppStrings {
   @override String get cardFrameManuscript => 'Manuscript';
   @override String get cardImagePickFailed => 'Failed to pick image';
   @override String get cardShareAsText     => 'Share as text';
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  @override
+  String get notificationPermissionDenied => 'Notification permission denied';
+  @override
+  String dailyVerseSet(String time) => '✓ Daily verse set for $time';
+  @override
+  String get dailyVerseOff => 'Daily verse reminder off';
+  @override
+  String dailyVerseUpdated(String time) => '✓ Daily verse updated to $time';
+  @override
+  String get readingReminderOff => 'Reading reminder off';
+  @override
+  String readingReminderSet(String time) => '✓ Reading reminder set for $time';
+  @override
+  String readingReminderUpdated(String time) => '✓ Reading reminder updated to $time';
 }

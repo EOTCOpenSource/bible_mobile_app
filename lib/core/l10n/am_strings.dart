@@ -447,4 +447,20 @@ class AmStrings extends AppStrings {
   @override String get cardFrameManuscript => 'ብራና';
   @override String get cardImagePickFailed => 'ምስል መምረጥ አልተቻለም';
   @override String get cardShareAsText     => 'እንደ ጽሑፍ አጋራ';
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  @override
+  String get notificationPermissionDenied => 'ማሳወቂያዎችን ለመላክ ፈቃድ አልተሰጠም';
+  @override
+  String dailyVerseSet(String time) => 'የዕለቱ ጥቅስ ማሳወቂያ በ $time ተዘጋጅቷል';
+  @override
+  String get dailyVerseOff => 'የዕለቱ ጥቅስ ማሳወቂያ ጠፍቷል';
+  @override
+  String dailyVerseUpdated(String time) => 'የዕለቱ ጥቅስ ማሳወቂያ ወደ $time ተቀይሯል';
+  @override
+  String get readingReminderOff => 'የንባብ ሰዓት ማሳወቂያ ጠፍቷል';
+  @override
+  String readingReminderSet(String time) => 'የንባብ ሰዓት ማሳወቂያ በ $time ተዘጋጅቷል';
+  @override
+  String readingReminderUpdated(String time) => 'የንባብ ሰዓት ማሳወቂያ ወደ $time ተቀይሯል';
 }

@@ -209,6 +209,20 @@ abstract final class AppTheme {
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
 
+      // ── TimePicker ────────────────────────────────────────────────────────
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: colors.surface,
+        hourMinuteTextColor: colors.textBody,
+        hourMinuteColor: colors.parchment,
+        dayPeriodTextColor: colors.textBody,
+        dayPeriodColor: colors.parchment,
+        dialHandColor: colors.primary,
+        dialBackgroundColor: colors.parchment,
+        dialTextColor: colors.textBody,
+        entryModeIconColor: colors.textBody,
+        helpTextStyle: AppTypography.englishBody.copyWith(color: colors.textCaption),
+      ),
+
       // ── Text theme ────────────────────────────────────────────────────────
       textTheme: const TextTheme(
         displayLarge:  AppTypography.amharicDisplay,

@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/deep_links/deep_link_uri.dart';
 import 'core/l10n/l10n.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/services/bible_repository_provider.dart';
 import 'core/services/repository_provider.dart';
 import 'core/settings/app_settings.dart';
 import 'core/settings/settings_provider.dart';
+import 'core/storage/app_database.dart';
 import 'core/theme/app_theme.dart';
 import 'features/books/data/repositories/bible_repository.dart';
 import 'features/books/presentation/pages/reader_screen.dart';
@@ -17,7 +19,28 @@ import 'features/home/presentation/pages/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bibleRepository = BibleRepository();
-  final settingsNotifier = ValueNotifier<AppSettings>(const AppSettings());
+  
+  await NotificationService.instance.init(repository: bibleRepository);
+  final db = AppDatabase();
+  
+  // Load saved settings
+  final saved = await db.getSavedNotificationSettings();
+  AppSettings initialSettings = const AppSettings();
+  if (saved != null) {
+    initialSettings = AppSettings(
+      dailyVerseNotificationEnabled: saved['daily_verse_enabled'] == 1,
+      readingTimeNotificationEnabled: saved['reading_time_enabled'] == 1,
+      dailyVerseNotificationTime: saved['daily_verse_hour'] != null
+          ? TimeOfDay(hour: saved['daily_verse_hour'] as int, minute: saved['daily_verse_minute'] as int)
+          : null,
+      readingTimeNotificationTime: saved['reading_time_hour'] != null
+          ? TimeOfDay(hour: saved['reading_time_hour'] as int, minute: saved['reading_time_minute'] as int)
+          : null,
+    );
+  }
+
+  final settingsNotifier = ValueNotifier<AppSettings>(initialSettings);
+  
   runApp(
     ProviderScope(
       overrides: [
@@ -68,9 +91,19 @@ class _BibleMaterialAppState extends State<_BibleMaterialApp> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = BibleRepositoryProvider.of(context);
+
+    // Set the navigator key for NotificationService to handle notification taps
+    NotificationService.instance.navigatorKey = _navigatorKey;
+
     if (!_deepLinksInitialized) {
       _deepLinksInitialized = true;
       unawaited(_initDeepLinks());
+
+      // Restore scheduled notifications based on current settings
+      final settings = Settings.of(context);
+      unawaited(
+        NotificationService.instance.restoreScheduledNotifications(settings),
+      );
     }
   }
 
@@ -93,8 +126,9 @@ class _BibleMaterialAppState extends State<_BibleMaterialApp> {
       if (target == null) {
         final ctx = _navigatorKey.currentContext;
         if (ctx != null) {
-          ScaffoldMessenger.maybeOf(ctx)
-              ?.showSnackBar(const SnackBar(content: Text('Verse link not found')));
+          ScaffoldMessenger.maybeOf(ctx)?.showSnackBar(
+            const SnackBar(content: Text('Verse link not found')),
+          );
         }
         return;
       }
