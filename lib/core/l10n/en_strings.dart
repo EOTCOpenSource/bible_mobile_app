@@ -408,4 +408,20 @@ class EnStrings extends AppStrings {
   @override String get profilePasswordChanged    => 'Password changed successfully';
   @override String get profilePasswordMismatch   => 'Passwords do not match';
   @override String get profileUpdateFailed       => 'Update failed. Please try again.';
+  // ── Notifications ─────────────────────────────────────────────────────────
+    @override
+    String get notificationPermissionDenied => 'Notification permission denied';
+    @override
+    String dailyVerseSet(String time) => '✓ Daily verse set for $time';
+    @override
+    String get dailyVerseOff => 'Daily verse reminder off';
+    @override
+    String dailyVerseUpdated(String time) => '✓ Daily verse updated to $time';
+    @override
+    String get readingReminderOff => 'Reading reminder off';
+    @override
+    String readingReminderSet(String time) => '✓ Reading reminder set for $time';
+    @override
+    String readingReminderUpdated(String time) => '✓ Reading reminder updated to $time';
+
 }

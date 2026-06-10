@@ -5,7 +5,7 @@ import '../annotations/annotation_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 5;
+  static const _version = 6;
 
   Database? _db;
 
@@ -42,6 +42,10 @@ class AppDatabase {
     if (oldVersion < 5) {
       await _createPlanPositionTable(db);
     }
+    if (oldVersion < 6) {
+  await _createSettingsTable(db);
+}
+
   }
 
   /// v3→v4: annotation items pushed with title-case bookId (e.g. "Genesis")
@@ -189,6 +193,7 @@ class AppDatabase {
     ''');
     await _createReadingTables(db);
     await _createPlanPositionTable(db);
+    await _createSettingsTable(db);
   }
 
   Future<void> _createPlanPositionTable(Database db) => db.execute('''
@@ -705,6 +710,52 @@ class AppDatabase {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+Future<void> _createSettingsTable(Database db) async {
+  await db.execute('''
+    CREATE TABLE IF NOT EXISTS app_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      daily_verse_enabled INTEGER NOT NULL DEFAULT 0,
+      reading_time_enabled INTEGER NOT NULL DEFAULT 0,
+      daily_verse_hour INTEGER,
+      daily_verse_minute INTEGER,
+      reading_time_hour INTEGER,
+      reading_time_minute INTEGER
+    )
+  ''');
+  await db.insert('app_settings', {'id': 1}, conflictAlgorithm: ConflictAlgorithm.ignore);
+}
+
+// Fetch saved settings
+Future<Map<String, Object?>?> getSavedNotificationSettings() async {
+  final db = await database;
+  final rows = await db.query('app_settings', where: 'id = ?', whereArgs: [1]);
+  return rows.isEmpty ? null : rows.first;
+}
+
+// Update saved settings
+Future<void> saveNotificationSettings({
+  required bool dailyVerseEnabled,
+  required bool readingTimeEnabled,
+  int? dailyVerseHour,
+  int? dailyVerseMinute,
+  int? readingTimeHour,
+  int? readingTimeMinute,
+}) async {
+  final db = await database;
+  await db.update(
+    'app_settings',
+    {
+      'daily_verse_enabled': dailyVerseEnabled ? 1 : 0,
+      'reading_time_enabled': readingTimeEnabled ? 1 : 0,
+      'daily_verse_hour': dailyVerseHour,
+      'daily_verse_minute': dailyVerseMinute,
+      'reading_time_hour': readingTimeHour,
+      'reading_time_minute': readingTimeMinute,
+    },
+    where: 'id = ?',
+    whereArgs: [1],
+  );
+}
 
   Future<void> close() async {
     await _db?.close();
