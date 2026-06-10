@@ -68,36 +68,23 @@ class VerseCardRenderer extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.center,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                              child: Text(
-                                verseText,
-                                textAlign: state.textAlign,
-                                style: TextStyle(
-                                  fontFamily: fontName,
-                                  fontSize: state.fontSize,
-                                  color: textColor,
-                                  height: 1.5,
-                                  shadows: state.textColorMode == CardTextColorMode.light
-                                      ? [
-                                          Shadow(
-                                            color: Colors.black.withValues(alpha: 0.4),
-                                            offset: const Offset(0, 1.5),
-                                            blurRadius: 3.0,
-                                          )
-                                        ]
-                                      : null,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                    Text(
+                      verseText,
+                      textAlign: state.textAlign,
+                      style: TextStyle(
+                        fontFamily: fontName,
+                        fontSize: state.fontSize,
+                        color: textColor,
+                        height: 1.5,
+                        shadows: state.textColorMode == CardTextColorMode.light
+                            ? [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  offset: const Offset(0, 1.5),
+                                  blurRadius: 3.0,
+                                )
+                              ]
+                            : null,
                       ),
                     ),
 
