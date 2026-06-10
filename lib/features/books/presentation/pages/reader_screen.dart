@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kenat/kenat.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/annotations/annotation_models.dart';
 import '../../../../core/auth/auth_state.dart';
@@ -31,6 +30,7 @@ import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
+import '../../../share/verse_card_sheet.dart';
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
@@ -408,6 +408,28 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       return '${texts.join('\n')}\n$ref\n$deepLink';
     } catch (_) {
       return null;
+    }
+  }
+
+  List<Verse> _getSelectedVerses() {
+    if (_book == null || _selectedKey == null) return [];
+    final parts = _selectedKey!.split(':');
+    if (parts.length != 3) return [];
+    final chNum = int.tryParse(parts[0]);
+    if (chNum == null) return [];
+    final start = _selectionVerseStart;
+    if (start == null) return [];
+    final count = _selectionVerseCount;
+    try {
+      final chapter = _book!.chapters.firstWhere(
+        (c) => c.chapterNumber == chNum,
+      );
+      final allVerses = chapter.allVerses;
+      return allVerses
+          .where((v) => v.verseNumber >= start && v.verseNumber < start + count)
+          .toList();
+    } catch (_) {
+      return [];
     }
   }
 
@@ -834,13 +856,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                           }
                                           _deselect();
                                         },
-                                        onShare: () async {
-                                          final text = _selectedVerseText(
-                                            settings,
-                                          );
-                                          if (text != null) {
-                                            await SharePlus.instance.share(
-                                              ShareParams(text: text),
+                                        onShare: () {
+                                          final selectedVerses = _getSelectedVerses();
+                                          if (selectedVerses.isNotEmpty && _book != null) {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              backgroundColor: Colors.transparent,
+                                              builder: (context) => VerseCardSheet(
+                                                verses: selectedVerses,
+                                                book: _book!,
+                                                chapterNumber: _currentChapterNumber,
+                                              ),
                                             );
                                           }
                                           _deselect();

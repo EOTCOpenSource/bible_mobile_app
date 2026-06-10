@@ -8,6 +8,12 @@ class AppSettings {
     this.fontSize = 17.0,
     this.isDarkReader = false,
     this.continuousReading = false,
+    this.cardBgType = 0,
+    this.cardSolidColorIndex = 0,
+    this.cardGradientIndex = 0,
+    this.cardFrameStyleIndex = 0,
+    this.cardFontIndex = 0,
+    this.cardAspectRatio = 0,
   });
 
   final bool useGeezNumbers;
@@ -27,6 +33,14 @@ class AppSettings {
   /// When true, verses flow as a paragraph instead of one verse per line.
   final bool continuousReading;
 
+  /// Card designer preferences
+  final int cardBgType;
+  final int cardSolidColorIndex;
+  final int cardGradientIndex;
+  final int cardFrameStyleIndex;
+  final int cardFontIndex;
+  final int cardAspectRatio;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
@@ -34,6 +48,12 @@ class AppSettings {
     double? fontSize,
     bool? isDarkReader,
     bool? continuousReading,
+    int? cardBgType,
+    int? cardSolidColorIndex,
+    int? cardGradientIndex,
+    int? cardFrameStyleIndex,
+    int? cardFontIndex,
+    int? cardAspectRatio,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -42,6 +62,12 @@ class AppSettings {
         fontSize: fontSize ?? this.fontSize,
         isDarkReader: isDarkReader ?? this.isDarkReader,
         continuousReading: continuousReading ?? this.continuousReading,
+        cardBgType: cardBgType ?? this.cardBgType,
+        cardSolidColorIndex: cardSolidColorIndex ?? this.cardSolidColorIndex,
+        cardGradientIndex: cardGradientIndex ?? this.cardGradientIndex,
+        cardFrameStyleIndex: cardFrameStyleIndex ?? this.cardFrameStyleIndex,
+        cardFontIndex: cardFontIndex ?? this.cardFontIndex,
+        cardAspectRatio: cardAspectRatio ?? this.cardAspectRatio,
       );
 
   @override
@@ -52,7 +78,13 @@ class AppSettings {
       other.titleFontIndex == titleFontIndex &&
       other.fontSize == fontSize &&
       other.isDarkReader == isDarkReader &&
-      other.continuousReading == continuousReading;
+      other.continuousReading == continuousReading &&
+      other.cardBgType == cardBgType &&
+      other.cardSolidColorIndex == cardSolidColorIndex &&
+      other.cardGradientIndex == cardGradientIndex &&
+      other.cardFrameStyleIndex == cardFrameStyleIndex &&
+      other.cardFontIndex == cardFontIndex &&
+      other.cardAspectRatio == cardAspectRatio;
 
   @override
   int get hashCode => Object.hash(
@@ -62,6 +94,12 @@ class AppSettings {
         fontSize,
         isDarkReader,
         continuousReading,
+        cardBgType,
+        cardSolidColorIndex,
+        cardGradientIndex,
+        cardFrameStyleIndex,
+        cardFontIndex,
+        cardAspectRatio,
       );
 }
 

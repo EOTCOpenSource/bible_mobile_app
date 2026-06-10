@@ -47,6 +47,9 @@ dependencies:
   google_sign_in: ^6.0.0
   flutter_svg: ^2.0.0
   image_picker: ^1.1.2
+  screenshot: ^3.0.0
+  image_gallery_saver_plus: ^4.0.1
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +76,8 @@ flutter:
   assets:
     - assets/bibledata/
     - assets/signin/
+    - assets/eotc.jpg
+  
 
   fonts:
     - family: Shiromeda

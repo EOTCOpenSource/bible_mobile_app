@@ -408,4 +408,43 @@ class EnStrings extends AppStrings {
   @override String get profilePasswordChanged    => 'Password changed successfully';
   @override String get profilePasswordMismatch   => 'Passwords do not match';
   @override String get profileUpdateFailed       => 'Update failed. Please try again.';
+
+  // ── Verse card sheet ──────────────────────────────────────────────────────
+  @override String get cardSheetTitle      => 'Design & Share';
+  @override String get cardTabBackground   => 'Background';
+  @override String get cardTabText         => 'Text';
+  @override String get cardTabReference    => 'Reference';
+  @override String get cardTabRatio        => 'Size';
+  @override String get cardShare           => 'Share';
+  @override String get cardSaveToGallery   => 'Save';
+  @override String get cardSaved           => 'Saved to gallery';
+  @override String get cardSaveFailed      => 'Failed to save';
+  @override String get cardBgColours       => 'Colours';
+  @override String get cardBgGradients     => 'Gradients';
+  @override String get cardBgGallery       => 'Gallery';
+  @override String get cardBgFrame         => 'Frame';
+  @override String get cardFontLabel       => 'Font';
+  @override String get cardSizeLabel       => 'Size';
+  @override String get cardColorLight      => 'Light';
+  @override String get cardColorDark       => 'Dark';
+  @override String get cardRefGeez         => 'Geez';
+  @override String get cardRefArabic       => '123';
+  @override String get cardRefAmharic      => 'Amharic';
+  @override String get cardRefEnglish      => 'English';
+  @override String get cardRefShow         => 'Show reference';
+  @override String get cardRefNumeralStyle => 'Numeral Style';
+  @override String get cardRefNumeralHint  => 'Choose numeral system';
+  @override String get cardRefBookLang     => 'Book Name Language';
+  @override String get cardRefBookLangHint => 'Display language of source book';
+  @override String get cardTextColour      => 'Colour';
+  @override String get cardTextAlignment   => 'Alignment';
+  @override String get cardRatioSquare     => 'Square';
+  @override String get cardRatioPortrait   => 'Portrait (Tall)';
+  @override String get cardRatioStory      => 'Story / Status';
+  @override String get cardFrameNone       => 'None';
+  @override String get cardFrameSimple     => 'Simple';
+  @override String get cardFrameOrnate     => 'Ornate';
+  @override String get cardFrameManuscript => 'Manuscript';
+  @override String get cardImagePickFailed => 'Failed to pick image';
+  @override String get cardShareAsText     => 'Share as text';
 }
