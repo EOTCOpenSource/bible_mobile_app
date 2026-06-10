@@ -328,4 +328,5 @@ abstract class AppStrings {
   String get cardFrameManuscript;
   // background_picker snackbar
   String get cardImagePickFailed;
+  String get cardShareAsText;
 }

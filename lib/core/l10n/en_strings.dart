@@ -446,4 +446,5 @@ class EnStrings extends AppStrings {
   @override String get cardFrameOrnate     => 'Ornate';
   @override String get cardFrameManuscript => 'Manuscript';
   @override String get cardImagePickFailed => 'Failed to pick image';
+  @override String get cardShareAsText     => 'Share as text';
 }

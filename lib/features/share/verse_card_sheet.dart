@@ -169,6 +169,11 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
     }
   }
 
+  Future<void> _shareAsText() async {
+    final text = '$_joinedVerseText\n\n— $_formattedReference';
+    await SharePlus.instance.share(ShareParams(text: text));
+  }
+
   Future<void> _shareCard() async {
     if (_isSharing) return;
     setState(() => _isSharing = true);
@@ -367,9 +372,9 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
 
-                // Share button
+                // Share image button
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: (_isSaving || _isSharing) ? null : _shareCard,
@@ -387,6 +392,22 @@ class _VerseCardSheetState extends State<VerseCardSheet> with SingleTickerProvid
                       side: BorderSide(color: theme.colorScheme.primary),
                       foregroundColor: theme.colorScheme.primary,
                     ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Share as text — compact icon button
+                Tooltip(
+                  message: s.cardShareAsText,
+                  child: OutlinedButton(
+                    onPressed: (_isSaving || _isSharing) ? null : _shareAsText,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: BorderSide(color: theme.colorScheme.primary),
+                      foregroundColor: theme.colorScheme.primary,
+                    ),
+                    child: const Icon(Icons.text_fields_rounded, size: 20),
                   ),
                 ),
               ],

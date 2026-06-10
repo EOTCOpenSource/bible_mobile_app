@@ -446,4 +446,5 @@ class AmStrings extends AppStrings {
   @override String get cardFrameOrnate     => 'ያጌጠ';
   @override String get cardFrameManuscript => 'ብራና';
   @override String get cardImagePickFailed => 'ምስል መምረጥ አልተቻለም';
+  @override String get cardShareAsText     => 'እንደ ጽሑፍ አጋራ';
 }
