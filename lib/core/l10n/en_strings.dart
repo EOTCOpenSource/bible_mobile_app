@@ -31,6 +31,9 @@ class EnStrings extends AppStrings {
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override
   String get dailyVerseTag => 'Daily Verse';
+  @override
+  String get dailyVerseUnavailable =>
+      "Today's verse couldn't be loaded. Tap to retry.";
 
   // ── Continue reading ──────────────────────────────────────────────────────
   @override

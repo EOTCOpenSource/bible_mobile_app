@@ -22,6 +22,7 @@ abstract class AppStrings {
 
   // ── Daily verse ───────────────────────────────────────────────────────────
   String get dailyVerseTag;
+  String get dailyVerseUnavailable;
 
   // ── Continue reading ──────────────────────────────────────────────────────
   String get continueReadingTitle;

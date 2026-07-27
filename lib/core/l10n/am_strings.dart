@@ -31,6 +31,8 @@ class AmStrings extends AppStrings {
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override
   String get dailyVerseTag => 'የዕለቱ ቃል';
+  @override
+  String get dailyVerseUnavailable => 'የዕለቱ ቃል መጫን አልተቻለም። እንደገና ይሞክሩ።';
 
   // ── Continue reading ──────────────────────────────────────────────────────
   @override
