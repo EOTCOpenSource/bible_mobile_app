@@ -9,6 +9,8 @@ import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
+import '../../../../core/services/repository_provider.dart';
+import '../../../books/presentation/pages/reader_screen.dart';
 import 'reading_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
@@ -70,7 +72,20 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                 _ActionRow(
                   label: s.settingAudio,
                   actionLabel: s.settingAudioAction,
-                  onTap: () {},
+                  onTap: () async {
+                    final repo = BibleRepositoryProvider.of(context);
+                    final index = await repo.loadIndex();
+                    if (!context.mounted || index.isEmpty) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReaderScreen(
+                          entry: index.first,
+                          autoStartAudio: true,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

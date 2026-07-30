@@ -19,6 +19,7 @@ import '../../data/reading_constants.dart';
 import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
 import '../../../../core/deep_links/deep_link_uri.dart';
+import '../../../../core/audio/audio_service.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -41,6 +42,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
     this.initialChapter = 0,
     this.initialChapterNumber,
     this.initialVerse,
+    this.autoStartAudio = false,
   });
 
   final BookIndexEntry entry;
@@ -51,6 +53,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
   /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
   final int? initialChapterNumber;
   final int? initialVerse;
+  final bool autoStartAudio;
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
@@ -258,6 +261,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _persistReadingPosition();
     _scheduleDwellTimer();
     _autoSelectInitialVerse(pageIdx);
+
+    if (widget.autoStartAudio) {
+      _playCurrentChapterAudio();
+    }
+  }
+
+  void _playCurrentChapterAudio() {
+    final book = _book;
+    if (book == null || _currentChapter >= book.chapters.length) return;
+    final ch = book.chapters[_currentChapter];
+    final versesText =
+        ch.allVerses.map((v) => '${v.verseNumber}. ${v.text}').toList();
+    AudioService.instance.startChapter(
+      title: '${widget.entry.bookNameAm} ${ch.chapterNumber}',
+      verses: versesText,
+    );
   }
 
   void _autoSelectInitialVerse(int chapterPageIndex) {
@@ -693,6 +712,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 onBack: () => Navigator.pop(context),
                                 onFontSettings: () =>
                                     _showFontSheet(context, settings),
+                                onAudio: _playCurrentChapterAudio,
                               ),
                               if (chapterReady)
                                 ReaderBreadcrumb(
@@ -880,6 +900,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                             ),
                           ),
                   ),
+                  _buildAudioMiniPlayer(settings),
                   if (!_loading && _book != null)
                     ChapterNavBar(
                       currentChapter: _currentChapter,
@@ -898,6 +919,73 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildAudioMiniPlayer(AppSettings settings) {
+    return ValueListenableBuilder<AudioState>(
+      valueListenable: AudioService.instance.stateNotifier,
+      builder: (context, audioState, _) {
+        if (audioState == AudioState.stopped) return const SizedBox.shrink();
+        final isDark = settings.isDarkReader;
+        final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+        final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
+        final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            border: Border(
+              top: BorderSide(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  audioState == AudioState.playing
+                      ? Icons.pause_circle_filled_rounded
+                      : Icons.play_circle_filled_rounded,
+                  size: 32,
+                  color: accentColor,
+                ),
+                onPressed: () {
+                  if (audioState == AudioState.playing) {
+                    AudioService.instance.pause();
+                  } else {
+                    AudioService.instance.resume();
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: AudioService.instance.currentTitleNotifier,
+                  builder: (context, title, _) {
+                    return Text(
+                      title ?? 'ድምፅ ንባብ',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.stop_rounded, color: Colors.redAccent),
+                onPressed: () => AudioService.instance.stop(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
