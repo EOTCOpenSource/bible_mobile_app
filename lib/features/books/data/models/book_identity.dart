@@ -15,7 +15,8 @@ library;
 
 /// USFM id → the English name the app used before the SQLite migration.
 ///
-/// Covers exactly the 81 books that shipped in `assets/bibledata/index.json`.
+/// Covers exactly the 81 books that shipped in the old
+/// `assets/bibledata/index.json`, which this migration deleted.
 /// Books that only exist in the SQLite editions (the Ethiopic appendix, the
 /// Greek Esther fragments, the KJV-specific deuterocanon) are absent by design
 /// — they never had a legacy name to preserve.
