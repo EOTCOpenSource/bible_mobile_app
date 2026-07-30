@@ -114,6 +114,8 @@ class AmStrings extends AppStrings {
   @override
   String get booksNewTestament => 'አዲስ ኪዳን';
   @override
+  String get booksDeuterocanonical => 'ዲዩትሮካኖኒካል';
+  @override
   String booksSubtitle(String c) => '$c መጻሕፍት';
   @override
   String get booksFilterAll => 'ሁሉም';
@@ -291,6 +293,10 @@ class AmStrings extends AppStrings {
   @override
   String get verseShare => 'አጋራ';
   @override
+  String get verseCrossReferences => 'ተመሳሳይ ጥቅሶች';
+  @override
+  String get verseFootnotes => 'የትርጉም ማስታወሻ';
+  @override
   String get comingSoon => 'በቅርቡ ይመጣል';
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
@@ -465,4 +471,43 @@ class AmStrings extends AppStrings {
   String readingReminderSet(String time) => 'የንባብ ሰዓት ማሳወቂያ በ $time ተዘጋጅቷል';
   @override
   String readingReminderUpdated(String time) => 'የንባብ ሰዓት ማሳወቂያ ወደ $time ተቀይሯል';
+  @override
+  String get editionsTitle => 'የመጽሐፍ ቅዱስ ዕትሞች';
+  @override
+  String get editionsSubtitle => 'ዕትም ይምረጡ ወይም አዲስ ያውርዱ';
+  @override
+  String get editionsInstalled => 'በመሣሪያዎ ላይ';
+  @override
+  String get editionsAvailable => 'ሊወርዱ የሚችሉ';
+  @override
+  String get editionDownload => 'አውርድ';
+  @override
+  String get editionUpdate => 'አዘምን';
+  @override
+  String get editionRemove => 'አስወግድ';
+  @override
+  String get editionUse => 'ተጠቀም';
+  @override
+  String get editionActive => 'በሥራ ላይ';
+  @override
+  String get editionBuiltIn => 'ከመተግበሪያው ጋር የመጣ';
+  @override
+  String get editionDownloading => 'በማውረድ ላይ…';
+  @override
+  String get editionRemoveTitle => 'ዕትሙ ይወገድ?';
+  @override
+  String editionRemoveBody(String title) =>
+      '$title ከመሣሪያዎ ይወገዳል። ማስታወሻዎችዎና ምልክቶችዎ አይጠፉም፤ ዕትሙን ዳግም ማውረድ ይችላሉ።';
+  @override
+  String get editionRemoveConfirm => 'አስወግድ';
+  @override
+  String get editionCancel => 'ተወው';
+  @override
+  String editionUpdated(String title) => '$title ተዘምኗል';
+  @override
+  String editionUpToDate(String title) => '$title ወቅታዊ ነው';
+  @override
+  String editionPublishedBy(String publisher) => 'በ$publisher የታተመ';
+  @override
+  String get editionPublicDomain => 'የሕዝብ ንብረት';
 }

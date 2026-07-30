@@ -115,6 +115,8 @@ class EnStrings extends AppStrings {
   @override
   String get booksNewTestament => 'New Testament';
   @override
+  String get booksDeuterocanonical => 'Deuterocanon';
+  @override
   String booksSubtitle(String c) => '$c Books';
   @override
   String get booksFilterAll => 'All';
@@ -292,6 +294,10 @@ class EnStrings extends AppStrings {
   @override
   String get verseShare => 'Share';
   @override
+  String get verseCrossReferences => 'Cross references';
+  @override
+  String get verseFootnotes => 'Footnotes';
+  @override
   String get comingSoon => 'Coming soon';
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
@@ -466,4 +472,44 @@ class EnStrings extends AppStrings {
   String readingReminderSet(String time) => '✓ Reading reminder set for $time';
   @override
   String readingReminderUpdated(String time) => '✓ Reading reminder updated to $time';
+  @override
+  String get editionsTitle => 'Bible editions';
+  @override
+  String get editionsSubtitle => 'Choose an edition or download another';
+  @override
+  String get editionsInstalled => 'On this device';
+  @override
+  String get editionsAvailable => 'Available to download';
+  @override
+  String get editionDownload => 'Download';
+  @override
+  String get editionUpdate => 'Update';
+  @override
+  String get editionRemove => 'Remove';
+  @override
+  String get editionUse => 'Use';
+  @override
+  String get editionActive => 'Active';
+  @override
+  String get editionBuiltIn => 'Built in';
+  @override
+  String get editionDownloading => 'Downloading…';
+  @override
+  String get editionRemoveTitle => 'Remove this edition?';
+  @override
+  String editionRemoveBody(String title) =>
+      '$title will be deleted from this device. Your notes and highlights are '
+      'kept, and you can download it again at any time.';
+  @override
+  String get editionRemoveConfirm => 'Remove';
+  @override
+  String get editionCancel => 'Cancel';
+  @override
+  String editionUpdated(String title) => '$title updated';
+  @override
+  String editionUpToDate(String title) => '$title is up to date';
+  @override
+  String editionPublishedBy(String publisher) => 'Published by $publisher';
+  @override
+  String get editionPublicDomain => 'Public domain';
 }

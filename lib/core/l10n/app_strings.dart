@@ -74,6 +74,10 @@ abstract class AppStrings {
   String get booksTitle;
   String get booksOldTestament;
   String get booksNewTestament;
+
+  /// The deuterocanon — the books the 81-book EOTC canon has and the
+  /// protestant 66 does not.
+  String get booksDeuterocanonical;
   String booksSubtitle(String countStr);
   String get booksFilterAll;
   String get booksFilterLaw; // Pentateuch — books 1–5
@@ -167,6 +171,12 @@ abstract class AppStrings {
   String get verseNote;
   String get verseCopy;
   String get verseShare;
+
+  /// Title of the sheet listing a verse's parallel passages.
+  String get verseCrossReferences;
+
+  /// Title of the sheet listing a verse's translator footnotes.
+  String get verseFootnotes;
   String get comingSoon;
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
@@ -339,4 +349,33 @@ String readingReminderUpdated(String time);
   // background_picker snackbar
   String get cardImagePickFailed;
   String get cardShareAsText;
+  // ── Bible editions ────────────────────────────────────────────────────────
+  /// Title of the edition picker / download screen.
+  String get editionsTitle;
+  String get editionsSubtitle;
+
+  /// Section headers: what is on the device vs what can be fetched.
+  String get editionsInstalled;
+  String get editionsAvailable;
+
+  String get editionDownload;
+  String get editionUpdate;
+  String get editionRemove;
+  String get editionUse;
+  String get editionActive;
+
+  /// Shown on am-2000, which ships inside the app and cannot be removed.
+  String get editionBuiltIn;
+
+  String get editionDownloading;
+  String get editionRemoveTitle;
+  String editionRemoveBody(String title);
+  String get editionRemoveConfirm;
+  String get editionCancel;
+  String editionUpdated(String title);
+  String editionUpToDate(String title);
+
+  /// Copyright line naming the edition's publisher.
+  String editionPublishedBy(String publisher);
+  String get editionPublicDomain;
 }
