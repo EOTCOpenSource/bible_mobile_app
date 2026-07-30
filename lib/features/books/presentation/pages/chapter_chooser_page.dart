@@ -63,7 +63,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     if (!mounted) return;
 
     final readSet =
-        await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
+        await repo.readChapterNumbersForBook(widget.entry.id);
     if (!mounted) return;
 
     final p = _deriveProgress(book, pos, readSet);
@@ -97,7 +97,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     if (!mounted) return;
 
     final readSet =
-        await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
+        await repo.readChapterNumbersForBook(widget.entry.id);
     if (!mounted) return;
 
     final p = _deriveProgress(book, pos, readSet);
@@ -130,7 +130,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   }) _deriveProgress(Book book, ReadingPosition? pos, Set<int> readChapters) {
     var lastIdx = 0;
     var lastVerse = 1;
-    if (pos != null && pos.bookId == widget.entry.bookNameEn) {
+    if (pos != null && pos.bookId == widget.entry.id) {
       final i =
           book.chapters.indexWhere((c) => c.chapterNumber == pos.chapter);
       if (i >= 0) lastIdx = i;

@@ -63,20 +63,18 @@ Future<void> openReadingPlan(
   if (day == null || day.readings.isEmpty) return;
 
   // 2. Look up the BookIndexEntry from the first reading's book name.
+  // The plan files name books in kebab-case English; resolveBook also accepts
+  // canon slugs, Amharic names and USFM ids, so a plan authored against any of
+  // those still lands on the right book.
   final reading = day.readings.first;
-  final index = await bibleRepo.loadIndex();
-  final bookKey = reading.book.toLowerCase();
-  final BookIndexEntry? entry = index.cast<BookIndexEntry?>().firstWhere(
-        (e) => e!.bookNameEn.toLowerCase().replaceAll(' ', '-') == bookKey,
-        orElse: () => null,
-      );
+  final BookIndexEntry? entry = await bibleRepo.resolveBook(reading.book);
   if (entry == null || !context.mounted) return;
 
   // 3. Save position so next tap resumes here.
   await db.savePlanPosition(
     planId: plan.id,
     dayNumber: day.dayNumber,
-    bookId: entry.bookNameEn,
+    bookId: entry.id,
     chapter: reading.startChapter,
   );
 

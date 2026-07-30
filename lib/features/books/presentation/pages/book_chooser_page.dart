@@ -6,7 +6,8 @@ import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book_index_entry.dart';
-import '../../data/repositories/bible_repository.dart' show SearchScope;
+import '../../data/repositories/bible_repository.dart'
+    show BibleRepository, SearchScope;
 
 // ── Category filters ──────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ class BookChooserPage extends StatefulWidget {
 class _BookChooserPageState extends State<BookChooserPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  BibleRepository? _repo;
   List<BookIndexEntry> _books = [];
   bool _loading = true;
   bool _initialized = false;
@@ -50,18 +52,26 @@ class _BookChooserPageState extends State<BookChooserPage>
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
+      _repo = BibleRepositoryProvider.of(context);
+      // The book list is edition-specific. Switching editions happens on
+      // another tab, so without this the chooser keeps showing the previous
+      // edition's books until the app restarts.
+      _repo!.addListener(_loadBooks);
       _loadBooks();
     }
   }
 
   @override
   void dispose() {
+    _repo?.removeListener(_loadBooks);
     _tabController.dispose();
     super.dispose();
   }
 
   Future<void> _loadBooks() async {
-    final books = await BibleRepositoryProvider.of(context).loadIndex();
+    final repo = _repo;
+    if (repo == null) return;
+    final books = await repo.loadIndex();
     if (mounted) setState(() { _books = books; _loading = false; });
   }
 
@@ -71,15 +81,36 @@ class _BookChooserPageState extends State<BookChooserPage>
   List<BookIndexEntry> get _ntBooks =>
       _books.where((b) => !b.isOldTestament).toList();
 
+  /// Filters key on the canon section, not on a book-number range.
+  ///
+  /// Display order is edition-specific — `am-2000` runs to 94 positions with
+  /// the deuterocanon at 40–58, while the protestant editions stop at 66 — so
+  /// the numeric ranges these filters used to carry were correct for exactly
+  /// one edition and silently mis-bucketed every other.
+  List<BookIndexEntry> _bySection(
+    List<BookIndexEntry> books,
+    Set<String> sections,
+  ) =>
+      books.where((b) => b.section != null && sections.contains(b.section!))
+          .toList();
+
+  /// Books the named sections do not claim: the Ethiopic appendix and the
+  /// unsectioned deuterocanon.
+  List<BookIndexEntry> _unsectioned(List<BookIndexEntry> books) =>
+      books.where((b) => b.section == null).toList();
+
   List<BookIndexEntry> get _filteredOT {
     final ot = _otBooks;
     return switch (_otFilter) {
       _OTFilter.all      => ot,
-      _OTFilter.law      => ot.where((b) => b.bookNumber <= 5).toList(),
-      _OTFilter.history  => ot.where((b) => b.bookNumber >= 6  && b.bookNumber <= 26).toList(),
-      _OTFilter.wisdom   => ot.where((b) => b.bookNumber >= 27 && b.bookNumber <= 34).toList(),
-      _OTFilter.prophets => ot.where((b) => b.bookNumber >= 35 && b.bookNumber <= 54).toList(),
-      _OTFilter.other    => ot.where((b) => b.bookNumber > 54).toList(),
+      _OTFilter.law      => _bySection(ot, const {'Pentateuch'}),
+      _OTFilter.history  => _bySection(ot, const {'Historical'}),
+      _OTFilter.wisdom   => _bySection(ot, const {'PoetryWisdom'}),
+      _OTFilter.prophets => _bySection(ot, const {'MajorProphet', 'MinorProphet'}),
+      _OTFilter.other    => [
+          ..._bySection(ot, const {'Deuterocanonical'}),
+          ..._unsectioned(ot),
+        ],
     };
   }
 
@@ -87,13 +118,12 @@ class _BookChooserPageState extends State<BookChooserPage>
     final nt = _ntBooks;
     return switch (_ntFilter) {
       _NTFilter.all        => nt,
-      _NTFilter.gospels    => nt.where((b) => b.bookNumber >= 55 && b.bookNumber <= 58).toList(),
-      _NTFilter.acts       => nt.where((b) => b.bookNumber == 59).toList(),
-      _NTFilter.pauline    => nt.where((b) => b.bookNumber >= 60 && b.bookNumber <= 73).toList(),
-      _NTFilter.general    => nt.where((b) => b.bookNumber >= 74 && b.bookNumber <= 80).toList(),
-      _NTFilter.revelation => nt.where((b) => b.bookNumber == 81).toList(),
-      _NTFilter.other      => nt.where((b) =>
-          b.bookNumber < 55 || b.bookNumber > 81).toList(),
+      _NTFilter.gospels    => _bySection(nt, const {'Gospel'}),
+      _NTFilter.acts       => _bySection(nt, const {'Acts'}),
+      _NTFilter.pauline    => _bySection(nt, const {'PaulineEpistle'}),
+      _NTFilter.general    => _bySection(nt, const {'GeneralEpistle'}),
+      _NTFilter.revelation => _bySection(nt, const {'Revelation'}),
+      _NTFilter.other      => _unsectioned(nt),
     };
   }
 
