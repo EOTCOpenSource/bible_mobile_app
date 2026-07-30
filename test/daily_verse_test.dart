@@ -1,10 +1,29 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bibleflutter/features/books/data/bible_storage.dart';
 import 'package:bibleflutter/features/books/data/repositories/bible_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final repo = BibleRepository();
+  late Directory tmp;
+  late BibleRepository repo;
+
+  // The repository now reads SQLite out of app support, which `path_provider`
+  // cannot supply under test — unpack the bundled edition into a temp dir.
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+    tmp = await Directory.systemTemp.createTemp('bibleflutter_daily');
+    repo = BibleRepository(storage: BibleStorage(rootOverride: tmp));
+    await repo.init();
+  });
+
+  tearDownAll(() {
+    repo.dispose();
+    if (tmp.existsSync()) tmp.deleteSync(recursive: true);
+  });
 
   test('every Ethiopian day of the year resolves to a real verse', () async {
     final failures = <String>[];
@@ -24,10 +43,10 @@ void main() {
         reason: 'days with no daily verse: ${failures.join(", ")}');
   });
 
-  test('book names that differ from index.json still resolve', () async {
+  test('book names that differ from the catalog still resolve', () async {
     // The curated file uses Ethiopian short names ("Kufale", "Yodit",
-    // "Ezra Sutuel", "Act", "Sirach", "Tobit") that do not equal
-    // index.json's book_name_en. Each of these days used to render blank.
+    // "Ezra Sutuel", "Act", "Sirach", "Tobit") that match neither the USFM id
+    // nor the English name. Each of these days used to render blank.
     const aliasDays = <String, List<int>>{
       'Kufale':      [1, 6],
       'Sirach':      [2, 15],
