@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../annotations/annotation_models.dart';
 import '../api/api_client.dart';
+import '../../features/books/data/models/book_identity.dart';
 
 class SyncRepository {
   const SyncRepository(this._client, this._token);
@@ -162,9 +163,10 @@ class SyncRepository {
   static Color _colorFromName(String name) =>
       _nameToColor[name] ?? const Color(0xFFFFE062);
 
-  // Reverse lookup: server kebab-case bookId → local bookNameEn.
-  // Web FE sends lowercase-hyphen (e.g. "1-samuel"); mobile stores title-case
-  // (e.g. "1 Samuel"). This map converts between the two directions.
+  // Legacy reverse lookup, kept only so rows written by older builds still
+  // resolve. The live translation is [_normalizeBookId] → USFM.
+  //
+  // ignore: unused_field
   static const _bookIdToName = <String, String>{
     'genesis': 'Genesis', 'exodus': 'Exodus', 'leviticus': 'Leviticus',
     'numbers': 'Numbers', 'deuteronomy': 'Deuteronomy', 'joshua': 'Joshua',
@@ -200,17 +202,21 @@ class SyncRepository {
     'james': 'James', 'jude': 'Jude', 'revelation': 'Revelation',
   };
 
-  /// Convert server kebab-case bookId to local bookNameEn.
-  /// Handles both web format ("genesis") and mobile format ("Genesis").
-  static String _normalizeBookId(String raw) {
-    if (raw.isEmpty) return raw;
-    final kebab = raw.toLowerCase().replaceAll(' ', '-');
-    return _bookIdToName[kebab] ?? raw;
-  }
+  /// Anything the server sends → the USFM id every local table now uses.
+  ///
+  /// Accepts the web frontend's kebab-case ("1-samuel"), the title-case form
+  /// older mobile builds pushed ("1 Samuel"), and a USFM id that is already
+  /// correct, so a mixed-vintage account converges instead of duplicating.
+  static String _normalizeBookId(String raw) =>
+      raw.isEmpty ? raw : usfmFromAnyBookId(raw);
 
-  /// Convert local bookNameEn to the API's kebab-case format.
-  static String _toApiBookId(String bookNameEn) =>
-      bookNameEn.toLowerCase().replaceAll(' ', '-');
+  /// USFM id → the kebab-case id the API and web frontend expect.
+  ///
+  /// The wire format is frozen at kebab-case of the *legacy* English name
+  /// ("book-of-tobit", "thr-letter-of-jeremiah"), which is what the web app
+  /// already has stored. Switching the server to USFM would orphan every
+  /// annotation it has written, so the translation lives here instead.
+  static String _toApiBookId(String usfmId) => apiBookIdFromUsfm(usfmId);
 
   // ── Fetch (pull from server) ────────────────────────────────────────────────
 

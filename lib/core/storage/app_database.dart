@@ -2,10 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../annotations/annotation_models.dart';
+import '../../features/books/data/models/book_identity.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 6;
+  static const _version = 7;
+
+  /// Every table that keys user data on a book.
+  static const _bookKeyedTables = [
+    'bookmarks',
+    'highlights',
+    'notes',
+    'reading_position',
+    'chapter_read',
+    'plan_position',
+  ];
 
   Database? _db;
 
@@ -43,9 +54,68 @@ class AppDatabase {
       await _createPlanPositionTable(db);
     }
     if (oldVersion < 6) {
-  await _createSettingsTable(db);
-}
+      await _createSettingsTable(db);
+    }
+    if (oldVersion < 7) {
+      await _migrateBookIdsToUsfm(db);
+    }
+  }
 
+  /// v6→v7: `book_id` moves from the English book name ("Genesis") to the USFM
+  /// id ("GEN"), matching the SQLite Bible editions.
+  ///
+  /// The sync server and web frontend are untouched: they still speak
+  /// kebab-case of the legacy name, and [SyncRepository] translates at the wire
+  /// boundary. So nothing here needs re-pushing, and `remote_id` stays valid.
+  ///
+  /// Two deliberate choices about data safety:
+  ///
+  /// * `UPDATE OR IGNORE` — the annotation tables have `UNIQUE(book_id,
+  ///   chapter, verse_start)`. If a device somehow holds both "Genesis" and
+  ///   "genesis" for the same verse, the second update is skipped and that row
+  ///   keeps its old id rather than being deleted.
+  /// * Books with no USFM equivalent keep their existing `book_id`. `Teref
+  ///   Baruch` (ተረፈ ባሮክ) is the real case: the 80-weahadu canon has no slot for
+  ///   it, and mapping it onto `BAR` or `LJE` would silently move a reader's
+  ///   notes into a different book.
+  Future<void> _migrateBookIdsToUsfm(Database db) async {
+    var moved = 0;
+    var stranded = 0;
+
+    for (final table in _bookKeyedTables) {
+      final List<Map<String, Object?>> rows;
+      try {
+        rows = await db.rawQuery('SELECT DISTINCT book_id FROM $table');
+      } on DatabaseException catch (e) {
+        // A table added by a later migration than the one being upgraded from.
+        debugPrint('[AppDatabase] v7: skipping $table ($e)');
+        continue;
+      }
+
+      for (final row in rows) {
+        final legacy = row['book_id'] as String?;
+        if (legacy == null || legacy.isEmpty) continue;
+
+        final usfm = usfmFromAnyBookId(legacy);
+        if (usfm == legacy) {
+          // Either already USFM, or a book we have no id for.
+          if (!kUsfmToLegacyName.containsKey(legacy) &&
+              !kUsfmToCanonSlug.containsKey(legacy)) {
+            stranded++;
+            debugPrint('[AppDatabase] v7: no USFM id for "$legacy" in $table '
+                '— left as is');
+          }
+          continue;
+        }
+
+        moved += await db.rawUpdate(
+          'UPDATE OR IGNORE $table SET book_id = ? WHERE book_id = ?',
+          [usfm, legacy],
+        );
+      }
+    }
+    debugPrint('[AppDatabase] v7: $moved rows moved to USFM ids, '
+        '$stranded book ids left unmapped');
   }
 
   /// v3→v4: annotation items pushed with title-case bookId (e.g. "Genesis")
