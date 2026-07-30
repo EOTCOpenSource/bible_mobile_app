@@ -55,6 +55,14 @@ dependencies:
   image_gallery_saver_plus: ^4.0.1
   path_provider: ^2.1.2
 
+  # Bible editions ship as SQLite databases (80-weahadu). sqlite3_flutter_libs
+  # is required, not optional: verse_fts uses the `trigram` tokenizer, which
+  # needs SQLite >= 3.34, and Android's system library is older on older
+  # releases. sqflite (used by app_database) keeps using the system library.
+  sqlite3: ^3.3.1
+  sqlite3_flutter_libs: ^0.5.42
+  crypto: ^3.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -78,7 +86,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/bibledata/
+    # Default edition + catalog, gunzipped into app support on first launch.
+    - assets/bibles/am-2000.db.gz
+    - assets/bibles/catalog.db.gz
+    # Curated daily-verse references (not scripture text).
+    - assets/bibledata/ethiopian_daily_verses.json
     - assets/signin/
     - assets/eotc.jpg
   
