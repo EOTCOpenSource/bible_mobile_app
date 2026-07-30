@@ -28,6 +28,7 @@ import '../widgets/reader/highlight_sheet.dart';
 import '../widgets/reader/note_sheet.dart';
 import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
+import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../share/verse_card_sheet.dart';
@@ -184,7 +185,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       container
           .read(readingProgressRepositoryProvider)
           .saveReadingPosition(
-            bookId: widget.entry.bookNameEn,
+            bookId: widget.entry.id,
             chapter: _currentChapterNumber,
             verse: verse,
           ),
@@ -210,7 +211,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         } on Object catch (_) {
           return;
         }
-        final bookId = widget.entry.bookNameEn;
+        final bookId = widget.entry.id;
         await container
             .read(readingProgressRepositoryProvider)
             .recordQualifiedChapterRead(bookId: bookId, chapter: chNum);
@@ -374,7 +375,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   ChapterKey get _chapterKey =>
-      (bookId: widget.entry.bookNameEn, chapter: _currentChapterNumber);
+      (bookId: widget.entry.id, chapter: _currentChapterNumber);
 
   String? _selectedVerseText(AppSettings settings) {
     if (_book == null || _selectedKey == null) return null;
@@ -613,7 +614,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _selectedKey = verseKey;
             _selectionEndKey = null;
           });
-          final chKey = (bookId: widget.entry.bookNameEn, chapter: chNum);
+          final chKey = (bookId: widget.entry.id, chapter: chNum);
           final liveAnnotations =
               _riverpodContainer
                   ?.read(chapterAnnotationsProvider(chKey))
@@ -621,6 +622,37 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               ChapterAnnotations.empty;
           _showNoteSheet(context, Settings.of(context), liveAnnotations);
         },
+      ),
+    );
+  }
+
+  // ── Footnotes and cross references ────────────────────────────────────────
+
+  void _showApparatus(Verse verse, int chapterNumber) {
+    if (verse.refs.isEmpty && verse.notes.isEmpty) return;
+
+    final s = L10n.of(context);
+    final settings = Settings.of(context);
+    final isDark = settings.isDarkReader;
+    final useGeez = settings.useGeezNumbers;
+
+    final chNum = useGeez ? toGeez(chapterNumber) : '$chapterNumber';
+    final vNum = verse.displayNumber(useGeez: useGeez);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => VerseApparatusSheet(
+        reference: '${widget.entry.bookNameAm} $chNum:$vNum',
+        refs: verse.refs,
+        notes: verse.notes,
+        s: s,
+        surfaceColor: isDark ? readerDarkSurface : Colors.white,
+        textColor: isDark ? readerDarkText : AppColors.textOnParchment,
+        mutedColor: isDark ? readerDarkMuted : AppColors.textMuted,
+        accentColor: isDark ? readerDarkAccent : AppColors.accentDeep,
+        bodyFont: readerFonts[settings.bodyFontIndex],
       ),
     );
   }
@@ -739,7 +771,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       final pageChapterNum =
                                           _book!.chapters[i].chapterNumber;
                                       final pageKey = (
-                                        bookId: widget.entry.bookNameEn,
+                                        bookId: widget.entry.id,
                                         chapter: pageChapterNum,
                                       );
                                       return Consumer(
@@ -773,6 +805,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                 settings.continuousReading,
                                             onNoteTap: (key, ann) =>
                                                 _showNoteView(key, ann),
+                                            onApparatusTap: (verse) =>
+                                                _showApparatus(
+                                              verse,
+                                              _book!
+                                                  .chapters[i].chapterNumber,
+                                            ),
                                             spotlightVerseNum:
                                                 (widget.initialVerse != null &&
                                                     i ==
