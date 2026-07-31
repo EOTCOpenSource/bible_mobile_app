@@ -589,7 +589,9 @@ class _ColumnLabels extends StatelessWidget {
             )
           : Row(
               children: [
-                _chip(primaryLabel, strong: true),
+                // Both flexible: an edition with no abbreviation falls back to
+                // its full title, and two of those overflow a phone.
+                Flexible(child: _chip(primaryLabel, strong: true)),
                 Text(
                   '  ·  ',
                   style: TextStyle(fontSize: 9.5, color: mutedColor),
