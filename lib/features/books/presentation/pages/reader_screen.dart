@@ -16,6 +16,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../../data/reading_constants.dart';
+import '../../data/repositories/bible_repository.dart' show BibleRepository;
+import '../widgets/edition_switcher.dart';
 import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
 import '../../../../core/deep_links/deep_link_uri.dart';
@@ -29,6 +31,7 @@ import '../widgets/reader/highlight_sheet.dart';
 import '../widgets/reader/note_sheet.dart';
 import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
+import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../share/verse_card_sheet.dart';
@@ -63,8 +66,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     with WidgetsBindingObserver {
   Book? _book;
   bool _loading = true;
-  late final PageController _pageCtrl;
+  late PageController _pageCtrl;
   int _currentChapter = 0;
+
+  /// The open book *in the active edition*. Re-resolved on every edition
+  /// switch: the USFM id is stable, everything else about the entry is not.
+  late BookIndexEntry _entry;
+
+  BibleRepository? _repo;
+  bool _initialized = false;
 
   String? _selectedKey;
   String? _selectionEndKey;
@@ -88,6 +98,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _entry = widget.entry;
     _currentChapter = widget.initialChapter;
     _pageCtrl = PageController(initialPage: widget.initialChapter);
     AudioService.instance.currentVerseIndexNotifier.addListener(_onAudioVerseIndexChanged);
@@ -158,6 +169,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _riverpodContainer = ProviderScope.containerOf(context);
+    if (!_initialized) {
+      _initialized = true;
+      // The toolbar can switch editions mid-chapter; follow the repository so
+      // the text under the reader is always the edition they just chose.
+      _repo = BibleRepositoryProvider.of(context);
+      _repo!.addListener(_onEditionChanged);
+    }
     // Defer: updating [readerBottomNavMatchReaderProvider] rebuilds [HomeScreen]
     // while this route is mounting; doing it synchronously here can throw.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -200,6 +218,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     AudioService.instance.currentVerseIndexNotifier.removeListener(_onAudioVerseIndexChanged);
     AudioService.instance.stateNotifier.removeListener(_onAudioStateChanged);
     _dwellTimer?.cancel();
+    _repo?.removeListener(_onEditionChanged);
     WidgetsBinding.instance.removeObserver(this);
     _persistReadingPosition();
     // Reset immersive/color providers while ref is still valid (before super.dispose).
@@ -253,7 +272,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       container
           .read(readingProgressRepositoryProvider)
           .saveReadingPosition(
-            bookId: widget.entry.bookNameEn,
+            bookId: _entry.id,
             chapter: _currentChapterNumber,
             verse: verse,
           ),
@@ -279,7 +298,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         } on Object catch (_) {
           return;
         }
-        final bookId = widget.entry.bookNameEn;
+        final bookId = _entry.id;
         await container
             .read(readingProgressRepositoryProvider)
             .recordQualifiedChapterRead(bookId: bookId, chapter: chNum);
@@ -299,7 +318,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   Future<void> _loadBook() async {
     final book = await BibleRepositoryProvider.of(
       context,
-    ).loadBook(widget.entry);
+    ).loadBook(_entry);
     if (!mounted) return;
 
     var pageIdx = widget.initialChapter.clamp(0, book.chapters.length - 1);
@@ -340,9 +359,69 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final versesText =
         ch.allVerses.map((v) => v.text).toList();
     AudioService.instance.startChapter(
-      title: '${widget.entry.bookNameAm} ${ch.chapterNumber}',
+      title: '${_entry.bookNameAm} ${ch.chapterNumber}',
       verses: versesText,
     );
+  }
+
+  /// Re-reads the open book from the edition just switched to, holding the
+  /// reader on the same chapter number.
+  ///
+  /// Two things can go wrong and both are ordinary: the new canon may not carry
+  /// this book at all (the protestant editions have no deuterocanon), and its
+  /// versification may not carry this chapter. The first leaves the reader, the
+  /// second lands on the nearest chapter the edition does have.
+  Future<void> _onEditionChanged() async {
+    final repo = _repo;
+    if (repo == null || !mounted) return;
+
+    final entry = await repo.bookById(_entry.id);
+    if (!mounted) return;
+
+    if (entry == null) {
+      final s = L10n.of(context);
+      final edition = await repo.activeEdition();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              s.editionBookMissing(
+                edition == null ? '' : editionTitleFor(edition, s),
+              ),
+            ),
+          ),
+        );
+      if (ModalRoute.of(context)?.isCurrent ?? false) Navigator.pop(context);
+      return;
+    }
+
+    final keepChapter = _currentChapterNumber;
+    final book = await repo.loadBook(entry);
+    if (!mounted) return;
+
+    var idx = book.chapters.indexWhere((c) => c.chapterNumber == keepChapter);
+    if (idx < 0) idx = (keepChapter - 1).clamp(0, book.chapters.length - 1);
+
+    // A fresh controller rather than a jump: the new edition can have fewer
+    // chapters, and a PageController restoring an out-of-range offset lands on
+    // the wrong page.
+    final previous = _pageCtrl;
+    setState(() {
+      _entry = entry;
+      _book = book;
+      _loading = false;
+      _currentChapter = idx;
+      _selectedKey = null;
+      _selectionEndKey = null;
+      _spotlightChapterPageIndex = null;
+      _pageCtrl = PageController(initialPage: idx);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+
+    _persistReadingPosition();
+    _scheduleDwellTimer();
   }
 
   void _autoSelectInitialVerse(int chapterPageIndex) {
@@ -459,7 +538,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   ChapterKey get _chapterKey =>
-      (bookId: widget.entry.bookNameEn, chapter: _currentChapterNumber);
+      (bookId: _entry.id, chapter: _currentChapterNumber);
 
   String? _selectedVerseText(AppSettings settings) {
     if (_book == null || _selectedKey == null) return null;
@@ -488,8 +567,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       final refEnd = count > 1
           ? '-${useGeez ? toGeez(start + count - 1) : '${start + count - 1}'}'
           : '';
-      final ref = '${widget.entry.bookNameAm} $chNum:$startStr$refEnd';
-      final deepLink = verseDeepLinkUri(widget.entry, chNum, start);
+      final ref = '${_entry.bookNameAm} $chNum:$startStr$refEnd';
+      final deepLink = verseDeepLinkUri(_entry, chNum, start);
       return '${texts.join('\n')}\n$ref\n$deepLink';
     } catch (_) {
       return null;
@@ -572,7 +651,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               .read(chapterAnnotationsProvider(_chapterKey).notifier)
               .setHighlight(
                 verseStart: verseNum,
-                bookNumber: widget.entry.bookNumber,
+                bookNumber: _entry.bookNumber,
                 color: color,
                 verseCount: count,
               );
@@ -624,7 +703,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               .read(chapterAnnotationsProvider(_chapterKey).notifier)
               .saveNote(
                 verseStart: verseNum,
-                bookNumber: widget.entry.bookNumber,
+                bookNumber: _entry.bookNumber,
                 content: content,
                 verseCount: count,
               );
@@ -674,7 +753,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     final chNumDisplay = settings.useGeezNumbers ? toGeez(chNum) : '$chNum';
     final vNumDisplay = settings.useGeezNumbers ? toGeez(vNum) : '$vNum';
-    final reference = '${widget.entry.bookNameAm} $chNumDisplay:$vNumDisplay';
+    final reference = '${_entry.bookNameAm} $chNumDisplay:$vNumDisplay';
 
     showModalBottomSheet(
       context: context,
@@ -698,7 +777,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _selectedKey = verseKey;
             _selectionEndKey = null;
           });
-          final chKey = (bookId: widget.entry.bookNameEn, chapter: chNum);
+          final chKey = (bookId: _entry.id, chapter: chNum);
           final liveAnnotations =
               _riverpodContainer
                   ?.read(chapterAnnotationsProvider(chKey))
@@ -706,6 +785,37 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               ChapterAnnotations.empty;
           _showNoteSheet(context, Settings.of(context), liveAnnotations);
         },
+      ),
+    );
+  }
+
+  // ── Footnotes and cross references ────────────────────────────────────────
+
+  void _showApparatus(Verse verse, int chapterNumber) {
+    if (verse.refs.isEmpty && verse.notes.isEmpty) return;
+
+    final s = L10n.of(context);
+    final settings = Settings.of(context);
+    final isDark = settings.isDarkReader;
+    final useGeez = settings.useGeezNumbers;
+
+    final chNum = useGeez ? toGeez(chapterNumber) : '$chapterNumber';
+    final vNum = verse.displayNumber(useGeez: useGeez);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => VerseApparatusSheet(
+        reference: '${_entry.bookNameAm} $chNum:$vNum',
+        refs: verse.refs,
+        notes: verse.notes,
+        s: s,
+        surfaceColor: isDark ? readerDarkSurface : Colors.white,
+        textColor: isDark ? readerDarkText : AppColors.textOnParchment,
+        mutedColor: isDark ? readerDarkMuted : AppColors.textMuted,
+        accentColor: isDark ? readerDarkAccent : AppColors.accentDeep,
+        bodyFont: readerFonts[settings.bodyFontIndex],
       ),
     );
   }
@@ -767,13 +877,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ReaderToolbar(
-                                entry: widget.entry,
+                                entry: _entry,
                                 currentChapter: _currentChapter,
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
                                 textColor: textColor,
                                 mutedColor: mutedColor,
+                                accentColor: accentColor,
+                                sheetTheme: EditionSheetTheme(
+                                  surface: surfaceColor,
+                                  text: textColor,
+                                  muted: mutedColor,
+                                  accent: accentColor,
+                                  border: mutedColor.withValues(alpha: 0.25),
+                                ),
                                 s: s,
                                 onBack: () => Navigator.pop(context),
                                 onFontSettings: () =>
@@ -782,7 +900,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                               ),
                               if (chapterReady)
                                 ReaderBreadcrumb(
-                                  entry: widget.entry,
+                                  entry: _entry,
                                   chapter: _book!.chapters[_currentChapter],
                                   useGeez: useGeez,
                                   isAmharic: isAm,
@@ -825,7 +943,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       final pageChapterNum =
                                           _book!.chapters[i].chapterNumber;
                                       final pageKey = (
-                                        bookId: widget.entry.bookNameEn,
+                                        bookId: _entry.id,
                                         chapter: pageChapterNum,
                                       );
                                       return Consumer(
@@ -840,7 +958,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                   .value ??
                                               ChapterAnnotations.empty;
                                           return ReaderChapterPage(
-                                            entry: widget.entry,
+                                            entry: _entry,
                                             chapter: _book!.chapters[i],
                                             isDark: isDark,
                                             fontSize: settings.fontSize,
@@ -859,6 +977,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                 settings.continuousReading,
                                             onNoteTap: (key, ann) =>
                                                 _showNoteView(key, ann),
+                                            onApparatusTap: (verse) =>
+                                                _showApparatus(
+                                              verse,
+                                              _book!
+                                                  .chapters[i].chapterNumber,
+                                            ),
                                             spotlightVerseNum: _audioVerseNum(i) ??
                                                 ((widget.initialVerse != null &&
                                                     i ==
@@ -907,7 +1031,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                               .toggleBookmark(
                                                 verseStart: verseNum,
                                                 bookNumber:
-                                                    widget.entry.bookNumber,
+                                                    _entry.bookNumber,
                                                 verseCount:
                                                     _selectionVerseCount,
                                               );

@@ -3,6 +3,7 @@ import 'package:kenat/kenat.dart';
 import '../../../../../core/l10n/app_strings.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book_index_entry.dart';
+import '../edition_switcher.dart';
 
 class ReaderToolbar extends StatelessWidget {
   const ReaderToolbar({
@@ -14,6 +15,8 @@ class ReaderToolbar extends StatelessWidget {
     required this.bgColor,
     required this.textColor,
     required this.mutedColor,
+    required this.accentColor,
+    required this.sheetTheme,
     required this.s,
     required this.onBack,
     required this.onFontSettings,
@@ -27,6 +30,11 @@ class ReaderToolbar extends StatelessWidget {
   final Color bgColor;
   final Color textColor;
   final Color mutedColor;
+  final Color accentColor;
+
+  /// Colors for the edition chooser sheet — the reader paints its own shell,
+  /// so the sheet cannot read them off the theme.
+  final EditionSheetTheme sheetTheme;
   final AppStrings s;
   final VoidCallback onBack;
   final VoidCallback onFontSettings;
@@ -79,6 +87,15 @@ class ReaderToolbar extends StatelessWidget {
               ),
             ),
           ),
+          // Active edition — opens the chooser
+          EditionChip(
+            dense: true,
+            foreground: accentColor,
+            background: accentColor.withValues(alpha: 0.10),
+            borderColor: accentColor.withValues(alpha: 0.28),
+            sheetTheme: sheetTheme,
+          ),
+          const SizedBox(width: 2),
           if (onAudio != null)
             IconButton(
               icon: Icon(Icons.volume_up_rounded, size: 20, color: mutedColor),

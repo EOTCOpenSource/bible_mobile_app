@@ -22,6 +22,7 @@ abstract class AppStrings {
 
   // ── Daily verse ───────────────────────────────────────────────────────────
   String get dailyVerseTag;
+  String get dailyVerseUnavailable;
 
   // ── Continue reading ──────────────────────────────────────────────────────
   String get continueReadingTitle;
@@ -73,6 +74,10 @@ abstract class AppStrings {
   String get booksTitle;
   String get booksOldTestament;
   String get booksNewTestament;
+
+  /// The deuterocanon — the books the 81-book EOTC canon has and the
+  /// protestant 66 does not.
+  String get booksDeuterocanonical;
   String booksSubtitle(String countStr);
   String get booksFilterAll;
   String get booksFilterLaw; // Pentateuch — books 1–5
@@ -166,6 +171,12 @@ abstract class AppStrings {
   String get verseNote;
   String get verseCopy;
   String get verseShare;
+
+  /// Title of the sheet listing a verse's parallel passages.
+  String get verseCrossReferences;
+
+  /// Title of the sheet listing a verse's translator footnotes.
+  String get verseFootnotes;
   String get comingSoon;
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
@@ -338,4 +349,60 @@ String readingReminderUpdated(String time);
   // background_picker snackbar
   String get cardImagePickFailed;
   String get cardShareAsText;
+  // ── Bible editions ────────────────────────────────────────────────────────
+  /// Title of the edition picker / download screen.
+  String get editionsTitle;
+  String get editionsSubtitle;
+
+  /// Section headers: what is on the device vs what can be fetched.
+  String get editionsInstalled;
+  String get editionsAvailable;
+
+  String get editionDownload;
+  String get editionUpdate;
+  String get editionRemove;
+  String get editionUse;
+  String get editionActive;
+
+  /// Shown on am-2000, which ships inside the app and cannot be removed.
+  String get editionBuiltIn;
+
+  String get editionDownloading;
+  String get editionRemoveTitle;
+  String editionRemoveBody(String title);
+  String get editionRemoveConfirm;
+  String get editionCancel;
+  String editionUpdated(String title);
+  String editionUpToDate(String title);
+
+  /// Copyright line naming the edition's publisher.
+  String editionPublishedBy(String publisher);
+  String get editionPublicDomain;
+
+  // ── Edition chooser ───────────────────────────────────────────────────────
+  /// Sheet opened from the book list, the chapter grid and the reader.
+  String get editionSwitchTitle;
+  String get editionSwitchSubtitle;
+
+  /// Row at the foot of the sheet that opens the full editions screen.
+  String get editionManage;
+  String editionMoreAvailable(int count);
+  String editionSwitched(String title);
+
+  /// Shown when the edition just switched to does not carry the open book —
+  /// the protestant canons have no deuterocanon, so this is expected.
+  String editionBookMissing(String title);
+
+  String get editionUpdateAvailable;
+  String get editionsFilterAll;
+  String get editionsNoneForFilter;
+  String get editionsCheckUpdates;
+
+  /// Label over the hero card on the editions screen.
+  String get editionsActiveLabel;
+  String editionsOnDeviceCount(int installed, int total);
+
+  String editionMetaBooks(String count);
+  String editionMetaChapters(String count);
+  String editionMetaVerses(String count);
 }
