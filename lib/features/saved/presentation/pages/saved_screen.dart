@@ -92,8 +92,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     final index = await repo.loadIndex();
     final entries = {
-      for (final e in index.where((e) => bookIds.contains(e.bookNameEn)))
-        e.bookNameEn: e,
+      for (final e in index.where((e) => bookIds.contains(e.id))) e.id: e,
     };
 
     final entryList = entries.values.toList();
@@ -101,7 +100,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     final textMap = <String, Map<int, Map<int, String>>>{};
     for (var i = 0; i < entryList.length; i++) {
-      final bookId = entryList[i].bookNameEn;
+      final bookId = entryList[i].id;
       textMap[bookId] = {};
       for (final ch in books[i].chapters) {
         textMap[bookId]![ch.chapterNumber] = {

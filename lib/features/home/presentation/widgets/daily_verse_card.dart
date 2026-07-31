@@ -22,13 +22,17 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_future == null) {
-      final et    = Kenat.now().getEthiopian();
-      final month = et['month'] as int;
-      final day   = et['day']   as int;
-      _future = BibleRepositoryProvider.of(context).loadDailyVerse(month, day);
-    }
+    _future ??= _load();
   }
+
+  Future<DailyVerseResult?> _load() {
+    final et    = Kenat.now().getEthiopian();
+    final month = et['month'] as int;
+    final day   = et['day']   as int;
+    return BibleRepositoryProvider.of(context).loadDailyVerse(month, day);
+  }
+
+  void _retry() => setState(() => _future = _load());
 
   String _formatRef(DailyVerseResult r, bool useGeez) {
     final ch = useGeez ? toGeez(r.chapter) : '${r.chapter}';
@@ -113,17 +117,40 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                 // ── Verse text ─────────────────────────────────────────────
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  child: snapshot.connectionState == ConnectionState.waiting
-                      ? _LoadingLines(key: const ValueKey('loading'))
-                      : Text(
-                          key: const ValueKey('verse'),
-                          verseText,
-                          style: AppTypography.amharicVerse.copyWith(
-                            color: c.textOnDark,
-                            height: 1.9,
-                            fontSize: 18,
-                          ),
+                  child: switch (snapshot.connectionState) {
+                    ConnectionState.waiting =>
+                      _LoadingLines(key: const ValueKey('loading')),
+                    _ when verseText.isEmpty => GestureDetector(
+                        key: const ValueKey('empty'),
+                        onTap: _retry,
+                        child: Row(
+                          children: [
+                            Icon(Icons.refresh_rounded,
+                                size: 18,
+                                color: c.textOnDark.withValues(alpha: 0.8)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                s.dailyVerseUnavailable,
+                                style: AppTypography.amharicBody.copyWith(
+                                  color: c.textOnDark.withValues(alpha: 0.85),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                    _ => Text(
+                        key: const ValueKey('verse'),
+                        verseText,
+                        style: AppTypography.amharicVerse.copyWith(
+                          color: c.textOnDark,
+                          height: 1.9,
+                          fontSize: 18,
+                        ),
+                      ),
+                  },
                 ),
                 const SizedBox(height: 18),
                 // ── Reference link + actions ───────────────────────────────

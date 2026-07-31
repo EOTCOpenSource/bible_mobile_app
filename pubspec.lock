@@ -106,7 +106,7 @@ packages:
     source: hosted
     version: "0.3.5+2"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
@@ -918,13 +918,21 @@ packages:
     source: hosted
     version: "2.4.0"
   sqlite3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3
-      sha256: "56da3e13ed7d28a66f930aa2b2b29db6736a233f08283326e96321dd812030f5"
+      sha256: c73fd75df1332d76a6257f4823ae4df9c791f522b97e4a60cbcad214de1becf4
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.1"
+    version: "3.5.0"
+  sqlite3_flutter_libs:
+    dependency: "direct main"
+    description:
+      name: sqlite3_flutter_libs
+      sha256: eeb9e3a45207649076b808f8a5a74d68770d0b7f26ccef6d5f43106eee5375ad
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.42"
   stack_trace:
     dependency: transitive
     description:

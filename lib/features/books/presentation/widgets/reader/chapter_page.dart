@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:kenat/kenat.dart';
 import '../../../../../core/annotations/annotation_models.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
@@ -31,6 +30,7 @@ class ReaderChapterPage extends StatelessWidget {
     this.spotlightKey,
     this.continuousReading = false,
     this.onNoteTap,
+    this.onApparatusTap,
   });
 
   final BookIndexEntry entry;
@@ -52,6 +52,9 @@ class ReaderChapterPage extends StatelessWidget {
   final ChapterAnnotations annotations;
   final bool continuousReading;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+
+  /// Opens the footnote / cross-reference sheet for a verse.
+  final void Function(Verse verse)? onApparatusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +102,7 @@ class ReaderChapterPage extends StatelessWidget {
           spotlightKey:     spotlightKey,
           continuousReading: continuousReading,
           onNoteTap:        onNoteTap,
+          onApparatusTap:   onApparatusTap,
         );
       },
     );
@@ -264,6 +268,7 @@ class SectionView extends StatelessWidget {
     this.spotlightKey,
     this.continuousReading = false,
     this.onNoteTap,
+    this.onApparatusTap,
   });
 
   final Section section;
@@ -284,11 +289,24 @@ class SectionView extends StatelessWidget {
   final GlobalKey? spotlightKey;
   final bool continuousReading;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final void Function(Verse verse)? onApparatusTap;
 
   @override
   Widget build(BuildContext context) {
     // Section 0 title is shown in ChapterHeader; skip it here
     final showTitle = secIdx > 0 && section.title.trim().isNotEmpty;
+
+    // `major` headings are the edition's own "ምዕራፍ 1" chapter markers, which
+    // the reader already prints in its chapter header — rendering them too
+    // would repeat the chapter number twice on every page.
+    final descriptive = section
+        .ofKind(HeadingKind.descriptive)
+        .where((h) => h.text.trim().isNotEmpty)
+        .toList();
+    final references = section
+        .ofKind(HeadingKind.reference)
+        .where((h) => h.text.trim().isNotEmpty)
+        .toList();
 
     final List<Widget> verseChildren = continuousReading
         ? [
@@ -315,15 +333,91 @@ class SectionView extends StatelessWidget {
             final key          = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
             final selected     = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
             final isSpotlight  = spotlightVerseNum == verse.verseNumber;
-            final numStr       = useGeez ? toGeez(verse.verseNumber) : '${verse.verseNumber}';
+            // The edition supplies the Ge'ez numeral in `alt` and the display
+            // label — which covers the odd ones like `3b` — so neither is
+            // computed here any more.
+            final numStr       = verse.displayNumber(useGeez: useGeez);
             final hlColor      = annotations.highlightColor(verse.verseNumber);
             final isBookmarked = annotations.isBookmarked(verse.verseNumber);
             final hasNote      = annotations.noteFor(verse.verseNumber) != null;
+            final hasApparatus = verse.refs.isNotEmpty || verse.notes.isNotEmpty;
 
             final bgColor = selected
                 ? (hlColor?.withValues(alpha: 0.5) ??
                     accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
                 : (hlColor?.withValues(alpha: 0.28) ?? Colors.transparent);
+
+            final numberSpan = TextSpan(
+              text: numStr.isEmpty ? '' : '$numStr ',
+              style: TextStyle(
+                fontFamily: AppTypography.nokiaPureheadline,
+                fontSize: fontSize * 0.62,
+                fontWeight: FontWeight.w700,
+                color: accentColor,
+              ),
+            );
+            final bodyStyle = TextStyle(
+              fontFamily: fontFamily,
+              fontSize: fontSize,
+              height: 1.85,
+              color: textColor,
+              fontWeight: FontWeight.w400,
+            );
+            // A superscript marker rather than the footnote text itself:
+            // Genesis 1:1 carries fourteen cross references and would bury the
+            // verse it belongs to.
+            final apparatusSpan = hasApparatus
+                ? WidgetSpan(
+                    alignment: PlaceholderAlignment.top,
+                    child: GestureDetector(
+                      onTap: () => onApparatusTap?.call(verse),
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 2, right: 2),
+                        child: Text(
+                          verse.notes.isNotEmpty ? '✻' : '→',
+                          style: TextStyle(
+                            fontSize: fontSize * 0.5,
+                            color: accentColor.withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : null;
+
+            // `lines` is `text` split by poetic line, never extra content —
+            // render one or the other, never both.
+            final Widget verseBody = verse.lines.isEmpty
+                ? RichText(
+                    text: TextSpan(children: [
+                      numberSpan,
+                      TextSpan(text: verse.text, style: bodyStyle),
+                      ?apparatusSpan,
+                    ]),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var li = 0; li < verse.lines.length; li++)
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: verse.lines[li].indent * (fontSize * 0.9),
+                          ),
+                          child: RichText(
+                            text: TextSpan(children: [
+                              if (li == 0) numberSpan,
+                              TextSpan(
+                                text: verse.lines[li].text,
+                                style: bodyStyle,
+                              ),
+                              if (li == verse.lines.length - 1)
+                                ?apparatusSpan,
+                            ]),
+                          ),
+                        ),
+                    ],
+                  );
 
             Widget verseWidget = Stack(
               clipBehavior: Clip.none,
@@ -342,31 +436,7 @@ class SectionView extends StatelessWidget {
                           ? Border(left: BorderSide(color: accentColor, width: 3))
                           : null,
                     ),
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '$numStr ',
-                            style: TextStyle(
-                              fontFamily: AppTypography.nokiaPureheadline,
-                              fontSize: fontSize * 0.62,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
-                            ),
-                          ),
-                          TextSpan(
-                            text: verse.text,
-                            style: TextStyle(
-                              fontFamily: fontFamily,
-                              fontSize: fontSize,
-                              height: 1.85,
-                              color: textColor,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    child: verseBody,
                   ),
                 ),
                 if (hasNote)
@@ -418,6 +488,36 @@ class SectionView extends StatelessWidget {
             ),
           ] else
             const SizedBox(height: 8),
+          // Parallel-passage line (`r`), e.g. "ማቴ 3፥1-12፤ ሉቃ 3፥1-9".
+          for (final h in references)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                h.text,
+                style: TextStyle(
+                  fontFamily: titleFontFamily,
+                  fontSize: fontSize * 0.68,
+                  color: accentColor.withValues(alpha: 0.8),
+                  height: 1.5,
+                ),
+              ),
+            ),
+          // Descriptive superscription (`d`) — a psalm's ascription, which is
+          // part of the text in this tradition rather than an editorial title.
+          for (final h in descriptive)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                h.text,
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontSize: fontSize * 0.86,
+                  fontStyle: FontStyle.italic,
+                  color: textColor.withValues(alpha: 0.75),
+                  height: 1.7,
+                ),
+              ),
+            ),
           ...verseChildren,
         ],
       ),
@@ -517,9 +617,7 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
       final hlColor = widget.annotations.highlightColor(verse.verseNumber);
       final isBookmarked = widget.annotations.isBookmarked(verse.verseNumber);
       final hasNote = widget.annotations.noteFor(verse.verseNumber) != null;
-      final numStr = widget.useGeez
-          ? toGeez(verse.verseNumber)
-          : '${verse.verseNumber}';
+      final numStr = verse.displayNumber(useGeez: widget.useGeez);
 
       final rec = _recs[verse.verseNumber]!;
       rec.onTap = () => widget.onVerseTap(key);

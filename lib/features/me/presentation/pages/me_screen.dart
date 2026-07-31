@@ -11,6 +11,8 @@ import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
+import '../../../books/presentation/pages/editions_page.dart';
+import '../../../books/providers/edition_providers.dart';
 import 'reading_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
@@ -21,7 +23,6 @@ class MeScreen extends ConsumerStatefulWidget {
 }
 
 class _MeScreenState extends ConsumerState<MeScreen> {
-
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
@@ -48,7 +49,16 @@ class _MeScreenState extends ConsumerState<MeScreen> {
               rows: [
                 _ArrowRow(
                   label: s.settingTranslation,
-                  value: s.settingTranslationValue,
+                  value: ref
+                      .watch(activeEditionTitleProvider)
+                      .maybeWhen(
+                        data: (t) => t,
+                        orElse: () => s.settingTranslationValue,
+                      ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const EditionsPage()),
+                  ),
                 ),
                 _ArrowRow(
                   label: s.settingReadingPrefs,
@@ -172,9 +182,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                         NotificationConfig.dailyVerseId,
                       );
                       messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(s.dailyVerseOff),
-                        ),
+                        SnackBar(content: Text(s.dailyVerseOff)),
                       );
                     }
                   },
@@ -226,10 +234,8 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                       final time =
                           settings.readingTimeNotificationTime ??
                           const TimeOfDay(hour: 20, minute: 0);
-                      await NotificationService.instance.scheduleReadingReminder(
-                        time,
-                        s.settingReadingTime,
-                      );
+                      await NotificationService.instance
+                          .scheduleReadingReminder(time, s.settingReadingTime);
                       messenger.showSnackBar(
                         SnackBar(
                           content: Text(s.readingReminderSet(time.formatted)),
@@ -240,9 +246,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                         NotificationConfig.readingReminderId,
                       );
                       messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(s.readingReminderOff),
-                        ),
+                        SnackBar(content: Text(s.readingReminderOff)),
                       );
                     }
                   },
@@ -259,7 +263,9 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     );
                     messenger.showSnackBar(
                       SnackBar(
-                        content: Text(s.readingReminderUpdated(picked.formatted)),
+                        content: Text(
+                          s.readingReminderUpdated(picked.formatted),
+                        ),
                       ),
                     );
                   },
@@ -390,7 +396,9 @@ class _ProfileCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: c.accent,
                         borderRadius: BorderRadius.circular(20),
@@ -489,11 +497,16 @@ class _GuestCard extends StatelessWidget {
                   color: c.accent.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: c.accent.withValues(alpha: 0.4), width: 1.5),
+                    color: c.accent.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
                 ),
                 alignment: Alignment.center,
-                child: Icon(Icons.person_outline_rounded,
-                    color: c.accent, size: 26),
+                child: Icon(
+                  Icons.person_outline_rounded,
+                  color: c.accent,
+                  size: 26,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -872,16 +885,13 @@ class _TimePickerRowState extends State<_TimePickerRow> {
             onTap: isOn && !_busy ? _pickTime : null,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: isOn
                     ? c.primary.withValues(alpha: 0.10)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isOn ? c.primary : c.borderSubtle,
-                ),
+                border: Border.all(color: isOn ? c.primary : c.borderSubtle),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -896,8 +906,7 @@ class _TimePickerRowState extends State<_TimePickerRow> {
                     displayTime,
                     style: AppTypography.amharicCaption.copyWith(
                       color: isOn ? c.primary : c.textCaption,
-                      fontWeight:
-                          isOn ? FontWeight.w700 : FontWeight.w400,
+                      fontWeight: isOn ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
                 ],
@@ -1042,8 +1051,10 @@ class _LogoutSection extends ConsumerWidget {
               const SizedBox(width: 10),
               Text(
                 s.profileLogout,
-                style: AppTypography.amharicLabel
-                    .copyWith(color: c.primary, fontSize: 14),
+                style: AppTypography.amharicLabel.copyWith(
+                  color: c.primary,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
