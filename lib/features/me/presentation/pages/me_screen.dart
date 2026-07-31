@@ -11,6 +11,8 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../onboarding/presentation/pages/onboarding_screen.dart';
+import '../../../books/presentation/pages/editions_page.dart';
+import '../../../books/providers/edition_providers.dart';
 import 'reading_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
@@ -48,7 +50,14 @@ class _MeScreenState extends ConsumerState<MeScreen> {
               rows: [
                 _ArrowRow(
                   label: s.settingTranslation,
-                  value: s.settingTranslationValue,
+                  value: ref.watch(activeEditionTitleProvider).maybeWhen(
+                        data: (t) => t,
+                        orElse: () => s.settingTranslationValue,
+                      ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const EditionsPage()),
+                  ),
                 ),
                 _ArrowRow(
                   label: s.meShowIntroduction,

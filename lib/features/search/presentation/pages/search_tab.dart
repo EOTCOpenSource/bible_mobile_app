@@ -154,9 +154,10 @@ class _SearchTabState extends State<SearchTab> {
           : _book!.bookNameAm;
     }
     return switch (_scope) {
-      SearchScope.all          => s.searchInAll,
-      SearchScope.oldTestament => s.booksOldTestament,
-      SearchScope.newTestament => s.booksNewTestament,
+      SearchScope.all              => s.searchInAll,
+      SearchScope.oldTestament     => s.booksOldTestament,
+      SearchScope.newTestament     => s.booksNewTestament,
+      SearchScope.deuterocanonical => s.booksDeuterocanonical,
     };
   }
 
@@ -178,6 +179,7 @@ class _SearchTabState extends State<SearchTab> {
         onAll:  () { Navigator.pop(sheetCtx); _applyScope(SearchScope.all); },
         onOT:   () { Navigator.pop(sheetCtx); _applyScope(SearchScope.oldTestament); },
         onNT:   () { Navigator.pop(sheetCtx); _applyScope(SearchScope.newTestament); },
+        onDeut: () { Navigator.pop(sheetCtx); _applyScope(SearchScope.deuterocanonical); },
         onBook: (b) { Navigator.pop(sheetCtx); _applyScope(SearchScope.all, book: b); },
       ),
     );
@@ -469,6 +471,7 @@ class _ScopeSheet extends StatefulWidget {
     required this.onAll,
     required this.onOT,
     required this.onNT,
+    required this.onDeut,
     required this.onBook,
   });
 
@@ -479,6 +482,7 @@ class _ScopeSheet extends StatefulWidget {
   final VoidCallback onAll;
   final VoidCallback onOT;
   final VoidCallback onNT;
+  final VoidCallback onDeut;
   final ValueChanged<BookIndexEntry> onBook;
 
   @override
@@ -538,6 +542,11 @@ class _ScopeSheetState extends State<_ScopeSheet> {
             label:    s.booksNewTestament,
             selected: widget.currentBook == null && widget.currentScope == SearchScope.newTestament,
             onTap:    widget.onNT,
+          ),
+          _ScopeOption(
+            label:    s.booksDeuterocanonical,
+            selected: widget.currentBook == null && widget.currentScope == SearchScope.deuterocanonical,
+            onTap:    widget.onDeut,
           ),
           const SizedBox(height: 8),
           Padding(

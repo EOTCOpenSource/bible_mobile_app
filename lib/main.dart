@@ -20,7 +20,12 @@ import 'features/onboarding/presentation/pages/onboarding_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bibleRepository = BibleRepository();
-  
+
+  // Unpacks the bundled catalog and am-2000 database on first launch and opens
+  // the last-used edition. Everything that reads scripture depends on this, so
+  // it blocks startup rather than racing the first frame.
+  await bibleRepository.init();
+
   await NotificationService.instance.init(repository: bibleRepository);
   final db = AppDatabase();
   
