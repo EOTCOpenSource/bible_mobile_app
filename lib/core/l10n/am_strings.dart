@@ -31,6 +31,8 @@ class AmStrings extends AppStrings {
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override
   String get dailyVerseTag => 'የዕለቱ ቃል';
+  @override
+  String get dailyVerseUnavailable => 'የዕለቱ ቃል መጫን አልተቻለም። እንደገና ይሞክሩ።';
 
   // ── Continue reading ──────────────────────────────────────────────────────
   @override
@@ -111,6 +113,8 @@ class AmStrings extends AppStrings {
   String get booksOldTestament => 'ብሉይ ኪዳን';
   @override
   String get booksNewTestament => 'አዲስ ኪዳን';
+  @override
+  String get booksDeuterocanonical => 'ዲዩትሮካኖኒካል';
   @override
   String booksSubtitle(String c) => '$c መጻሕፍት';
   @override
@@ -289,6 +293,10 @@ class AmStrings extends AppStrings {
   @override
   String get verseShare => 'አጋራ';
   @override
+  String get verseCrossReferences => 'ተመሳሳይ ጥቅሶች';
+  @override
+  String get verseFootnotes => 'የትርጉም ማስታወሻ';
+  @override
   String get comingSoon => 'በቅርቡ ይመጣል';
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
@@ -463,4 +471,74 @@ class AmStrings extends AppStrings {
   String readingReminderSet(String time) => 'የንባብ ሰዓት ማሳወቂያ በ $time ተዘጋጅቷል';
   @override
   String readingReminderUpdated(String time) => 'የንባብ ሰዓት ማሳወቂያ ወደ $time ተቀይሯል';
+  @override
+  String get editionsTitle => 'የመጽሐፍ ቅዱስ ዕትሞች';
+  @override
+  String get editionsSubtitle => 'ዕትም ይምረጡ ወይም አዲስ ያውርዱ';
+  @override
+  String get editionsInstalled => 'በመሣሪያዎ ላይ';
+  @override
+  String get editionsAvailable => 'ሊወርዱ የሚችሉ';
+  @override
+  String get editionDownload => 'አውርድ';
+  @override
+  String get editionUpdate => 'አዘምን';
+  @override
+  String get editionRemove => 'አስወግድ';
+  @override
+  String get editionUse => 'ተጠቀም';
+  @override
+  String get editionActive => 'በሥራ ላይ';
+  @override
+  String get editionBuiltIn => 'ከመተግበሪያው ጋር የመጣ';
+  @override
+  String get editionDownloading => 'በማውረድ ላይ…';
+  @override
+  String get editionRemoveTitle => 'ዕትሙ ይወገድ?';
+  @override
+  String editionRemoveBody(String title) =>
+      '$title ከመሣሪያዎ ይወገዳል። ማስታወሻዎችዎና ምልክቶችዎ አይጠፉም፤ ዕትሙን ዳግም ማውረድ ይችላሉ።';
+  @override
+  String get editionRemoveConfirm => 'አስወግድ';
+  @override
+  String get editionCancel => 'ተወው';
+  @override
+  String editionUpdated(String title) => '$title ተዘምኗል';
+  @override
+  String editionUpToDate(String title) => '$title ወቅታዊ ነው';
+  @override
+  String editionPublishedBy(String publisher) => 'በ$publisher የታተመ';
+  @override
+  String get editionPublicDomain => 'የሕዝብ ንብረት';
+  @override
+  String get editionSwitchTitle => 'ዕትም ይምረጡ';
+  @override
+  String get editionSwitchSubtitle => 'የሚያነቡትን ጽሑፍ ይቀይሩ';
+  @override
+  String get editionManage => 'ዕትሞችን አስተዳድር';
+  @override
+  String editionMoreAvailable(int count) => '$count ተጨማሪ ሊወርዱ ይችላሉ';
+  @override
+  String editionSwitched(String title) => 'አሁን $title እያነበቡ ነው';
+  @override
+  String editionBookMissing(String title) => 'ይህ መጽሐፍ በ$title ውስጥ የለም';
+  @override
+  String get editionUpdateAvailable => 'ማዘመኛ አለ';
+  @override
+  String get editionsFilterAll => 'ሁሉም';
+  @override
+  String get editionsNoneForFilter => 'በዚህ ቋንቋ ዕትም የለም';
+  @override
+  String get editionsCheckUpdates => 'ዝማኔ ፈትሽ';
+  @override
+  String get editionsActiveLabel => 'አሁን በንባብ ላይ';
+  @override
+  String editionsOnDeviceCount(int installed, int total) =>
+      'ከ$total ውስጥ $installed በመሣሪያዎ ላይ';
+  @override
+  String editionMetaBooks(String count) => '$count መጻሕፍት';
+  @override
+  String editionMetaChapters(String count) => '$count ምዕራፎች';
+  @override
+  String editionMetaVerses(String count) => '$count ጥቅሶች';
 }

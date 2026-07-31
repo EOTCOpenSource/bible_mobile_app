@@ -31,7 +31,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
   List<AnnotationItem> get _filtered => widget.items.where((item) {
     if (_testamentFilter == 'OT' && !item.isOT) return false;
     if (_testamentFilter == 'NT' && item.isOT) return false;
-    if (_bookFilter != null && item.bookEntry.bookNameEn != _bookFilter) {
+    if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
       return false;
     }
     if (_chapterFilter != null && item.chapter != _chapterFilter) {
@@ -46,13 +46,13 @@ class _NotesTabState extends ConsumerState<NotesTab> {
         if (_testamentFilter == 'NT' && item.isOT) return false;
         return true;
       })
-      .map((item) => item.bookEntry.bookNameEn)
+      .map((item) => item.bookEntry.id)
       .toSet();
 
   Set<int> get _availableChapters {
     if (_bookFilter == null) return {};
     return widget.items
-        .where((item) => item.bookEntry.bookNameEn == _bookFilter)
+        .where((item) => item.bookEntry.id == _bookFilter)
         .map((item) => item.chapter)
         .toSet();
   }
@@ -83,7 +83,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
           AnnotationPickerItem(id: null, label: s.savedAllBooks),
           ...books.map(
             (e) => AnnotationPickerItem(
-              id: e.bookNameEn,
+              id: e.id,
               label: isEnglish ? e.bookNameEn : e.bookNameAm,
             ),
           ),
@@ -269,7 +269,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
     final currentBookEntry = _bookFilter == null
         ? null
         : widget.items
-              .where((i) => i.bookEntry.bookNameEn == _bookFilter)
+              .where((i) => i.bookEntry.id == _bookFilter)
               .firstOrNull
               ?.bookEntry;
 

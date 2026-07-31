@@ -1,3 +1,4 @@
+import '../../features/books/data/models/book_identity.dart';
 import '../../features/books/data/models/book_index_entry.dart';
 
 // Custom scheme — used for adb testing and as the fallback inside openinapp.html
@@ -24,11 +25,14 @@ class DeepLinkTarget {
   final int verse;
 }
 
-String _normalizeAbbrev(String s) => s.toLowerCase().replaceAll(' ', '');
-
 /// Encodes a verse reference as a slug, e.g. `jer29_11`, `1sam3_4`.
+///
+/// Built from the frozen abbreviation table rather than the entry's own
+/// [BookIndexEntry.bookShortNameEn], so the slug for a verse is the same
+/// whichever edition the reader happens to have active — a link shared from the
+/// Ge'ez edition has to open for someone reading Amharic.
 String verseDeepLinkSlug(BookIndexEntry entry, int chapter, int verse) =>
-    '${_normalizeAbbrev(entry.bookShortNameEn)}${chapter}_$verse';
+    '${deepLinkSlugFromUsfm(entry.id)}${chapter}_$verse';
 
 /// HTTPS URI for the clipboard — linkified by Telegram, WhatsApp, Chrome, etc.
 /// e.g. `https://80-weahadu.vercel.app/openinapp/jer29_11`
@@ -62,8 +66,14 @@ DeepLinkTarget? parseDeepLink(Uri uri, List<BookIndexEntry> index) {
   final chapter = int.parse(match.group(2)!);
   final verse = int.parse(match.group(3)!);
 
+  final usfm = usfmFromDeepLinkSlug(abbrev);
+  if (usfm == null) return null;
+
+  // The link may name a book this edition does not contain — a deuterocanonical
+  // reference opened while reading the protestant 66, say. That is a miss, not
+  // a malformed link, and the caller shows "verse not found" either way.
   final entry = index.cast<BookIndexEntry?>().firstWhere(
-    (e) => _normalizeAbbrev(e!.bookShortNameEn) == abbrev,
+    (e) => e!.id == usfm,
     orElse: () => null,
   );
   if (entry == null) return null;

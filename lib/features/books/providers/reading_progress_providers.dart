@@ -24,7 +24,7 @@ final continueReadingSnapshotsProvider =
   for (final pos in positions) {
     BookIndexEntry? entry;
     for (final e in index) {
-      if (e.bookNameEn == pos.bookId) {
+      if (e.id == pos.bookId) {
         entry = e;
         break;
       }
