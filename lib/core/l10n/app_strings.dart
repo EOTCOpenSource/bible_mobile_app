@@ -378,4 +378,31 @@ String readingReminderUpdated(String time);
   /// Copyright line naming the edition's publisher.
   String editionPublishedBy(String publisher);
   String get editionPublicDomain;
+
+  // ── Edition chooser ───────────────────────────────────────────────────────
+  /// Sheet opened from the book list, the chapter grid and the reader.
+  String get editionSwitchTitle;
+  String get editionSwitchSubtitle;
+
+  /// Row at the foot of the sheet that opens the full editions screen.
+  String get editionManage;
+  String editionMoreAvailable(int count);
+  String editionSwitched(String title);
+
+  /// Shown when the edition just switched to does not carry the open book —
+  /// the protestant canons have no deuterocanon, so this is expected.
+  String editionBookMissing(String title);
+
+  String get editionUpdateAvailable;
+  String get editionsFilterAll;
+  String get editionsNoneForFilter;
+  String get editionsCheckUpdates;
+
+  /// Label over the hero card on the editions screen.
+  String get editionsActiveLabel;
+  String editionsOnDeviceCount(int installed, int total);
+
+  String editionMetaBooks(String count);
+  String editionMetaChapters(String count);
+  String editionMetaVerses(String count);
 }

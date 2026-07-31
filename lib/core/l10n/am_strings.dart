@@ -510,4 +510,35 @@ class AmStrings extends AppStrings {
   String editionPublishedBy(String publisher) => 'በ$publisher የታተመ';
   @override
   String get editionPublicDomain => 'የሕዝብ ንብረት';
+  @override
+  String get editionSwitchTitle => 'ዕትም ይምረጡ';
+  @override
+  String get editionSwitchSubtitle => 'የሚያነቡትን ጽሑፍ ይቀይሩ';
+  @override
+  String get editionManage => 'ዕትሞችን አስተዳድር';
+  @override
+  String editionMoreAvailable(int count) => '$count ተጨማሪ ሊወርዱ ይችላሉ';
+  @override
+  String editionSwitched(String title) => 'አሁን $title እያነበቡ ነው';
+  @override
+  String editionBookMissing(String title) => 'ይህ መጽሐፍ በ$title ውስጥ የለም';
+  @override
+  String get editionUpdateAvailable => 'ማዘመኛ አለ';
+  @override
+  String get editionsFilterAll => 'ሁሉም';
+  @override
+  String get editionsNoneForFilter => 'በዚህ ቋንቋ ዕትም የለም';
+  @override
+  String get editionsCheckUpdates => 'ዝማኔ ፈትሽ';
+  @override
+  String get editionsActiveLabel => 'አሁን በንባብ ላይ';
+  @override
+  String editionsOnDeviceCount(int installed, int total) =>
+      'ከ$total ውስጥ $installed በመሣሪያዎ ላይ';
+  @override
+  String editionMetaBooks(String count) => '$count መጻሕፍት';
+  @override
+  String editionMetaChapters(String count) => '$count ምዕራፎች';
+  @override
+  String editionMetaVerses(String count) => '$count ጥቅሶች';
 }

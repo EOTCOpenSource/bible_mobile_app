@@ -9,7 +9,9 @@ import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../../data/reading_models.dart';
+import '../../data/repositories/bible_repository.dart' show BibleRepository;
 import '../../providers/reading_progress_providers.dart';
+import '../widgets/edition_switcher.dart';
 import 'book_reader_page.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 
@@ -34,13 +36,78 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   Set<int> _readChapters = {};
   double _bookProgress = 0;
 
+  BibleRepository? _repo;
+
+  /// The book as the active edition names it — re-resolved on every switch.
+  late BookIndexEntry _entry;
+
+  /// Set when an edition switch left this book outside the active canon and
+  /// the reader was on top, so the exit is deferred until we are visible again.
+  bool _leaveWhenVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _entry = widget.entry;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
+      // Chapter counts and text are edition-specific, and the edition can now
+      // be switched from this very screen, so follow the repository.
+      _repo = BibleRepositoryProvider.of(context);
+      _repo!.addListener(_onEditionChanged);
       _loadBook();
     }
+  }
+
+  @override
+  void dispose() {
+    _repo?.removeListener(_onEditionChanged);
+    super.dispose();
+  }
+
+  /// Reloads the book against the newly active edition, or leaves the screen
+  /// when that edition's canon does not carry it — the protestant editions
+  /// have no deuterocanon, so this is an ordinary outcome, not an error.
+  Future<void> _onEditionChanged() async {
+    final repo = _repo;
+    if (repo == null || !mounted) return;
+
+    final entry = await repo.bookById(_entry.id);
+    if (!mounted) return;
+
+    if (entry == null) {
+      final s = L10n.of(context);
+      final edition = await repo.activeEdition();
+      if (!mounted) return;
+      final title = edition == null ? '' : editionTitleFor(edition, s);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(s.editionBookMissing(title))),
+        );
+      _leaveWhenVisible = true;
+      _exitIfVisible();
+      return;
+    }
+
+    setState(() {
+      _entry = entry;
+      _loading = true;
+    });
+    await _loadBook();
+  }
+
+  /// Pops back to the book list once this route is the visible one.
+  void _exitIfVisible() {
+    if (!_leaveWhenVisible || !mounted) return;
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    _leaveWhenVisible = false;
+    Navigator.pop(context);
   }
 
   Future<void> _loadBook() async {
@@ -56,14 +123,14 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     final repo = container.read(readingProgressRepositoryProvider);
 
     final book =
-        await BibleRepositoryProvider.of(context).loadBook(widget.entry);
+        await BibleRepositoryProvider.of(context).loadBook(_entry);
     if (!mounted) return;
 
     final pos = await repo.getReadingPosition();
     if (!mounted) return;
 
     final readSet =
-        await repo.readChapterNumbersForBook(widget.entry.id);
+        await repo.readChapterNumbersForBook(_entry.id);
     if (!mounted) return;
 
     final p = _deriveProgress(book, pos, readSet);
@@ -97,7 +164,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     if (!mounted) return;
 
     final readSet =
-        await repo.readChapterNumbersForBook(widget.entry.id);
+        await repo.readChapterNumbersForBook(_entry.id);
     if (!mounted) return;
 
     final p = _deriveProgress(book, pos, readSet);
@@ -130,7 +197,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   }) _deriveProgress(Book book, ReadingPosition? pos, Set<int> readChapters) {
     var lastIdx = 0;
     var lastVerse = 1;
-    if (pos != null && pos.bookId == widget.entry.id) {
+    if (pos != null && pos.bookId == _entry.id) {
       final i =
           book.chapters.indexWhere((c) => c.chapterNumber == pos.chapter);
       if (i >= 0) lastIdx = i;
@@ -163,13 +230,19 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
       context,
       MaterialPageRoute<void>(
         builder: (_) => ReaderScreen(
-          entry: widget.entry,
+          entry: _entry,
           initialChapter: idx,
           initialChapterNumber: chNum,
         ),
       ),
     ).then((_) async {
       if (!mounted) return;
+      // The reader can switch editions too; if that dropped this book from the
+      // canon, leave now that this route is back on top.
+      if (_leaveWhenVisible) {
+        _exitIfVisible();
+        return;
+      }
       await _refreshChapterReadingUi();
     });
   }
@@ -179,7 +252,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     final s = L10n.of(context);
     final useGeez = Settings.of(context).useGeezNumbers;
     final isAmharic = s is AmStrings;
-    final total = _book?.chapters.length ?? (widget.entry.chapterCount ?? 0);
+    final total = _book?.chapters.length ?? (_entry.chapterCount ?? 0);
 
     final c = context.colors;
     return Scaffold(
@@ -189,13 +262,13 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _TopBar(
-              entry: widget.entry,
+              entry: _entry,
               s: s,
               isAmharic: isAmharic,
               onSearch: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => SearchTab(initialBook: widget.entry),
+                  builder: (_) => SearchTab(initialBook: _entry),
                 ),
               ),
             ),
@@ -205,7 +278,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
               )
             else ...[
               _BookInfoCard(
-                entry: widget.entry,
+                entry: _entry,
                 totalChapters: total,
                 progress: _bookProgress,
                 s: s,
@@ -307,6 +380,7 @@ class _TopBar extends StatelessWidget {
               ],
             ),
           ),
+          const EditionChip(),
           IconButton(
             icon: Icon(Icons.search_rounded, size: 20, color: c.textMuted),
             onPressed: onSearch,
