@@ -512,4 +512,35 @@ class EnStrings extends AppStrings {
   String editionPublishedBy(String publisher) => 'Published by $publisher';
   @override
   String get editionPublicDomain => 'Public domain';
+  @override
+  String get editionSwitchTitle => 'Choose an edition';
+  @override
+  String get editionSwitchSubtitle => 'Switch the text you are reading';
+  @override
+  String get editionManage => 'Manage editions';
+  @override
+  String editionMoreAvailable(int count) => '$count more to download';
+  @override
+  String editionSwitched(String title) => 'Now reading $title';
+  @override
+  String editionBookMissing(String title) => 'This book is not part of $title';
+  @override
+  String get editionUpdateAvailable => 'Update available';
+  @override
+  String get editionsFilterAll => 'All';
+  @override
+  String get editionsNoneForFilter => 'No editions in this language';
+  @override
+  String get editionsCheckUpdates => 'Check for updates';
+  @override
+  String get editionsActiveLabel => 'Currently reading';
+  @override
+  String editionsOnDeviceCount(int installed, int total) =>
+      '$installed of $total on this device';
+  @override
+  String editionMetaBooks(String count) => '$count books';
+  @override
+  String editionMetaChapters(String count) => '$count chapters';
+  @override
+  String editionMetaVerses(String count) => '$count verses';
 }

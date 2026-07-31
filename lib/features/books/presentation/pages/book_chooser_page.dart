@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book_index_entry.dart';
 import '../../data/repositories/bible_repository.dart'
     show BibleRepository, SearchScope;
+import '../widgets/edition_switcher.dart';
 
 // ── Category filters ──────────────────────────────────────────────────────────
 
@@ -252,6 +253,9 @@ class _BooksHeader extends StatelessWidget {
               ],
             ),
           ),
+          // The book list is edition-specific — offer the switch here rather
+          // than making the reader walk out to settings to change translation.
+          const EditionChip(),
           IconButton(
             icon: Icon(Icons.search_rounded, color: c.textMuted),
             onPressed: onSearchTap,
