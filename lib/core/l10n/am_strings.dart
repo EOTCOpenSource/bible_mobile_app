@@ -463,4 +463,50 @@ class AmStrings extends AppStrings {
   String readingReminderSet(String time) => 'የንባብ ሰዓት ማሳወቂያ በ $time ተዘጋጅቷል';
   @override
   String readingReminderUpdated(String time) => 'የንባብ ሰዓት ማሳወቂያ ወደ $time ተቀይሯል';
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  @override
+  String get onboardingSkip => 'እለፍ';
+  @override
+  String get onboardingNext => 'ቀጣይ';
+  @override
+  String get onboardingDone => 'ጀምር';
+
+  @override
+  String get onboardingWelcomeTitle => 'መጽሐፍ ቅዱስ';
+  @override
+  String get onboardingWelcomeCanonNote =>
+      'የ ፹፩ (81) መጻሕፍት የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን የቅዱሳት መጻሕፍት ስብስብ።';
+
+  @override
+  String get onboardingPrefsTitle => 'የንባብ ምርጫዎች';
+  @override
+  String get onboardingPrefsSubtitle =>
+      'የፊደል መጠንን፣ ቋንቋን እና የቁጥር ስርዓትን እንደ ፍላጎትዎ ያስተካክሉ።';
+  @override
+  String get onboardingPreviewVerseText =>
+      'በመጀመሪያ ቃል ነበረ፥ ቃልም በእግዚአብሔር ዘንድ ነበረ፥ ቃልም እግዚአብሔር ነበረ። (ዮሐንስ ፩:፩)';
+
+  @override
+  String get onboardingActionsTitle => 'የጥቅስ ተግባራት';
+  @override
+  String get onboardingActionsSubtitle =>
+      'ጥቅሶችን ይምረጡ፤ ያጉሉ፣ ማስታወሻ ይጻፉ፣ ይቅዱ ወይም ያጋሩ።';
+
+  @override
+  String get onboardingSignInTitle => 'መለያ ያስገቡ (በምርጫ)';
+  @override
+  String get onboardingSignInSubtitle =>
+      'መለያ በመክፈት ማስታወሻዎችዎን እና ስብስቦችዎን በደመና ላይ ያስቀምጡ። ያለ መለያም ሙሉ የመጽሐፍ ቅዱስ ንባብ እና አገልግሎቶች ከመስመር ውጭ (Offline) ይሰራሉ።';
+  @override
+  String get onboardingSignInBtn => 'ይግቡ';
+  @override
+  String get onboardingNotNowBtn => 'አሁን አይደለም';
+
+  @override
+  String get meShowIntroduction => 'መግቢያውን አሳይ';
+
+  @override
+  String get readerVerseActionHint =>
+      'ጥቅስ ላይ በመጫን ማጉላት፣ ማስታወሻ መጻፍ ወይም ማጋራት ይችላሉ';
 }

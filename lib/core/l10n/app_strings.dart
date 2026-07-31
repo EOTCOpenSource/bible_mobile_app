@@ -338,4 +338,34 @@ String readingReminderUpdated(String time);
   // background_picker snackbar
   String get cardImagePickFailed;
   String get cardShareAsText;
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  String get onboardingSkip;
+  String get onboardingNext;
+  String get onboardingDone;
+
+  // Screen 1: Welcome
+  String get onboardingWelcomeTitle;
+  String get onboardingWelcomeCanonNote;
+
+  // Screen 2: Preferences
+  String get onboardingPrefsTitle;
+  String get onboardingPrefsSubtitle;
+  String get onboardingPreviewVerseText;
+
+  // Screen 3: Verse actions
+  String get onboardingActionsTitle;
+  String get onboardingActionsSubtitle;
+
+  // Screen 4: Sign-in
+  String get onboardingSignInTitle;
+  String get onboardingSignInSubtitle;
+  String get onboardingSignInBtn;
+  String get onboardingNotNowBtn;
+
+  // MeScreen introduction row
+  String get meShowIntroduction;
+
+  // Reader coach mark
+  String get readerVerseActionHint;
 }

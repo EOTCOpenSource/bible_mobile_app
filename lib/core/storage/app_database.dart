@@ -5,7 +5,7 @@ import '../annotations/annotation_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 6;
+  static const _version = 7;
 
   Database? _db;
 
@@ -43,9 +43,16 @@ class AppDatabase {
       await _createPlanPositionTable(db);
     }
     if (oldVersion < 6) {
-  await _createSettingsTable(db);
-}
-
+      await _createSettingsTable(db);
+    }
+    if (oldVersion < 7) {
+      await db.execute(
+        'ALTER TABLE app_settings ADD COLUMN has_seen_onboarding INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE app_settings ADD COLUMN has_seen_reader_hint INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   /// v3→v4: annotation items pushed with title-case bookId (e.g. "Genesis")
@@ -719,7 +726,9 @@ Future<void> _createSettingsTable(Database db) async {
       daily_verse_hour INTEGER,
       daily_verse_minute INTEGER,
       reading_time_hour INTEGER,
-      reading_time_minute INTEGER
+      reading_time_minute INTEGER,
+      has_seen_onboarding INTEGER NOT NULL DEFAULT 0,
+      has_seen_reader_hint INTEGER NOT NULL DEFAULT 0
     )
   ''');
   await db.insert('app_settings', {'id': 1}, conflictAlgorithm: ConflictAlgorithm.ignore);
@@ -740,6 +749,8 @@ Future<void> saveNotificationSettings({
   int? dailyVerseMinute,
   int? readingTimeHour,
   int? readingTimeMinute,
+  bool hasSeenOnboarding = false,
+  bool hasSeenReaderHint = false,
 }) async {
   final db = await database;
   await db.update(
@@ -751,6 +762,8 @@ Future<void> saveNotificationSettings({
       'daily_verse_minute': dailyVerseMinute,
       'reading_time_hour': readingTimeHour,
       'reading_time_minute': readingTimeMinute,
+      'has_seen_onboarding': hasSeenOnboarding ? 1 : 0,
+      'has_seen_reader_hint': hasSeenReaderHint ? 1 : 0,
     },
     where: 'id = ?',
     whereArgs: [1],

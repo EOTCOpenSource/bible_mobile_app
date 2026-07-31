@@ -6,9 +6,11 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
+import '../../../onboarding/presentation/pages/onboarding_screen.dart';
 import 'reading_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
@@ -47,6 +49,21 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                 _ArrowRow(
                   label: s.settingTranslation,
                   value: s.settingTranslationValue,
+                ),
+                _ArrowRow(
+                  label: s.meShowIntroduction,
+                  onTap: () {
+                    Settings.update(
+                      context,
+                      settings.copyWith(hasSeenOnboarding: false),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OnboardingScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _ArrowRow(
                   label: s.settingReadingPrefs,

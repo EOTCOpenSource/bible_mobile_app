@@ -463,4 +463,50 @@ class EnStrings extends AppStrings {
   String readingReminderSet(String time) => '✓ Reading reminder set for $time';
   @override
   String readingReminderUpdated(String time) => '✓ Reading reminder updated to $time';
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  @override
+  String get onboardingSkip => 'Skip';
+  @override
+  String get onboardingNext => 'Next';
+  @override
+  String get onboardingDone => 'Get Started';
+
+  @override
+  String get onboardingWelcomeTitle => 'Holy Bible';
+  @override
+  String get onboardingWelcomeCanonNote =>
+      'The 81-book Ethiopian Orthodox Tewahedo Church biblical canon.';
+
+  @override
+  String get onboardingPrefsTitle => 'Reading Preferences';
+  @override
+  String get onboardingPrefsSubtitle =>
+      'Customize your font size, language, and numeral system.';
+  @override
+  String get onboardingPreviewVerseText =>
+      'In the beginning was the Word, and the Word was with God, and the Word was God. (John 1:1)';
+
+  @override
+  String get onboardingActionsTitle => 'Verse Actions';
+  @override
+  String get onboardingActionsSubtitle =>
+      'Tap verses to highlight, write notes, bookmark, or share.';
+
+  @override
+  String get onboardingSignInTitle => 'Optional Sign In';
+  @override
+  String get onboardingSignInSubtitle =>
+      'Sign in to sync your notes and bookmarks across devices. The app works fully offline without an account.';
+  @override
+  String get onboardingSignInBtn => 'Sign in';
+  @override
+  String get onboardingNotNowBtn => 'Not now';
+
+  @override
+  String get meShowIntroduction => 'Show introduction';
+
+  @override
+  String get readerVerseActionHint =>
+      'Tap a verse to highlight, note, bookmark, or share';
 }
