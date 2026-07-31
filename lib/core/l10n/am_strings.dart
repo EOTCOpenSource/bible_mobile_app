@@ -541,4 +541,22 @@ class AmStrings extends AppStrings {
   String editionMetaChapters(String count) => '$count ምዕራፎች';
   @override
   String editionMetaVerses(String count) => '$count ጥቅሶች';
+
+  // ── Parallel reading ──────────────────────────────────────────────────────
+  @override
+  String get parallelSectionTitle => 'ጎን ለጎን ንባብ';
+  @override
+  String get parallelSectionSubtitle => 'ሁለት ትርጉሞችን በአንድ ገጽ ያንብቡ';
+  @override
+  String get parallelShowAlongside => 'ጎን ለጎን አሳይ';
+  @override
+  String get parallelSettingLabel => 'ጎን ለጎን ትርጉም';
+  @override
+  String get parallelOff => 'ጠፍቷል';
+  @override
+  String parallelEnabled(String title) => '$title ጎን ለጎን እየታየ ነው';
+  @override
+  String get parallelDisabled => 'ጎን ለጎን ንባብ ጠፍቷል';
+  @override
+  String parallelBookMissing(String title) => 'ይህ መጽሐፍ በ$title ትርጉም የለም';
 }
