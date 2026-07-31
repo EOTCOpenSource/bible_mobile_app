@@ -2,7 +2,7 @@ name: bibleflutter
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -46,7 +46,7 @@ dependencies:
   path: ^1.9.0
   app_links: ^6.0.0
   share_plus: ^13.1.0
-  http: ^1.2.0
+  http: ^1.6.0
   flutter_secure_storage: ^10.2.0
   google_sign_in: ^6.0.0
   flutter_svg: ^2.0.0
@@ -54,6 +54,7 @@ dependencies:
   screenshot: ^3.0.0
   image_gallery_saver_plus: ^4.0.1
   path_provider: ^2.1.2
+  just_audio: ^0.10.6
 
   # Bible editions ship as SQLite databases (80-weahadu). sqlite3_flutter_libs
   # is required, not optional: verse_fts uses the `trigram` tokenizer, which
@@ -79,7 +80,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -93,7 +93,6 @@ flutter:
     - assets/bibledata/ethiopian_daily_verses.json
     - assets/signin/
     - assets/eotc.jpg
-  
 
   fonts:
     - family: Shiromeda
