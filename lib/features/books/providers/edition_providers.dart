@@ -37,3 +37,18 @@ final activeEditionTitleProvider = FutureProvider<String>((ref) async {
       ? edition!.abbrev
       : edition?.title ?? '';
 });
+
+/// The edition in the reader's parallel column, or null when parallel reading
+/// is off. Mirrors [activeEditionIdProvider] so the chip, the picker and the
+/// settings row all rebuild off one piece of state.
+final secondaryEditionIdProvider = StateProvider<String?>(
+  (ref) => ref.watch(bibleRepositoryProvider).secondaryEditionId,
+);
+
+/// Abbreviation of the parallel edition, null when parallel reading is off.
+final secondaryEditionTitleProvider = FutureProvider<String?>((ref) async {
+  ref.watch(secondaryEditionIdProvider);
+  final edition = await ref.watch(bibleRepositoryProvider).secondaryEdition();
+  if (edition == null) return null;
+  return edition.abbrev.isNotEmpty ? edition.abbrev : edition.title;
+});

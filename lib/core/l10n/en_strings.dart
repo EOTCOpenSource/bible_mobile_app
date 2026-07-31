@@ -543,4 +543,23 @@ class EnStrings extends AppStrings {
   String editionMetaChapters(String count) => '$count chapters';
   @override
   String editionMetaVerses(String count) => '$count verses';
+
+  // ── Parallel reading ──────────────────────────────────────────────────────
+  @override
+  String get parallelSectionTitle => 'Parallel reading';
+  @override
+  String get parallelSectionSubtitle => 'Read two translations side by side';
+  @override
+  String get parallelShowAlongside => 'Show alongside';
+  @override
+  String get parallelSettingLabel => 'Parallel translation';
+  @override
+  String get parallelOff => 'Off';
+  @override
+  String parallelEnabled(String title) => 'Showing $title alongside';
+  @override
+  String get parallelDisabled => 'Parallel reading turned off';
+  @override
+  String parallelBookMissing(String title) =>
+      'This book is not available in the $title translation';
 }

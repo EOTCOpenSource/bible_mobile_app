@@ -240,6 +240,94 @@ void main() {
     });
   });
 
+  group('parallel reading', () {
+    // A byte copy of the bundled edition installed under a second id. The other
+    // eight editions are downloads, so this is the only way to exercise two
+    // open databases without a network.
+    const parallelId = 'am-2000-parallel';
+
+    setUpAll(() async {
+      final source = await repo.storage.editionFile(
+        BibleStorage.bundledEditionId,
+      );
+      final target = await repo.storage.editionFile(parallelId);
+      source.copySync(target.path);
+    });
+
+    tearDown(() async {
+      await repo.setSecondaryEdition(null);
+      await repo.switchEdition(BibleStorage.bundledEditionId);
+    });
+
+    test('is off until an edition is put in the second column', () {
+      expect(repo.secondaryEditionId, isNull);
+      expect(repo.isParallelReading, isFalse);
+    });
+
+    test('refuses an edition that is not installed', () async {
+      expect(await repo.setSecondaryEdition('en-kjv'), isFalse);
+      expect(repo.secondaryEditionId, isNull);
+    });
+
+    test('refuses the edition already being read', () async {
+      expect(
+        await repo.setSecondaryEdition(BibleStorage.bundledEditionId),
+        isFalse,
+      );
+      expect(repo.secondaryEditionId, isNull);
+    });
+
+    test('reads the same book out of the second edition', () async {
+      expect(await repo.setSecondaryEdition(parallelId), isTrue);
+      expect(repo.isParallelReading, isTrue);
+
+      final secondary = await repo.loadSecondaryBook('GEN');
+      expect(secondary, isNotNull);
+      expect(secondary!.chapters, hasLength(50));
+      expect(secondary.chapters.first.allVerses, hasLength(31));
+
+      // The primary is untouched by any of this — the parallel column is a
+      // read, not a switch.
+      expect(repo.activeEditionId, BibleStorage.bundledEditionId);
+      final primary = await repo.loadBook((await repo.bookById('GEN'))!);
+      expect(
+        secondary.chapters.first.allVerses.first.text,
+        primary.chapters.first.allVerses.first.text,
+      );
+    });
+
+    test('a book the parallel canon does not carry resolves to null', () async {
+      await repo.setSecondaryEdition(parallelId);
+      expect(await repo.loadSecondaryBook('ZZZ'), isNull);
+    });
+
+    test('returns null for every book while parallel reading is off', () async {
+      expect(repo.secondaryEditionId, isNull);
+      expect(await repo.loadSecondaryBook('GEN'), isNull);
+    });
+
+    test('reading the parallel edition drops it from the second column',
+        () async {
+      await repo.setSecondaryEdition(parallelId);
+      expect(await repo.switchEdition(parallelId), isTrue);
+
+      // An edition cannot be both columns.
+      expect(repo.activeEditionId, parallelId);
+      expect(repo.secondaryEditionId, isNull);
+      expect(await repo.loadSecondaryBook('GEN'), isNull);
+    });
+
+    test('deleting the parallel edition turns parallel reading off', () async {
+      await repo.setSecondaryEdition(parallelId);
+      await repo.storage.deleteEdition(parallelId);
+      await repo.handleEditionRemoved(parallelId);
+
+      expect(repo.secondaryEditionId, isNull);
+      // The primary was never the deleted edition, so it stays put.
+      expect(repo.activeEditionId, BibleStorage.bundledEditionId);
+    });
+  });
+
   group('daily verse', () {
     test('curated book aliases resolve to the right book', () async {
       // The curated file names books by canon slug and abbreviation rather

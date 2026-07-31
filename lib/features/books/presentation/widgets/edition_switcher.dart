@@ -98,7 +98,12 @@ class EditionChip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.colors;
-    final label = ref.watch(activeEditionTitleProvider).valueOrNull ?? '';
+    final primary = ref.watch(activeEditionTitleProvider).valueOrNull ?? '';
+    final parallel = ref.watch(secondaryEditionTitleProvider).valueOrNull;
+    // Both editions in the label when reading in parallel — the chip is the
+    // only place the second column is named once the reader scrolls past the
+    // column headings.
+    final label = parallel == null ? primary : '$primary · $parallel';
     final fg = foreground ?? c.primary;
     final bg = background ?? c.primary.withValues(alpha: 0.08);
     final border = borderColor ?? c.primary.withValues(alpha: 0.18);
@@ -125,7 +130,9 @@ class EditionChip extends ConsumerWidget {
               Icon(Icons.translate_rounded, size: dense ? 13 : 14, color: fg),
               const SizedBox(width: 5),
               ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: dense ? 74 : 110),
+                constraints: BoxConstraints(
+                  maxWidth: (dense ? 74.0 : 110.0) + (parallel == null ? 0 : 46),
+                ),
                 child: Text(
                   label.isEmpty ? '—' : label,
                   maxLines: 1,
@@ -191,10 +198,44 @@ class _EditionSwitcherSheet extends ConsumerWidget {
 
     container.read(activeEditionIdProvider.notifier).state =
         repo.activeEditionId;
+    // Reading an edition that was the second column drops it from there; the
+    // chip and the settings row have to hear about that.
+    container.read(secondaryEditionIdProvider.notifier).state =
+        repo.secondaryEditionId;
     container.invalidate(editionListProvider);
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(s.editionSwitched(title))));
+  }
+
+  /// Puts an edition in the reader's second column, or takes it out again.
+  ///
+  /// Closes the sheet either way: the change is on the page underneath, and a
+  /// confirmation snackbar behind an open sheet is a confirmation nobody sees.
+  Future<void> _toggleParallel(
+    BuildContext context,
+    EditionInstall item,
+    AppStrings s,
+    bool isParallel,
+  ) async {
+    final container = ProviderScope.containerOf(context);
+    final repo = container.read(bibleRepositoryProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final title = editionTitleFor(item.edition, s);
+    final target = isParallel ? null : item.edition.id;
+
+    Navigator.of(context).pop();
+    if (!await repo.setSecondaryEdition(target)) return;
+
+    container.read(secondaryEditionIdProvider.notifier).state =
+        repo.secondaryEditionId;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(
+          target == null ? s.parallelDisabled : s.parallelEnabled(title),
+        ),
+      ));
   }
 
   void _manage(BuildContext context) {
@@ -209,6 +250,7 @@ class _EditionSwitcherSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = L10n.of(context);
     final activeId = ref.watch(activeEditionIdProvider);
+    final parallelId = ref.watch(secondaryEditionIdProvider);
     final listAsync = ref.watch(editionListProvider);
     final maxHeight = MediaQuery.sizeOf(context).height * 0.72;
 
@@ -277,15 +319,48 @@ class _EditionSwitcherSheet extends ConsumerWidget {
                       shrinkWrap: true,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       itemCount: installed.length,
-                      itemBuilder: (ctx, i) => _SheetRow(
-                        item: installed[i],
-                        s: s,
-                        theme: theme,
-                        isActive: installed[i].edition.id == activeId,
-                        onTap: () => _use(context, installed[i], s),
-                      ),
+                      itemBuilder: (ctx, i) {
+                        final isActive = installed[i].edition.id == activeId;
+                        final isParallel =
+                            installed[i].edition.id == parallelId;
+                        return _SheetRow(
+                          item: installed[i],
+                          s: s,
+                          theme: theme,
+                          isActive: isActive,
+                          isParallel: isParallel,
+                          onTap: () => _use(context, installed[i], s),
+                          // An edition cannot be both columns, so the one being
+                          // read has no toggle of its own.
+                          onToggleParallel: isActive
+                              ? null
+                              : () => _toggleParallel(
+                                    context,
+                                    installed[i],
+                                    s,
+                                    isParallel,
+                                  ),
+                        );
+                      },
                     ),
             ),
+            if (installed.length > 1)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                child: Row(
+                  children: [
+                    Icon(Icons.view_column_outlined,
+                        size: 14, color: theme.muted),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        s.parallelSectionSubtitle,
+                        style: TextStyle(fontSize: 11, color: theme.muted),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Divider(color: theme.border, height: 20, indent: 20, endIndent: 20),
             InkWell(
               onTap: () => _manage(context),
@@ -338,13 +413,21 @@ class _SheetRow extends StatelessWidget {
     required this.theme,
     required this.isActive,
     required this.onTap,
+    this.isParallel = false,
+    this.onToggleParallel,
   });
 
   final EditionInstall item;
   final AppStrings s;
   final EditionSheetTheme theme;
   final bool isActive;
+
+  /// True when this edition is the reader's second column.
+  final bool isParallel;
   final VoidCallback onTap;
+
+  /// Null for the edition being read, which cannot also be the second column.
+  final VoidCallback? onToggleParallel;
 
   @override
   Widget build(BuildContext context) {
@@ -361,14 +444,18 @@ class _SheetRow extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
+        padding: const EdgeInsets.fromLTRB(10, 10, 8, 10),
         decoration: BoxDecoration(
-          color: isActive
+          color: isActive || isParallel
               ? langColor.withValues(alpha: 0.07)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isActive ? langColor.withValues(alpha: 0.4) : theme.border,
+            color: isActive
+                ? langColor.withValues(alpha: 0.4)
+                : isParallel
+                    ? langColor.withValues(alpha: 0.28)
+                    : theme.border,
           ),
         ),
         child: Row(
@@ -402,11 +489,37 @@ class _SheetRow extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
+            if (onToggleParallel != null)
+              IconButton(
+                onPressed: onToggleParallel,
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(
+                  minWidth: 36,
+                  minHeight: 36,
+                ),
+                padding: EdgeInsets.zero,
+                tooltip: s.parallelShowAlongside,
+                icon: Icon(
+                  isParallel
+                      ? Icons.view_column_rounded
+                      : Icons.view_column_outlined,
+                  size: 19,
+                  color: isParallel ? langColor : theme.muted,
+                ),
+              ),
             if (isActive)
-              Icon(Icons.check_circle_rounded, size: 20, color: langColor)
+              Padding(
+                padding: const EdgeInsets.only(left: 4, right: 4),
+                child: Icon(Icons.check_circle_rounded,
+                    size: 20, color: langColor),
+              )
             else if (item.status == EditionStatus.updateAvailable)
-              Icon(Icons.sync_problem_rounded, size: 18, color: theme.muted),
+              Padding(
+                padding: const EdgeInsets.only(left: 4, right: 4),
+                child: Icon(Icons.sync_problem_rounded,
+                    size: 18, color: theme.muted),
+              ),
           ],
         ),
       ),

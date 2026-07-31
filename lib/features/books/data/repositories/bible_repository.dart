@@ -38,6 +38,12 @@ class SearchHit {
   final int matchStart;
   final int matchEnd;
 
+  /// The edition this hit was read from. Search only ever covers the primary
+  /// edition, but a result can outlive the edition it was found in — the reader
+  /// opened from a stale result would otherwise show different words than the
+  /// row the reader tapped.
+  final String editionId;
+
   const SearchHit({
     required this.bookEntry,
     required this.chapter,
@@ -45,6 +51,7 @@ class SearchHit {
     required this.text,
     required this.matchStart,
     required this.matchEnd,
+    required this.editionId,
   });
 }
 
@@ -70,6 +77,12 @@ class SearchFilter {
 /// editions swaps the open database and drops every derived cache — book names,
 /// aliases and loaded books are all edition-specific.
 ///
+/// A second edition may be open alongside it for the reader's parallel column
+/// ([secondaryEditionId]). It is deliberately read-only and second-class: the
+/// book index, search, the daily verse and every annotation still come from the
+/// primary, because annotations key on book/chapter/verse and would otherwise
+/// depend on which column a reader happened to tap.
+///
 /// A [ChangeNotifier] so the edition picker can rebuild the app's book lists
 /// without threading a callback through every screen.
 class BibleRepository extends ChangeNotifier {
@@ -79,6 +92,7 @@ class BibleRepository extends ChangeNotifier {
   }
 
   static const _prefsActiveEdition = 'active_edition_id';
+  static const _prefsSecondaryEdition = 'parallel_edition_id';
   static const _dailyVersesAsset =
       'assets/bibledata/ethiopian_daily_verses.json';
 
@@ -88,15 +102,25 @@ class BibleRepository extends ChangeNotifier {
   EditionDatabase? _edition;
   String _activeEditionId = BibleStorage.bundledEditionId;
 
+  EditionDatabase? _secondary;
+  String? _secondaryEditionId;
+
   List<BookIndexEntry>? _index;
   Map<String, BookIndexEntry>? _byId;
   Map<String, BookIndexEntry>? _aliases;
   final Map<String, Book> _bookCache = {};
+  final Map<String, Book> _secondaryBookCache = {};
 
   Map<String, Map<String, dynamic>>? _dailyVerseIndex;
   List<Map<String, dynamic>>? _dailyVerseList;
 
   String get activeEditionId => _activeEditionId;
+
+  /// The edition shown in the reader's parallel column, or null when parallel
+  /// reading is off.
+  String? get secondaryEditionId => _secondaryEditionId;
+
+  bool get isParallelReading => _secondary != null;
 
   /// Unpacks the bundled assets and opens the last-used edition.
   ///
@@ -113,6 +137,18 @@ class BibleRepository extends ChangeNotifier {
             : BibleStorage.bundledEditionId;
 
     await _openEdition(target);
+
+    // The parallel column is restored the same way, but never insisted on: an
+    // edition the user has since deleted, or one that has become the primary,
+    // silently turns parallel reading off rather than blocking startup.
+    final parallel = prefs.getString(_prefsSecondaryEdition);
+    if (parallel != null &&
+        parallel != _activeEditionId &&
+        await storage.isInstalled(parallel)) {
+      await _openSecondary(parallel);
+    } else if (parallel != null) {
+      await prefs.remove(_prefsSecondaryEdition);
+    }
   }
 
   Future<void> _openEdition(String id) async {
@@ -121,6 +157,16 @@ class BibleRepository extends ChangeNotifier {
     _edition = EditionDatabase(editionId: id, path: file.path);
     _activeEditionId = id;
     _resetCaches();
+  }
+
+  Future<void> _openSecondary(String? id) async {
+    _secondary?.dispose();
+    _secondary = null;
+    _secondaryEditionId = id;
+    _secondaryBookCache.clear();
+    if (id == null) return;
+    final file = await storage.editionFile(id);
+    _secondary = EditionDatabase(editionId: id, path: file.path);
   }
 
   void _resetCaches() {
@@ -150,6 +196,35 @@ class BibleRepository extends ChangeNotifier {
     await _openEdition(id);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsActiveEdition, id);
+    // An edition cannot sit in both columns. Reading it as the primary is the
+    // stronger intent, so the parallel slot yields.
+    if (_secondaryEditionId == id) {
+      await _openSecondary(null);
+      await prefs.remove(_prefsSecondaryEdition);
+    }
+    notifyListeners();
+    return true;
+  }
+
+  /// Opens [id] in the reader's parallel column, or turns parallel reading off
+  /// when [id] is null.
+  ///
+  /// Returns false without changing anything when the edition is not installed
+  /// or is already the primary — both are states the picker owns, not errors.
+  Future<bool> setSecondaryEdition(String? id) async {
+    if (id == _secondaryEditionId) return true;
+    if (id != null) {
+      if (id == _activeEditionId) return false;
+      if (!await storage.isInstalled(id)) return false;
+    }
+
+    await _openSecondary(id);
+    final prefs = await SharedPreferences.getInstance();
+    if (id == null) {
+      await prefs.remove(_prefsSecondaryEdition);
+    } else {
+      await prefs.setString(_prefsSecondaryEdition, id);
+    }
     notifyListeners();
     return true;
   }
@@ -157,22 +232,38 @@ class BibleRepository extends ChangeNotifier {
   /// Called after an edition is deleted, so an active edition that just went
   /// away is replaced rather than left dangling.
   Future<void> handleEditionRemoved(String id) async {
-    if (id != _activeEditionId) return;
-    await _openEdition(BibleStorage.bundledEditionId);
+    var changed = false;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        _prefsActiveEdition, BibleStorage.bundledEditionId);
-    notifyListeners();
+
+    if (id == _secondaryEditionId) {
+      await _openSecondary(null);
+      await prefs.remove(_prefsSecondaryEdition);
+      changed = true;
+    }
+    if (id == _activeEditionId) {
+      await _openEdition(BibleStorage.bundledEditionId);
+      await prefs.setString(
+          _prefsActiveEdition, BibleStorage.bundledEditionId);
+      changed = true;
+    }
+    if (changed) notifyListeners();
   }
 
   /// Reopens the active edition — used after patches are applied so the
   /// read-only connection sees the new text.
   Future<void> reloadActiveEdition() async {
     await _openEdition(_activeEditionId);
+    if (_secondaryEditionId != null) await _openSecondary(_secondaryEditionId);
     notifyListeners();
   }
 
   Future<Edition?> activeEdition() => catalog.edition(_activeEditionId);
+
+  /// Catalog entry for the parallel column, null when parallel reading is off.
+  Future<Edition?> secondaryEdition() async {
+    final id = _secondaryEditionId;
+    return id == null ? null : catalog.edition(id);
+  }
 
   // ── Book index ─────────────────────────────────────────────────────────────
 
@@ -249,6 +340,47 @@ class BibleRepository extends ChangeNotifier {
       chapters: _db.loadChapters(entry.id),
     );
     return _bookCache[entry.id] = book;
+  }
+
+  /// The same book read out of the parallel edition, or null when parallel
+  /// reading is off or that edition's canon does not carry the book.
+  ///
+  /// A missing book is the normal case, not a failure: the protestant editions
+  /// have 66 books against the EOTC canon's 81+, so opening Jubilees with
+  /// `en-kjv` alongside legitimately has nothing to put in the second column.
+  Future<Book?> loadSecondaryBook(String usfmId) async {
+    final db = _secondary;
+    if (db == null) return null;
+
+    final cached = _secondaryBookCache[usfmId];
+    if (cached != null) return cached;
+
+    EditionBookRow? row;
+    for (final b in db.books()) {
+      if (b.id == usfmId) {
+        row = b;
+        break;
+      }
+    }
+    if (row == null) return null;
+
+    final amNames = await catalog.namesFor('am');
+    final enNames = await catalog.namesFor('en');
+    final am = amNames[row.id];
+    final en = enNames[row.id];
+
+    final book = Book(
+      id: row.id,
+      bookNumber: row.position,
+      bookNameAm: am?.name.isNotEmpty == true ? am!.name : row.name,
+      bookNameEn: en?.name.isNotEmpty == true ? en!.name : row.name,
+      bookShortNameAm: am?.abbr.isNotEmpty == true ? am!.abbr : row.abbr,
+      bookShortNameEn: enAbbrevFromUsfm(row.id),
+      nativeName: row.name,
+      testament: '',
+      chapters: db.loadChapters(row.id),
+    );
+    return _secondaryBookCache[usfmId] = book;
   }
 
   /// Text of a single verse, without paying to materialise the whole book.
@@ -498,6 +630,7 @@ class BibleRepository extends ChangeNotifier {
               text: row.text,
               matchStart: start < 0 ? 0 : start,
               matchEnd: start < 0 ? 0 : start + needle.length,
+              editionId: _activeEditionId,
             );
           }(),
     ];
@@ -505,6 +638,7 @@ class BibleRepository extends ChangeNotifier {
 
   void clearCache() {
     _resetCaches();
+    _secondaryBookCache.clear();
     _dailyVerseIndex = null;
     _dailyVerseList = null;
   }
@@ -512,6 +646,7 @@ class BibleRepository extends ChangeNotifier {
   @override
   void dispose() {
     _edition?.dispose();
+    _secondary?.dispose();
     catalog.dispose();
     super.dispose();
   }

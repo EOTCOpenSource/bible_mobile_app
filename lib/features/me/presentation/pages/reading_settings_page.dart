@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../books/presentation/widgets/edition_switcher.dart';
 import '../../../books/presentation/widgets/reader/constants.dart';
 import '../../../books/presentation/widgets/reader/font_settings_widgets.dart';
+import '../../../books/providers/edition_providers.dart';
 
 /// Full-page reading customizer — opened from Me settings or the reader Aa sheet.
 class ReadingSettingsPage extends StatelessWidget {
@@ -71,6 +74,23 @@ class ReadingSettingsPage extends StatelessWidget {
             previewLabel: s.readingSettingsPreview,
           ),
           const SizedBox(height: 24),
+
+          // ── Parallel translation ──────────────────────────────────────────
+          _ParallelRow(
+            label: s.parallelSettingLabel,
+            offLabel: s.parallelOff,
+            textColor: textColor,
+            mutedColor: mutedColor,
+            accentColor: accentColor,
+            sheetTheme: EditionSheetTheme(
+              surface: surfaceColor,
+              text: textColor,
+              muted: mutedColor,
+              accent: accentColor,
+              border: mutedColor.withValues(alpha: 0.25),
+            ),
+          ),
+          const SizedBox(height: 20),
 
           // ── Continuous reading toggle ─────────────────────────────────────
           _SettingRow(
@@ -244,6 +264,61 @@ class _PreviewCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Opens the edition chooser at its parallel-column controls.
+///
+/// A row rather than a switch: choosing *which* edition sits alongside is the
+/// decision, and there is no sensible default second translation to toggle on.
+class _ParallelRow extends ConsumerWidget {
+  const _ParallelRow({
+    required this.label,
+    required this.offLabel,
+    required this.textColor,
+    required this.mutedColor,
+    required this.accentColor,
+    required this.sheetTheme,
+  });
+
+  final String label;
+  final String offLabel;
+  final Color textColor;
+  final Color mutedColor;
+  final Color accentColor;
+  final EditionSheetTheme sheetTheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final parallel = ref.watch(secondaryEditionTitleProvider).valueOrNull;
+
+    return InkWell(
+      onTap: () => showEditionSwitcher(context, theme: sheetTheme),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.view_column_outlined, size: 17, color: mutedColor),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.amharicLabel.copyWith(color: textColor),
+              ),
+            ),
+            Text(
+              parallel ?? offLabel,
+              style: AppTypography.amharicCaption.copyWith(
+                color: parallel == null ? mutedColor : accentColor,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(Icons.chevron_right_rounded, size: 18, color: mutedColor),
+          ],
+        ),
       ),
     );
   }
