@@ -130,8 +130,9 @@ class EditionChip extends ConsumerWidget {
               Icon(Icons.translate_rounded, size: dense ? 13 : 14, color: fg),
               const SizedBox(width: 5),
               ConstrainedBox(
+                // "አማርኛ 2000" fits; a parallel pair needs the extra room.
                 constraints: BoxConstraints(
-                  maxWidth: (dense ? 74.0 : 110.0) + (parallel == null ? 0 : 46),
+                  maxWidth: (dense ? 92.0 : 124.0) + (parallel == null ? 0 : 60),
                 ),
                 child: Text(
                   label.isEmpty ? '—' : label,
