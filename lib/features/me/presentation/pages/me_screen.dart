@@ -9,11 +9,11 @@ import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
-import '../../../../core/services/repository_provider.dart';
+import '../../../../core/audio/tts_providers.dart';
 import '../../../books/presentation/pages/editions_page.dart';
-import '../../../books/presentation/pages/reader_screen.dart';
 import '../../../books/providers/edition_providers.dart';
 import 'reading_settings_page.dart';
+import 'voice_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
@@ -78,23 +78,23 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     settings.copyWith(isDarkReader: v),
                   ),
                 ),
-                _ActionRow(
+                // Audio reading is set up before it is used: the user's own
+                // Addis AI key, then the voice that reads to them. The row
+                // shows the voice actually in effect, so "which voice is this
+                // going to use?" is answerable without opening the page.
+                _ArrowRow(
                   label: s.settingAudio,
-                  actionLabel: s.settingAudioAction,
-                  onTap: () async {
-                    final repo = BibleRepositoryProvider.of(context);
-                    final index = await repo.loadIndex();
-                    if (!context.mounted || index.isEmpty) return;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ReaderScreen(
-                          entry: index.first,
-                          autoStartAudio: true,
-                        ),
+                  value: ref.watch(effectiveVoiceProvider('am')).maybeWhen(
+                        data: (v) => v?.name ?? '',
+                        orElse: () => '',
                       ),
-                    );
-                  },
+                  hint: s.voiceSectionVoices,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const VoiceSettingsPage(),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -716,56 +716,6 @@ class _ToggleRow extends StatelessWidget {
             onChanged: onChanged,
             activeThumbColor: c.primary,
             activeTrackColor: c.primaryLight.withValues(alpha: 0.4),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionRow extends StatelessWidget {
-  const _ActionRow({
-    required this.label,
-    required this.actionLabel,
-    required this.onTap,
-  });
-
-  final String label;
-  final String actionLabel;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: AppTypography.amharicLabel.copyWith(
-                color: c.textOnParchment,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: c.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: c.primary, width: 0.8),
-              ),
-              child: Text(
-                actionLabel,
-                style: AppTypography.amharicCaption.copyWith(
-                  color: c.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
           ),
         ],
       ),

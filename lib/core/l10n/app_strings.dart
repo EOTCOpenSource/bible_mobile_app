@@ -405,4 +405,29 @@ String readingReminderUpdated(String time);
   String editionMetaBooks(String count);
   String editionMetaChapters(String count);
   String editionMetaVerses(String count);
+
+  // Audio reading — voice chooser and the user's own Addis AI key
+  String get voiceSettingsTitle;
+  String get voiceSectionKey;
+  String get voiceSectionVoices;
+  String get voiceKeyIntro;
+  String get voiceKeyGetOne;
+  String get voiceKeyLinkCopied;
+  String get voiceKeyFieldHint;
+  String get voiceKeySave;
+  String get voiceKeySaved;
+  String get voiceKeyChange;
+  String get voiceKeyRemove;
+  String get voiceKeyRemoved;
+  String get voiceKeyRejected;
+  String get voiceKeyRequired;
+  String get voiceLoadFailed;
+  String get voiceListEmpty;
+  String get voiceRetry;
+  String get voicePreview;
+  String get voiceSelectedBadge;
+  String get voiceDefaultBadge;
+  String get voiceGenderMale;
+  String get voiceGenderFemale;
+  String voiceSelectedToast(String name);
 }

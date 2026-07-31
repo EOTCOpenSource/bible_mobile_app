@@ -543,4 +543,54 @@ class EnStrings extends AppStrings {
   String editionMetaChapters(String count) => '$count chapters';
   @override
   String editionMetaVerses(String count) => '$count verses';
+
+  // ── Audio reading ──────────────────────────────────────────────────────────
+  @override
+  String get voiceSettingsTitle => 'Reading Voice';
+  @override
+  String get voiceSectionKey => 'Addis AI key';
+  @override
+  String get voiceSectionVoices => 'Choose a voice';
+  @override
+  String get voiceKeyIntro =>
+      'Audio reading is powered by Addis AI. Get your own key from Addis AI '
+      'and paste it here — it stays on this device.';
+  @override
+  String get voiceKeyGetOne => 'Get a key';
+  @override
+  String get voiceKeyLinkCopied => 'Link copied';
+  @override
+  String get voiceKeyFieldHint => 'Paste your key here';
+  @override
+  String get voiceKeySave => 'Save';
+  @override
+  String get voiceKeySaved => 'Key saved';
+  @override
+  String get voiceKeyChange => 'Change key';
+  @override
+  String get voiceKeyRemove => 'Remove key';
+  @override
+  String get voiceKeyRemoved => 'Key removed';
+  @override
+  String get voiceKeyRejected => 'That key was rejected. Please check it.';
+  @override
+  String get voiceKeyRequired => 'Add your key first to listen.';
+  @override
+  String get voiceLoadFailed => 'Could not load the voice list.';
+  @override
+  String get voiceListEmpty => 'No voices available for this language.';
+  @override
+  String get voiceRetry => 'Try again';
+  @override
+  String get voicePreview => 'Preview';
+  @override
+  String get voiceSelectedBadge => 'Selected';
+  @override
+  String get voiceDefaultBadge => 'Default';
+  @override
+  String get voiceGenderMale => 'Male';
+  @override
+  String get voiceGenderFemale => 'Female';
+  @override
+  String voiceSelectedToast(String name) => '$name selected';
 }

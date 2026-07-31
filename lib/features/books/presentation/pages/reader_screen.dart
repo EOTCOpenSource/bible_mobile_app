@@ -22,6 +22,8 @@ import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
 import '../../../../core/deep_links/deep_link_uri.dart';
 import '../../../../core/audio/audio_service.dart';
+import '../../../../core/audio/tts_providers.dart';
+import '../../../me/presentation/pages/voice_settings_page.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -352,15 +354,57 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     }
   }
 
-  void _playCurrentChapterAudio() {
+  /// Reads the open chapter aloud with the user's own key and chosen voice.
+  ///
+  /// Anything that stops it from starting routes to the voice settings page
+  /// rather than failing silently — a missing key is the common case on a
+  /// fresh install, and it is fixable right there.
+  Future<void> _playCurrentChapterAudio() async {
     final book = _book;
     if (book == null || _currentChapter >= book.chapters.length) return;
     final ch = book.chapters[_currentChapter];
-    final versesText =
-        ch.allVerses.map((v) => v.text).toList();
-    AudioService.instance.startChapter(
+
+    final s = L10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final apiKey = await ref.read(addisApiKeyProvider.future);
+    final voice = await ref.read(effectiveVoiceProvider('am').future);
+    if (!mounted) return;
+
+    final result = await AudioService.instance.startChapter(
       title: '${_entry.bookNameAm} ${ch.chapterNumber}',
-      verses: versesText,
+      verses: ch.allVerses.map((v) => v.text).toList(),
+      apiKey: apiKey,
+      voiceId: voice?.id,
+    );
+    if (!mounted) return;
+
+    switch (result) {
+      case StartAudioResult.started:
+      case StartAudioResult.cancelled:
+        break;
+      case StartAudioResult.missingApiKey:
+        messenger.showSnackBar(SnackBar(content: Text(s.voiceKeyRequired)));
+        _openVoiceSettings();
+      case StartAudioResult.invalidApiKey:
+        messenger.showSnackBar(SnackBar(content: Text(s.voiceKeyRejected)));
+        _openVoiceSettings();
+      case StartAudioResult.noVoiceAvailable:
+        messenger.showSnackBar(SnackBar(content: Text(s.voiceListEmpty)));
+        _openVoiceSettings();
+      case StartAudioResult.failed:
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(AudioService.instance.lastError ?? s.voiceLoadFailed),
+          ),
+        );
+    }
+  }
+
+  void _openVoiceSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const VoiceSettingsPage()),
     );
   }
 
