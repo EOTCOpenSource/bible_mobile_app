@@ -92,20 +92,12 @@ class ReaderToolbar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 2),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: mutedColor,
-                  ),
+                  Icon(Icons.keyboard_arrow_down_rounded,
+                      size: 18, color: mutedColor),
                 ],
               ),
             ),
           ),
-          if (onAudio != null)
-            IconButton(
-              icon: Icon(Icons.volume_up_rounded, size: 20, color: mutedColor),
-              onPressed: onAudio,
-            ),
           // Active edition — opens the chooser
           EditionChip(
             dense: true,
@@ -115,6 +107,11 @@ class ReaderToolbar extends StatelessWidget {
             sheetTheme: sheetTheme,
           ),
           const SizedBox(width: 2),
+          if (onAudio != null)
+            IconButton(
+              icon: Icon(Icons.volume_up_rounded, size: 20, color: mutedColor),
+              onPressed: onAudio,
+            ),
           // Aa — opens font settings
           GestureDetector(
             onTap: onFontSettings,

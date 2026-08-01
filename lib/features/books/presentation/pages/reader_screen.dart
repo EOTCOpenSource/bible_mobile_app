@@ -23,6 +23,8 @@ import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
 import '../../../../core/deep_links/deep_link_uri.dart';
 import '../../../../core/audio/audio_service.dart';
+import '../../../../core/audio/tts_providers.dart';
+import '../../../me/presentation/pages/voice_settings_page.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -117,17 +119,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _entry = widget.entry;
     _currentChapter = widget.initialChapter;
     _pageCtrl = PageController(initialPage: widget.initialChapter);
-    AudioService.instance.currentVerseIndexNotifier.addListener(
-      _onAudioVerseIndexChanged,
-    );
+    AudioService.instance.currentVerseIndexNotifier.addListener(_onAudioVerseIndexChanged);
     AudioService.instance.stateNotifier.addListener(_onAudioStateChanged);
   }
 
   void _onAudioStateChanged() {
     final state = AudioService.instance.stateNotifier.value;
     final wasPlaying = _isAudioPlaying;
-    _isAudioPlaying =
-        (state == AudioState.playing || state == AudioState.buffering);
+    _isAudioPlaying = (state == AudioState.playing || state == AudioState.buffering);
     if (wasPlaying && !_isAudioPlaying && mounted) {
       setState(() {
         _selectedKey = null;
@@ -145,14 +144,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     final verse = chapter.allVerses[verseIdx];
     for (var sIdx = 0; sIdx < chapter.sections.length; sIdx++) {
-      if (chapter.sections[sIdx].verses.any(
-        (v) => v.verseNumber == verse.verseNumber,
-      )) {
-        final targetKey = _verseKey(
-          chapter.chapterNumber,
-          sIdx,
-          verse.verseNumber,
-        );
+      if (chapter.sections[sIdx].verses.any((v) => v.verseNumber == verse.verseNumber)) {
+        final targetKey = _verseKey(chapter.chapterNumber, sIdx, verse.verseNumber);
         if (_selectedKey != targetKey) {
           setState(() {
             _isAudioPlaying = true;
@@ -178,15 +171,16 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     }
   }
 
-  void _playCurrentChapterAudio() {
-    final book = _book;
-    if (book == null || _currentChapter >= book.chapters.length) return;
-    final ch = book.chapters[_currentChapter];
-    final versesText = ch.allVerses.map((v) => v.text).toList();
-    AudioService.instance.startChapter(
-      title: '${_entry.bookNameAm} ${ch.chapterNumber}',
-      verses: versesText,
-    );
+  /// Returns the verse number currently being read by audio on page [pageIdx],
+  /// or null if audio is not active on that page.
+  int? _audioVerseNum(int pageIdx) {
+    if (!_isAudioPlaying || _book == null) return null;
+    if (pageIdx != _currentChapter) return null;
+    final verseIdx = AudioService.instance.currentVerseIndexNotifier.value;
+    if (verseIdx == null) return null;
+    final chapter = _book!.chapters[_currentChapter];
+    if (verseIdx < 0 || verseIdx >= chapter.allVerses.length) return null;
+    return chapter.allVerses[verseIdx].verseNumber;
   }
 
   @override
@@ -239,9 +233,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   @override
   void dispose() {
-    AudioService.instance.currentVerseIndexNotifier.removeListener(
-      _onAudioVerseIndexChanged,
-    );
+    AudioService.instance.currentVerseIndexNotifier.removeListener(_onAudioVerseIndexChanged);
     AudioService.instance.stateNotifier.removeListener(_onAudioStateChanged);
     _dwellTimer?.cancel();
     _repo?.removeListener(_onEditionChanged);
@@ -342,7 +334,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   Future<void> _loadBook() async {
-    final book = await BibleRepositoryProvider.of(context).loadBook(_entry);
+    final book = await BibleRepositoryProvider.of(
+      context,
+    ).loadBook(_entry);
     if (!mounted) return;
 
     var pageIdx = widget.initialChapter.clamp(0, book.chapters.length - 1);
@@ -370,7 +364,65 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _persistReadingPosition();
     _scheduleDwellTimer();
     _autoSelectInitialVerse(pageIdx);
+
+    if (widget.autoStartAudio) {
+      _playCurrentChapterAudio();
+    }
     unawaited(_refreshParallel());
+  }
+
+  /// Reads the open chapter aloud with the user's own key and chosen voice.
+  ///
+  /// Anything that stops it from starting routes to the voice settings page
+  /// rather than failing silently — a missing key is the common case on a
+  /// fresh install, and it is fixable right there.
+  Future<void> _playCurrentChapterAudio() async {
+    final book = _book;
+    if (book == null || _currentChapter >= book.chapters.length) return;
+    final ch = book.chapters[_currentChapter];
+
+    final s = L10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final apiKey = await ref.read(addisApiKeyProvider.future);
+    final voice = await ref.read(effectiveVoiceProvider('am').future);
+    if (!mounted) return;
+
+    final result = await AudioService.instance.startChapter(
+      title: '${_entry.bookNameAm} ${ch.chapterNumber}',
+      verses: ch.allVerses.map((v) => v.text).toList(),
+      apiKey: apiKey,
+      voiceId: voice?.id,
+    );
+    if (!mounted) return;
+
+    switch (result) {
+      case StartAudioResult.started:
+      case StartAudioResult.cancelled:
+        break;
+      case StartAudioResult.missingApiKey:
+        messenger.showSnackBar(SnackBar(content: Text(s.voiceKeyRequired)));
+        _openVoiceSettings();
+      case StartAudioResult.invalidApiKey:
+        messenger.showSnackBar(SnackBar(content: Text(s.voiceKeyRejected)));
+        _openVoiceSettings();
+      case StartAudioResult.noVoiceAvailable:
+        messenger.showSnackBar(SnackBar(content: Text(s.voiceListEmpty)));
+        _openVoiceSettings();
+      case StartAudioResult.failed:
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(AudioService.instance.lastError ?? s.voiceLoadFailed),
+          ),
+        );
+    }
+  }
+
+  void _openVoiceSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const VoiceSettingsPage()),
+    );
   }
 
   /// Re-reads the parallel column for the open book.
@@ -1147,8 +1199,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                               verse,
                                               pageChapterNum,
                                             ),
-                                            spotlightVerseNum: spotlightVerse,
-                                            spotlightKey: spotlightKey,
+                                            spotlightVerseNum: _audioVerseNum(i) ?? spotlightVerse,
+                                            spotlightKey: _audioVerseNum(i) != null
+                                                ? _audioScrollKey
+                                                : spotlightKey,
                                           );
                                         },
                                       );
@@ -1156,9 +1210,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   ),
                                   // Verse action bar
                                   AnimatedSlide(
-                                    offset:
-                                        (_selectedKey != null &&
-                                            !_isAudioPlaying)
+                                    offset: (_selectedKey != null && !_isAudioPlaying)
                                         ? Offset.zero
                                         : const Offset(0, 1),
                                     duration: const Duration(milliseconds: 220),
@@ -1185,7 +1237,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                               )
                                               .toggleBookmark(
                                                 verseStart: verseNum,
-                                                bookNumber: _entry.bookNumber,
+                                                bookNumber:
+                                                    _entry.bookNumber,
                                                 verseCount:
                                                     _selectionVerseCount,
                                               );
@@ -1222,22 +1275,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                           _deselect();
                                         },
                                         onShare: () {
-                                          final selectedVerses =
-                                              _getSelectedVerses();
-                                          if (selectedVerses.isNotEmpty &&
-                                              _book != null) {
+                                          final selectedVerses = _getSelectedVerses();
+                                          if (selectedVerses.isNotEmpty && _book != null) {
                                             showModalBottomSheet(
                                               context: context,
                                               isScrollControlled: true,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              builder: (context) =>
-                                                  VerseCardSheet(
-                                                    verses: selectedVerses,
-                                                    book: _book!,
-                                                    chapterNumber:
-                                                        _currentChapterNumber,
-                                                  ),
+                                              backgroundColor: Colors.transparent,
+                                              builder: (context) => VerseCardSheet(
+                                                verses: selectedVerses,
+                                                book: _book!,
+                                                chapterNumber: _currentChapterNumber,
+                                              ),
                                             );
                                           }
                                           _deselect();
@@ -1286,7 +1334,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           decoration: BoxDecoration(
             color: surfaceColor,
             border: Border(
-              top: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
+              top: BorderSide(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
