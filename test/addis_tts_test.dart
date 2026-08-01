@@ -156,8 +156,9 @@ void main() {
       expect(body['text'], 'ሰላም');
       expect(body['language'], 'am');
       expect(body['output_format'], 'mp3_44100');
-      // Omitted rather than sent as null when the caller does not supply one.
-      expect(body.containsKey('client_request_id'), isFalse);
+      // Always sent — required by the Addis AI API.
+      expect(body['client_request_id'], isA<String>());
+      expect((body['client_request_id'] as String).startsWith('req_'), isTrue);
 
       expect(url.toString(), 'https://cdn.example/clip_1.mp3?sig=abc');
     });
