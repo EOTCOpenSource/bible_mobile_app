@@ -62,6 +62,24 @@ class Edition {
     return era == null || era!.isEmpty ? '$year' : '$year $era';
   }
 
+  /// Language and year, and nothing else — "አማርኛ 2000", "English 1611".
+  ///
+  /// For the chips and settings rows that name the edition in passing. It is
+  /// deliberately not [abbrev]: that column is not an abbreviation in the
+  /// catalog — `am-2000` carries "መጽሐፍ ቅዱስ አማርኛ የ2000 ዓ.ም ዕትም" in it, a whole
+  /// title that overflows anything chip-sized. Everywhere this appears the
+  /// reader already knows they are in a Bible, so the language and the year are
+  /// the only two facts that tell one edition from another.
+  ///
+  /// The era is dropped: `am-2000` and `am-nasv-2001` still read differently,
+  /// and the full "2000 EC" belongs on the chooser row, which has room for it.
+  String get shortLabel {
+    final lang = languageName.isNotEmpty
+        ? languageName
+        : (language.isNotEmpty ? language.toUpperCase() : id);
+    return year == null ? lang : '$lang $year';
+  }
+
   factory Edition.fromRow(Map<String, Object?> r) => Edition(
         id: r['id'] as String,
         title: (r['title'] as String?) ?? '',

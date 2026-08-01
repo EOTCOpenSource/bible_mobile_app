@@ -28,12 +28,25 @@ final activeEditionIdProvider = StateProvider<String>(
   (ref) => ref.watch(bibleRepositoryProvider).activeEditionId,
 );
 
-/// Display title of the active edition, for the settings row.
+/// Short name of the active edition — language and year — for the chip and the
+/// settings row. See [Edition.shortLabel] for why this is not `abbrev`.
 final activeEditionTitleProvider = FutureProvider<String>((ref) async {
   // Depend on the id so switching editions refreshes the label.
   ref.watch(activeEditionIdProvider);
   final edition = await ref.watch(bibleRepositoryProvider).activeEdition();
-  return edition?.abbrev.isNotEmpty == true
-      ? edition!.abbrev
-      : edition?.title ?? '';
+  return edition?.shortLabel ?? '';
+});
+
+/// The edition in the reader's parallel column, or null when parallel reading
+/// is off. Mirrors [activeEditionIdProvider] so the chip, the picker and the
+/// settings row all rebuild off one piece of state.
+final secondaryEditionIdProvider = StateProvider<String?>(
+  (ref) => ref.watch(bibleRepositoryProvider).secondaryEditionId,
+);
+
+/// Short name of the parallel edition, null when parallel reading is off.
+final secondaryEditionTitleProvider = FutureProvider<String?>((ref) async {
+  ref.watch(secondaryEditionIdProvider);
+  final edition = await ref.watch(bibleRepositoryProvider).secondaryEdition();
+  return edition?.shortLabel;
 });

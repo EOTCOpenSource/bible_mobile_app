@@ -405,4 +405,23 @@ String readingReminderUpdated(String time);
   String editionMetaBooks(String count);
   String editionMetaChapters(String count);
   String editionMetaVerses(String count);
+
+  // ── Parallel reading ──────────────────────────────────────────────────────
+  /// Header over the parallel-column part of the edition chooser.
+  String get parallelSectionTitle;
+  String get parallelSectionSubtitle;
+
+  /// Per-row toggle that puts an edition in the reader's second column.
+  String get parallelShowAlongside;
+
+  /// Settings row and its value when no second column is chosen.
+  String get parallelSettingLabel;
+  String get parallelOff;
+
+  String parallelEnabled(String title);
+  String get parallelDisabled;
+
+  /// Shown in place of the second column when the parallel edition's canon
+  /// does not carry the open book.
+  String parallelBookMissing(String title);
 }

@@ -15,6 +15,7 @@ import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
+import '../../data/models/edition.dart';
 import '../../data/reading_constants.dart';
 import '../../data/repositories/bible_repository.dart' show BibleRepository;
 import '../widgets/edition_switcher.dart';
@@ -26,6 +27,8 @@ import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
 import '../widgets/reader/chapter_page.dart';
+import '../widgets/reader/chapter_picker_sheet.dart';
+import '../widgets/reader/parallel_chapter_page.dart';
 import '../widgets/reader/font_sheet.dart';
 import '../widgets/reader/highlight_sheet.dart';
 import '../widgets/reader/note_sheet.dart';
@@ -75,6 +78,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   BibleRepository? _repo;
   bool _initialized = false;
+
+  /// Parallel column state. [_secondaryBook] is null while parallel reading is
+  /// off *and* when the parallel edition's canon has no such book — the two are
+  /// told apart by [_parallelOn], because the second case has to say so rather
+  /// than quietly drop back to one column.
+  Book? _secondaryBook;
+  bool _parallelOn = false;
+  String _primaryLabel = '';
+  String _secondaryLabel = '';
+
+  /// The primary edition as of the last load, so a notification that only
+  /// changed the parallel column does not re-read the whole book.
+  String? _primaryEditionId;
 
   String? _selectedKey;
   String? _selectionEndKey;
@@ -355,21 +371,55 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _persistReadingPosition();
     _scheduleDwellTimer();
     _autoSelectInitialVerse(pageIdx);
-
-    if (widget.autoStartAudio) {
-      _playCurrentChapterAudio();
-    }
+    unawaited(_refreshParallel());
   }
 
-  void _playCurrentChapterAudio() {
-    final book = _book;
-    if (book == null || _currentChapter >= book.chapters.length) return;
-    final ch = book.chapters[_currentChapter];
-    final versesText = ch.allVerses.map((v) => v.text).toList();
-    AudioService.instance.startChapter(
-      title: '${widget.entry.bookNameAm} ${ch.chapterNumber}',
-      verses: versesText,
-    );
+  /// Re-reads the parallel column for the open book.
+  ///
+  /// Cheap enough to call on every edition notification: the secondary book is
+  /// cached in the repository, and a book the parallel canon does not carry
+  /// resolves to null without touching the database twice.
+  Future<void> _refreshParallel() async {
+    final repo = _repo;
+    if (repo == null) return;
+
+    _primaryEditionId = repo.activeEditionId;
+    final parallelId = repo.secondaryEditionId;
+
+    if (parallelId == null) {
+      if (!mounted) return;
+      setState(() {
+        _parallelOn = false;
+        _secondaryBook = null;
+        _secondaryLabel = '';
+      });
+      return;
+    }
+
+    final book = await repo.loadSecondaryBook(_entry.id);
+    final secondary = await repo.secondaryEdition();
+    final primary = await repo.activeEdition();
+    if (!mounted) return;
+
+    setState(() {
+      _parallelOn = true;
+      _secondaryBook = book;
+      _primaryLabel = primary == null ? '' : _editionLabel(primary);
+      _secondaryLabel = secondary == null ? '' : _editionLabel(secondary);
+    });
+  }
+
+  static String _editionLabel(Edition e) => e.shortLabel;
+
+  /// The open chapter in the parallel edition, null when its versification
+  /// does not reach this far.
+  Chapter? _secondaryChapterFor(int chapterNumber) {
+    final book = _secondaryBook;
+    if (book == null) return null;
+    for (final c in book.chapters) {
+      if (c.chapterNumber == chapterNumber) return c;
+    }
+    return null;
   }
 
   /// Re-reads the open book from the edition just switched to, holding the
@@ -382,6 +432,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   Future<void> _onEditionChanged() async {
     final repo = _repo;
     if (repo == null || !mounted) return;
+
+    // Turning the parallel column on or off leaves the primary text alone;
+    // reloading the book would throw away the reader's scroll position for a
+    // change that does not affect it.
+    if (_primaryEditionId != null &&
+        repo.activeEditionId == _primaryEditionId) {
+      await _refreshParallel();
+      return;
+    }
 
     final entry = await repo.bookById(_entry.id);
     if (!mounted) return;
@@ -430,6 +489,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     _persistReadingPosition();
     _scheduleDwellTimer();
+    await _refreshParallel();
   }
 
   void _autoSelectInitialVerse(int chapterPageIndex) {
@@ -467,10 +527,49 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   void _goToChapter(int idx) {
     if (_book == null) return;
+    final target = idx.clamp(0, _book!.chapters.length - 1);
+    // Animating across a long jump would flick through every chapter between
+    // Psalm 1 and Psalm 119, so only neighbours slide.
+    if ((target - _currentChapter).abs() > 2) {
+      _pageCtrl.jumpToPage(target);
+      return;
+    }
     _pageCtrl.animateToPage(
-      idx.clamp(0, _book!.chapters.length - 1),
+      target,
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeInOut,
+    );
+  }
+
+  // ── Chapter picker ────────────────────────────────────────────────────────
+
+  void _showChapterPicker(BuildContext ctx, AppSettings settings) {
+    final book = _book;
+    if (book == null || book.chapters.isEmpty) return;
+
+    final isDark = settings.isDarkReader;
+    showModalBottomSheet<void>(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => ReaderChapterPicker(
+        entry: _entry,
+        chapters: book.chapters,
+        currentIndex: _currentChapter,
+        useGeez: settings.useGeezNumbers,
+        isAmharic: L10n.of(ctx) is AmStrings,
+        s: L10n.of(ctx),
+        surfaceColor: isDark ? readerDarkSurface : Colors.white,
+        textColor: isDark ? readerDarkText : AppColors.textOnParchment,
+        mutedColor: isDark ? readerDarkMuted : AppColors.textMuted,
+        accentColor: isDark ? readerDarkAccent : AppColors.accentDeep,
+        titleFontFamily: readerFonts[settings.titleFontIndex],
+        onSelect: (i) {
+          Navigator.pop(sheetCtx);
+          _deselect();
+          _goToChapter(i);
+        },
+      ),
     );
   }
 
@@ -887,6 +986,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                               ReaderToolbar(
                                 entry: _entry,
                                 currentChapter: _currentChapter,
+                                chapterNumber:
+                                    chapterReady ? _currentChapterNumber : null,
+                                onChapterTap: chapterReady
+                                    ? () => _showChapterPicker(context, settings)
+                                    : null,
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
@@ -965,6 +1069,60 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                   )
                                                   .value ??
                                               ChapterAnnotations.empty;
+                                          final spotlightVerse =
+                                              (widget.initialVerse != null &&
+                                                      i ==
+                                                          _spotlightChapterPageIndex)
+                                                  ? widget.initialVerse
+                                                  : null;
+                                          final spotlightKey =
+                                              spotlightVerse == null
+                                                  ? null
+                                                  : _spotlightKey;
+
+                                          // Parallel wins over continuous
+                                          // reading: a paragraph of run-on
+                                          // verses has nothing to align a
+                                          // second translation against.
+                                          if (_parallelOn) {
+                                            return ParallelChapterPage(
+                                              entry: _entry,
+                                              chapter: _book!.chapters[i],
+                                              secondaryChapter:
+                                                  _secondaryChapterFor(
+                                                pageChapterNum,
+                                              ),
+                                              secondaryBookMissing:
+                                                  _secondaryBook == null,
+                                              primaryLabel: _primaryLabel,
+                                              secondaryLabel: _secondaryLabel,
+                                              isDark: isDark,
+                                              fontSize: settings.fontSize,
+                                              fontFamily: bodyFont,
+                                              titleFontFamily: titleFont,
+                                              textColor: textColor,
+                                              mutedColor: mutedColor,
+                                              accentColor: accentColor,
+                                              useGeez: useGeez,
+                                              isAmharic: isAm,
+                                              s: s,
+                                              isSelectedFn: _isSelected,
+                                              onVerseTap: _selectVerse,
+                                              verseKeyFn: _verseKey,
+                                              annotations: pageAnnotations,
+                                              onNoteTap: (key, ann) =>
+                                                  _showNoteView(key, ann),
+                                              onApparatusTap: (verse) =>
+                                                  _showApparatus(
+                                                verse,
+                                                pageChapterNum,
+                                              ),
+                                              spotlightVerseNum:
+                                                  spotlightVerse,
+                                              spotlightKey: spotlightKey,
+                                            );
+                                          }
+
                                           return ReaderChapterPage(
                                             entry: _entry,
                                             chapter: _book!.chapters[i],
@@ -987,27 +1145,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                 _showNoteView(key, ann),
                                             onApparatusTap: (verse) =>
                                                 _showApparatus(
-                                                  verse,
-                                                  _book!
-                                                      .chapters[i]
-                                                      .chapterNumber,
-                                                ),
-                                            spotlightVerseNum:
-                                                _audioVerseNum(i) ??
-                                                ((widget.initialVerse != null &&
-                                                        i ==
-                                                            _spotlightChapterPageIndex)
-                                                    ? widget.initialVerse
-                                                    : null),
-                                            spotlightKey:
-                                                _audioVerseNum(i) != null
-                                                ? _audioScrollKey
-                                                : ((widget.initialVerse !=
-                                                              null &&
-                                                          i ==
-                                                              _spotlightChapterPageIndex)
-                                                      ? _spotlightKey
-                                                      : null),
+                                              verse,
+                                              pageChapterNum,
+                                            ),
+                                            spotlightVerseNum: spotlightVerse,
+                                            spotlightKey: spotlightKey,
                                           );
                                         },
                                       );

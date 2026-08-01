@@ -63,6 +63,42 @@ lib/
 - Font/size settings bottom sheet (`ReaderFontSheet`)
 - `ChapterNavBar`, `ReaderToolbar`, `ReaderBreadcrumb` as separate widget files under `lib/features/books/presentation/widgets/reader/`
 
+### Parallel reading
+
+The reader can show a second edition beside the first. `BibleRepository` holds a
+secondary `EditionDatabase` open alongside the active one:
+
+| Member | Purpose |
+|---|---|
+| `secondaryEditionId` / `isParallelReading` | Which edition is in the second column, null when off |
+| `setSecondaryEdition(id?)` | Opens it, or turns parallel reading off with `null` |
+| `loadSecondaryBook(usfmId)` | The open book from that edition, null when its canon lacks it |
+
+The secondary is deliberately second-class. The book index, search, the daily
+verse and **every annotation still come from the primary** — bookmarks,
+highlights and notes key on book/chapter/verse rather than on a translation, so
+they survive a switch untouched and must not depend on which column was tapped.
+
+Rules the UI relies on, all enforced in the repository:
+- an edition cannot be both columns — making the secondary primary drops it from
+  the second column
+- deleting an edition that is in the second column turns parallel reading off
+- the choice persists in `SharedPreferences` under `parallel_edition_id`, beside
+  `active_edition_id`; it is **not** in `AppSettings`, so the pair cannot
+  disagree across a restart
+
+`ParallelChapterPage` renders the pair and **aligns by verse number, never by
+index** — editions disagree about where verses split, so walking two lists in
+lockstep pairs the wrong words from the first disagreement onwards. A verse only
+one edition has gets an empty cell opposite it; a book the parallel canon does
+not carry gets an inline notice instead of a blank column. Two columns at
+`kParallelTwoColumnBreakpoint` (600 dp) and up, stacked pairs below. Section
+headings come from the primary only, and parallel takes precedence over
+continuous reading.
+
+`VerseView` in `chapter_page.dart` is shared by both readers — the single-column
+and parallel views must not grow two copies of verse rendering.
+
 ### Typography & fonts
 
 `AppTypography` (`lib/core/theme/app_typography.dart`) defines all named text styles. Nine custom Ethiopic/Latin fonts are registered in `pubspec.yaml`; the reader exposes all nine through `readerFonts[]` / `readerFontNames[]` in `lib/features/books/presentation/widgets/reader/constants.dart`. Font indices in `AppSettings` always index into `readerFonts[]`.
