@@ -298,13 +298,12 @@ abstract class AppStrings {
   String get profileUpdateFailed;
   // ── Notifications ─────────────────────────────────────────────────────────
   String get notificationPermissionDenied;
-String dailyVerseSet(String time);
-String get dailyVerseOff;
-String dailyVerseUpdated(String time);
-String get readingReminderOff;
-String readingReminderSet(String time);
-String readingReminderUpdated(String time);
-
+  String dailyVerseSet(String time);
+  String get dailyVerseOff;
+  String dailyVerseUpdated(String time);
+  String get readingReminderOff;
+  String readingReminderSet(String time);
+  String readingReminderUpdated(String time);
 
   // ── Verse card sheet ──────────────────────────────────────────────────────
   String get cardSheetTitle;
@@ -454,4 +453,7 @@ String readingReminderUpdated(String time);
   /// Shown in place of the second column when the parallel edition's canon
   /// does not carry the open book.
   String parallelBookMissing(String title);
+  // in your AppStrings abstract class
+  String get onboardingSampleVerseNumber;
+  String get onboardingSampleVerseText;
 }
