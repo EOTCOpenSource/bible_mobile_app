@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bibleflutter/core/settings/app_settings.dart';
-import 'package:bibleflutter/core/settings/settings_provider.dart';
 import 'package:bibleflutter/core/l10n/l10n.dart';
 import 'package:bibleflutter/core/theme/app_theme.dart';
 import 'package:bibleflutter/features/onboarding/presentation/pages/onboarding_screen.dart';
 
 void main() {
-  testWidgets('OnboardingScreen renders page 1 with Skip and Next buttons', (tester) async {
+  testWidgets('OnboardingScreen renders page 1 with Skip and Next buttons', (
+    tester,
+  ) async {
     final settingsNotifier = ValueNotifier<AppSettings>(const AppSettings());
 
     await tester.pumpWidget(
@@ -30,7 +31,9 @@ void main() {
     expect(find.text('ቀጥል'), findsOneWidget); // Amharic Next
   });
 
-  testWidgets('Skipping onboarding updates hasSeenOnboarding flag to true', (tester) async {
+  testWidgets('Skipping onboarding updates hasSeenOnboarding flag to true', (
+    tester,
+  ) async {
     final settingsNotifier = ValueNotifier<AppSettings>(const AppSettings());
 
     await tester.pumpWidget(
