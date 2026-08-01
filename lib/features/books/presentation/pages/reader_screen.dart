@@ -959,7 +959,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                         : NotificationListener<ScrollNotification>(
                             onNotification: _onChapterScroll,
                             child: GestureDetector(
-                              onTap: _deselect,
+                              onTap: () {
+                                if (!settings.hasSeenReaderHint) {
+                                  Settings.update(
+                                    context,
+                                    settings.copyWith(hasSeenReaderHint: true),
+                                  );
+                                }
+                                _deselect();
+                              },
                               behavior: HitTestBehavior.translucent,
                               child: Stack(
                                 children: [
@@ -1161,6 +1169,73 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       ),
                                     ),
                                   ),
+                                  // Contextual Reader Hint (One-off Coach Mark)
+                                  if (!settings.hasSeenReaderHint)
+                                    Positioned(
+                                      top: 16,
+                                      left: 20,
+                                      right: 20,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Settings.update(
+                                            context,
+                                            settings.copyWith(
+                                              hasSeenReaderHint: true,
+                                            ),
+                                          );
+                                        },
+                                        child: Material(
+                                          elevation: 6,
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                          color: isDark
+                                              ? readerDarkSurface
+                                              : Colors.white,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: accentColor.withValues(
+                                                    alpha: 0.5),
+                                                width: 1.2,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.touch_app_rounded,
+                                                  color: accentColor,
+                                                  size: 24,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Text(
+                                                    s.readerVerseActionHint,
+                                                    style: TextStyle(
+                                                      fontFamily: bodyFont,
+                                                      fontSize: 13,
+                                                      color: textColor,
+                                                      height: 1.4,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.close_rounded,
+                                                  color: mutedColor,
+                                                  size: 18,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),

@@ -6,7 +6,7 @@ import '../../features/books/data/models/book_identity.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 7;
+  static const _version = 8;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -59,6 +59,17 @@ class AppDatabase {
     if (oldVersion < 7) {
       await _migrateBookIdsToUsfm(db);
     }
+    // v7→v8: the onboarding flags. Only databases whose `app_settings` predates
+    // them need the ALTER — anything older than v6 just had the table created
+    // above by [_createSettingsTable], which already declares both columns.
+    if (oldVersion >= 6 && oldVersion < 8) {
+      await db.execute(
+        'ALTER TABLE app_settings ADD COLUMN has_seen_onboarding INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE app_settings ADD COLUMN has_seen_reader_hint INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   /// v6→v7: `book_id` moves from the English book name ("Genesis") to the USFM
@@ -102,8 +113,10 @@ class AppDatabase {
           if (!kUsfmToLegacyName.containsKey(legacy) &&
               !kUsfmToCanonSlug.containsKey(legacy)) {
             stranded++;
-            debugPrint('[AppDatabase] v7: no USFM id for "$legacy" in $table '
-                '— left as is');
+            debugPrint(
+              '[AppDatabase] v7: no USFM id for "$legacy" in $table '
+              '— left as is',
+            );
           }
           continue;
         }
@@ -114,8 +127,10 @@ class AppDatabase {
         );
       }
     }
-    debugPrint('[AppDatabase] v7: $moved rows moved to USFM ids, '
-        '$stranded book ids left unmapped');
+    debugPrint(
+      '[AppDatabase] v7: $moved rows moved to USFM ids, '
+      '$stranded book ids left unmapped',
+    );
   }
 
   /// v3→v4: annotation items pushed with title-case bookId (e.g. "Genesis")
@@ -154,16 +169,13 @@ class AppDatabase {
       final bookId = row['book_id'] as String?;
       final chapter = row['chapter'] as int?;
       if (bookId == null || chapter == null) continue;
-      await db.insert(
-        'reading_position',
-        {
-          'book_id': bookId,
-          'chapter': chapter,
-          'verse': row['verse'],
-          'updated_at': row['updated_at'] ?? DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      await db.insert('reading_position', {
+        'book_id': bookId,
+        'chapter': chapter,
+        'verse': row['verse'],
+        'updated_at':
+            row['updated_at'] ?? DateTime.now().millisecondsSinceEpoch,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
   }
 
@@ -196,19 +208,15 @@ class AppDatabase {
         longest_streak_end    TEXT
       )
     ''');
-    await db.insert(
-      'reading_streak',
-      {
-        'id': 1,
-        'last_qualified_date': null,
-        'current_streak': 0,
-        'current_streak_start': null,
-        'longest_streak': 0,
-        'longest_streak_start': null,
-        'longest_streak_end': null,
-      },
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+    await db.insert('reading_streak', {
+      'id': 1,
+      'last_qualified_date': null,
+      'current_streak': 0,
+      'current_streak_start': null,
+      'longest_streak': 0,
+      'longest_streak_start': null,
+      'longest_streak_end': null,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   Future<void> _onCreate(Database db, int _) async {
@@ -280,7 +288,11 @@ class AppDatabase {
 
   Future<Map<String, Object?>?> getReadingPositionRow() async {
     final db = await database;
-    final rows = await db.query('reading_position', orderBy: 'updated_at DESC', limit: 1);
+    final rows = await db.query(
+      'reading_position',
+      orderBy: 'updated_at DESC',
+      limit: 1,
+    );
     if (rows.isEmpty) return null;
     return rows.first;
   }
@@ -296,16 +308,12 @@ class AppDatabase {
     int? verse,
   }) async {
     final db = await database;
-    await db.insert(
-      'reading_position',
-      {
-        'book_id': bookId,
-        'chapter': chapter,
-        'verse': verse,
-        'updated_at': DateTime.now().millisecondsSinceEpoch,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('reading_position', {
+      'book_id': bookId,
+      'chapter': chapter,
+      'verse': verse,
+      'updated_at': DateTime.now().millisecondsSinceEpoch,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> insertChapterReadIfAbsent({
@@ -347,7 +355,11 @@ class AppDatabase {
 
   Future<Map<String, Object?>> getReadingStreakRow() async {
     final db = await database;
-    final rows = await db.query('reading_streak', where: 'id = ?', whereArgs: [1]);
+    final rows = await db.query(
+      'reading_streak',
+      where: 'id = ?',
+      whereArgs: [1],
+    );
     if (rows.isEmpty) {
       await db.insert('reading_streak', {
         'id': 1,
@@ -358,8 +370,11 @@ class AppDatabase {
         'longest_streak_start': null,
         'longest_streak_end': null,
       });
-      return (await db.query('reading_streak', where: 'id = ?', whereArgs: [1]))
-          .first;
+      return (await db.query(
+        'reading_streak',
+        where: 'id = ?',
+        whereArgs: [1],
+      )).first;
     }
     return rows.first;
   }
@@ -402,8 +417,11 @@ class AppDatabase {
 
   Future<void> insertBookmark(Bookmark bookmark) async {
     final db = await database;
-    await db.insert('bookmarks', bookmark.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'bookmarks',
+      bookmark.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> deleteBookmark(int id) async {
@@ -425,14 +443,21 @@ class AppDatabase {
 
   Future<void> insertHighlight(Highlight highlight) async {
     final db = await database;
-    await db.insert('highlights', highlight.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'highlights',
+      highlight.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> updateHighlight(Highlight highlight) async {
     final db = await database;
-    await db.update('highlights', highlight.toMap(),
-        where: 'id = ?', whereArgs: [highlight.id]);
+    await db.update(
+      'highlights',
+      highlight.toMap(),
+      where: 'id = ?',
+      whereArgs: [highlight.id],
+    );
   }
 
   Future<void> deleteHighlight(int id) async {
@@ -454,14 +479,21 @@ class AppDatabase {
 
   Future<void> insertNote(Note note) async {
     final db = await database;
-    await db.insert('notes', note.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'notes',
+      note.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> updateNote(Note note) async {
     final db = await database;
-    await db.update('notes', note.toMap(),
-        where: 'id = ?', whereArgs: [note.id]);
+    await db.update(
+      'notes',
+      note.toMap(),
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
   }
 
   Future<void> deleteNote(int id) async {
@@ -611,12 +643,19 @@ class AppDatabase {
       // Already tracked by remoteId — fix book_id if it was stored in the
       // wrong case from a previous pull
       final byRemoteId = await db.query(
-        'bookmarks', where: 'remote_id = ?', whereArgs: [b.remoteId], limit: 1,
+        'bookmarks',
+        where: 'remote_id = ?',
+        whereArgs: [b.remoteId],
+        limit: 1,
       );
       if (byRemoteId.isNotEmpty) {
         if ((byRemoteId.first['book_id'] as String) != b.bookId) {
-          await db.update('bookmarks', {'book_id': b.bookId},
-              where: 'remote_id = ?', whereArgs: [b.remoteId]);
+          await db.update(
+            'bookmarks',
+            {'book_id': b.bookId},
+            where: 'remote_id = ?',
+            whereArgs: [b.remoteId],
+          );
         }
         continue;
       }
@@ -636,8 +675,11 @@ class AppDatabase {
           whereArgs: [byVerse.first['id'] as int],
         );
       } else {
-        await db.insert('bookmarks', b.toMap(),
-            conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert(
+          'bookmarks',
+          b.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
       }
     }
   }
@@ -651,20 +693,28 @@ class AppDatabase {
       // Already tracked by remoteId — update color/note if not locally modified;
       // also normalize book_id in case it was stored in wrong case
       final byRemoteId = await db.query(
-        'highlights', where: 'remote_id = ?', whereArgs: [h.remoteId], limit: 1,
+        'highlights',
+        where: 'remote_id = ?',
+        whereArgs: [h.remoteId],
+        limit: 1,
       );
       if (byRemoteId.isNotEmpty) {
         final updates = <String, dynamic>{};
         if ((byRemoteId.first['book_id'] as String) != h.bookId) {
           updates['book_id'] = h.bookId;
         }
-        if ((byRemoteId.first['sync_status'] as String) == SyncStatus.synced.name) {
+        if ((byRemoteId.first['sync_status'] as String) ==
+            SyncStatus.synced.name) {
           updates['color'] = h.color.toARGB32();
           updates['note'] = h.note;
         }
         if (updates.isNotEmpty) {
-          await db.update('highlights', updates,
-              where: 'remote_id = ?', whereArgs: [h.remoteId]);
+          await db.update(
+            'highlights',
+            updates,
+            where: 'remote_id = ?',
+            whereArgs: [h.remoteId],
+          );
         }
         continue;
       }
@@ -689,8 +739,11 @@ class AppDatabase {
           whereArgs: [byVerse.first['id'] as int],
         );
       } else {
-        await db.insert('highlights', h.toMap(),
-            conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert(
+          'highlights',
+          h.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
       }
     }
   }
@@ -704,20 +757,28 @@ class AppDatabase {
       // Already tracked by remoteId — update content if not locally modified;
       // also normalize book_id in case it was stored in wrong case
       final byRemoteId = await db.query(
-        'notes', where: 'remote_id = ?', whereArgs: [n.remoteId], limit: 1,
+        'notes',
+        where: 'remote_id = ?',
+        whereArgs: [n.remoteId],
+        limit: 1,
       );
       if (byRemoteId.isNotEmpty) {
         final updates = <String, dynamic>{};
         if ((byRemoteId.first['book_id'] as String) != n.bookId) {
           updates['book_id'] = n.bookId;
         }
-        if ((byRemoteId.first['sync_status'] as String) == SyncStatus.synced.name) {
+        if ((byRemoteId.first['sync_status'] as String) ==
+            SyncStatus.synced.name) {
           updates['content'] = n.content;
           updates['is_private'] = n.isPrivate ? 1 : 0;
         }
         if (updates.isNotEmpty) {
-          await db.update('notes', updates,
-              where: 'remote_id = ?', whereArgs: [n.remoteId]);
+          await db.update(
+            'notes',
+            updates,
+            where: 'remote_id = ?',
+            whereArgs: [n.remoteId],
+          );
         }
         continue;
       }
@@ -742,8 +803,11 @@ class AppDatabase {
           whereArgs: [byVerse.first['id'] as int],
         );
       } else {
-        await db.insert('notes', n.toMap(),
-            conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert(
+          'notes',
+          n.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
       }
     }
   }
@@ -768,20 +832,17 @@ class AppDatabase {
     required int chapter,
   }) async {
     final db = await database;
-    await db.insert(
-      'plan_position',
-      {
-        'plan_id': planId,
-        'day_number': dayNumber,
-        'book_id': bookId,
-        'chapter': chapter,
-        'updated_at': DateTime.now().millisecondsSinceEpoch,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('plan_position', {
+      'plan_id': planId,
+      'day_number': dayNumber,
+      'book_id': bookId,
+      'chapter': chapter,
+      'updated_at': DateTime.now().millisecondsSinceEpoch,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
-Future<void> _createSettingsTable(Database db) async {
-  await db.execute('''
+
+  Future<void> _createSettingsTable(Database db) async {
+    await db.execute('''
     CREATE TABLE IF NOT EXISTS app_settings (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       daily_verse_enabled INTEGER NOT NULL DEFAULT 0,
@@ -789,43 +850,55 @@ Future<void> _createSettingsTable(Database db) async {
       daily_verse_hour INTEGER,
       daily_verse_minute INTEGER,
       reading_time_hour INTEGER,
-      reading_time_minute INTEGER
+      reading_time_minute INTEGER,
+      has_seen_onboarding INTEGER NOT NULL DEFAULT 0,
+      has_seen_reader_hint INTEGER NOT NULL DEFAULT 0
     )
   ''');
-  await db.insert('app_settings', {'id': 1}, conflictAlgorithm: ConflictAlgorithm.ignore);
-}
+    await db.insert('app_settings', {
+      'id': 1,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+  }
 
-// Fetch saved settings
-Future<Map<String, Object?>?> getSavedNotificationSettings() async {
-  final db = await database;
-  final rows = await db.query('app_settings', where: 'id = ?', whereArgs: [1]);
-  return rows.isEmpty ? null : rows.first;
-}
+  // Fetch saved settings
+  Future<Map<String, Object?>?> getSavedNotificationSettings() async {
+    final db = await database;
+    final rows = await db.query(
+      'app_settings',
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
 
-// Update saved settings
-Future<void> saveNotificationSettings({
-  required bool dailyVerseEnabled,
-  required bool readingTimeEnabled,
-  int? dailyVerseHour,
-  int? dailyVerseMinute,
-  int? readingTimeHour,
-  int? readingTimeMinute,
-}) async {
-  final db = await database;
-  await db.update(
-    'app_settings',
-    {
-      'daily_verse_enabled': dailyVerseEnabled ? 1 : 0,
-      'reading_time_enabled': readingTimeEnabled ? 1 : 0,
-      'daily_verse_hour': dailyVerseHour,
-      'daily_verse_minute': dailyVerseMinute,
-      'reading_time_hour': readingTimeHour,
-      'reading_time_minute': readingTimeMinute,
-    },
-    where: 'id = ?',
-    whereArgs: [1],
-  );
-}
+  // Update saved settings
+  Future<void> saveNotificationSettings({
+    required bool dailyVerseEnabled,
+    required bool readingTimeEnabled,
+    int? dailyVerseHour,
+    int? dailyVerseMinute,
+    int? readingTimeHour,
+    int? readingTimeMinute,
+    bool hasSeenOnboarding = false,
+    bool hasSeenReaderHint = false,
+  }) async {
+    final db = await database;
+    await db.update(
+      'app_settings',
+      {
+        'daily_verse_enabled': dailyVerseEnabled ? 1 : 0,
+        'reading_time_enabled': readingTimeEnabled ? 1 : 0,
+        'daily_verse_hour': dailyVerseHour,
+        'daily_verse_minute': dailyVerseMinute,
+        'reading_time_hour': readingTimeHour,
+        'reading_time_minute': readingTimeMinute,
+        'has_seen_onboarding': hasSeenOnboarding ? 1 : 0,
+        'has_seen_reader_hint': hasSeenReaderHint ? 1 : 0,
+      },
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+  }
 
   Future<void> close() async {
     await _db?.close();
