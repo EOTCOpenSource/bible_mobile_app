@@ -141,7 +141,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         backgroundColor: c.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -186,26 +188,23 @@ class _WelcomePage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Spacer(),
-         Container(
-  width: 180,
-  height: 180,
-  decoration: BoxDecoration(
-    shape: BoxShape.circle,
-    boxShadow: [
-      BoxShadow(
-        color: c.primary.withValues(alpha: 0.12),
-        blurRadius: 24,
-        offset: const Offset(0, 8),
-      ),
-    ],
-  ),
-  child: ClipOval(
-    child: Image.asset(
-      'assets/eotc.jpg',
-      fit: BoxFit.cover,
-    ),
-  ),
-),
+          Container(
+            width: 180,
+            height: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: c.primary.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset('assets/eotc.jpg', fit: BoxFit.cover),
+            ),
+          ),
           // Container(
           //   padding: const EdgeInsets.all(28),
           //   decoration: BoxDecoration(
@@ -421,7 +420,9 @@ class _ReadingPreferencesPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: settings.isDarkReader ? readerDarkBg : AppColors.parchment,
+                color: settings.isDarkReader
+                    ? readerDarkBg
+                    : AppColors.parchment,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: c.borderSubtle),
               ),
@@ -549,7 +550,7 @@ class _VerseActionsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '፩',
+                        s.onboardingSampleVerseNumber,
                         style: AppTypography.amharicLabel.copyWith(
                           color: c.primary,
                           fontWeight: FontWeight.bold,
@@ -558,7 +559,7 @@ class _VerseActionsPage extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'በመጀመሪያ ቃል ነበረ፥ ቃልም በእግዚአብሔር ዘንድ ነበረ፥ ቃልም እግዚአብሔር ነበረ።',
+                          s.onboardingSampleVerseText,
                           style: AppTypography.amharicBody.copyWith(
                             fontSize: 15,
                             color: c.textOnParchment,
@@ -573,8 +574,10 @@ class _VerseActionsPage extends StatelessWidget {
 
                 // Action Bar Mockup
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: c.parchment,
                     borderRadius: BorderRadius.circular(14),
@@ -678,11 +681,7 @@ class _OptionalSignInPage extends StatelessWidget {
               color: c.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.cloud_sync_rounded,
-              size: 64,
-              color: c.primary,
-            ),
+            child: Icon(Icons.cloud_sync_rounded, size: 64, color: c.primary),
           ),
           const SizedBox(height: 28),
 
