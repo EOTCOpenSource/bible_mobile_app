@@ -20,10 +20,21 @@ class ReaderToolbar extends StatelessWidget {
     required this.s,
     required this.onBack,
     required this.onFontSettings,
+    this.chapterNumber,
+    this.onChapterTap,
   });
 
   final BookIndexEntry entry;
   final int currentChapter;
+
+  /// The chapter as the edition numbers it. Falls back to the page index when
+  /// absent — books whose chapters do not start at 1 are the reason this is not
+  /// derived from the index.
+  final int? chapterNumber;
+
+  /// Opens the chapter picker. The label has always carried a dropdown chevron;
+  /// until this existed it was wired to nothing.
+  final VoidCallback? onChapterTap;
   final bool useGeez;
   final bool isAmharic;
   final Color bgColor;
@@ -39,7 +50,7 @@ class ReaderToolbar extends StatelessWidget {
   final VoidCallback onFontSettings;
 
   String get _label {
-    final n    = currentChapter + 1;
+    final n    = chapterNumber ?? currentChapter + 1;
     final ch   = useGeez ? toGeez(n) : '$n';
     final book = isAmharic ? entry.bookShortNameAm : entry.bookShortNameEn;
     return '$book · ${s.chapterAbbr} $ch';
@@ -62,7 +73,7 @@ class ReaderToolbar extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () {},
+              onTap: onChapterTap,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

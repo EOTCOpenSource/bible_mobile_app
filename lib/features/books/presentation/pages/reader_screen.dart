@@ -26,6 +26,7 @@ import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
 import '../widgets/reader/chapter_page.dart';
+import '../widgets/reader/chapter_picker_sheet.dart';
 import '../widgets/reader/parallel_chapter_page.dart';
 import '../widgets/reader/font_sheet.dart';
 import '../widgets/reader/highlight_sheet.dart';
@@ -330,8 +331,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     });
   }
 
-  static String _editionLabel(Edition e) =>
-      e.abbrev.isNotEmpty ? e.abbrev : e.title;
+  static String _editionLabel(Edition e) => e.shortLabel;
 
   /// The open chapter in the parallel edition, null when its versification
   /// does not reach this far.
@@ -449,10 +449,49 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   void _goToChapter(int idx) {
     if (_book == null) return;
+    final target = idx.clamp(0, _book!.chapters.length - 1);
+    // Animating across a long jump would flick through every chapter between
+    // Psalm 1 and Psalm 119, so only neighbours slide.
+    if ((target - _currentChapter).abs() > 2) {
+      _pageCtrl.jumpToPage(target);
+      return;
+    }
     _pageCtrl.animateToPage(
-      idx.clamp(0, _book!.chapters.length - 1),
+      target,
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeInOut,
+    );
+  }
+
+  // ── Chapter picker ────────────────────────────────────────────────────────
+
+  void _showChapterPicker(BuildContext ctx, AppSettings settings) {
+    final book = _book;
+    if (book == null || book.chapters.isEmpty) return;
+
+    final isDark = settings.isDarkReader;
+    showModalBottomSheet<void>(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => ReaderChapterPicker(
+        entry: _entry,
+        chapters: book.chapters,
+        currentIndex: _currentChapter,
+        useGeez: settings.useGeezNumbers,
+        isAmharic: L10n.of(ctx) is AmStrings,
+        s: L10n.of(ctx),
+        surfaceColor: isDark ? readerDarkSurface : Colors.white,
+        textColor: isDark ? readerDarkText : AppColors.textOnParchment,
+        mutedColor: isDark ? readerDarkMuted : AppColors.textMuted,
+        accentColor: isDark ? readerDarkAccent : AppColors.accentDeep,
+        titleFontFamily: readerFonts[settings.titleFontIndex],
+        onSelect: (i) {
+          Navigator.pop(sheetCtx);
+          _deselect();
+          _goToChapter(i);
+        },
+      ),
     );
   }
 
@@ -869,6 +908,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                               ReaderToolbar(
                                 entry: _entry,
                                 currentChapter: _currentChapter,
+                                chapterNumber:
+                                    chapterReady ? _currentChapterNumber : null,
+                                onChapterTap: chapterReady
+                                    ? () => _showChapterPicker(context, settings)
+                                    : null,
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
