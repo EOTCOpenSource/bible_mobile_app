@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
@@ -81,6 +82,8 @@ class AddisTtsClient {
     String outputFormat = 'mp3_44100',
     String? clientRequestId,
   }) async {
+    final reqId = clientRequestId ??
+        'req_${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(999999)}';
     final res = await _http.post(
       Uri.parse('$_baseUrl/voice/generations'),
       headers: _headers(apiKey),
@@ -89,7 +92,7 @@ class AddisTtsClient {
         'voice_id': voiceId,
         'language': language,
         'output_format': outputFormat,
-        'client_request_id': ?clientRequestId,
+        'client_request_id': reqId,
       }),
     );
 
