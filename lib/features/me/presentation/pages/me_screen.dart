@@ -62,10 +62,8 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                 _ArrowRow(
                   label: s.meShowIntroduction,
                   onTap: () {
-                    Settings.update(
-                      context,
-                      settings.copyWith(hasSeenOnboarding: false),
-                    );
+                    // The flag stays true — replaying the intro must not make a
+                    // back-out reopen it on the next launch.
                     Navigator.push(
                       context,
                       MaterialPageRoute(

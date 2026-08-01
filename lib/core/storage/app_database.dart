@@ -6,7 +6,7 @@ import '../../features/books/data/models/book_identity.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 7;
+  static const _version = 8;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -57,6 +57,12 @@ class AppDatabase {
       await _createSettingsTable(db);
     }
     if (oldVersion < 7) {
+      await _migrateBookIdsToUsfm(db);
+    }
+    // v7→v8: the onboarding flags. Only databases whose `app_settings` predates
+    // them need the ALTER — anything older than v6 just had the table created
+    // above by [_createSettingsTable], which already declares both columns.
+    if (oldVersion >= 6 && oldVersion < 8) {
       await db.execute(
         'ALTER TABLE app_settings ADD COLUMN has_seen_onboarding INTEGER NOT NULL DEFAULT 0',
       );
@@ -64,7 +70,6 @@ class AppDatabase {
         'ALTER TABLE app_settings ADD COLUMN has_seen_reader_hint INTEGER NOT NULL DEFAULT 0',
       );
     }
-    await _migrateBookIdsToUsfm(db);
   }
 
   /// v6→v7: `book_id` moves from the English book name ("Genesis") to the USFM

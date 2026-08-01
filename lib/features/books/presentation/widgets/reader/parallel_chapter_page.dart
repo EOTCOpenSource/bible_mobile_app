@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 import '../../../../../core/annotations/annotation_models.dart';
 import '../../../../../core/l10n/app_strings.dart';
@@ -85,8 +84,7 @@ class ParallelChapterPage extends StatelessWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
-  final void Function(String verseKey, ChapterAnnotations annotations)?
-  onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
   /// Secondary verses grouped onto the primary section that owns them.
@@ -105,10 +103,7 @@ class ParallelChapterPage extends StatelessWidget {
         sec.verses
                 .where((v) => v.isNumbered)
                 .map((v) => v.verseNumber)
-                .fold<int?>(
-                  null,
-                  (min, n) => min == null || n < min ? n : min,
-                ) ??
+                .fold<int?>(null, (min, n) => min == null || n < min ? n : min) ??
             -1,
     ];
 
@@ -136,9 +131,7 @@ class ParallelChapterPage extends StatelessWidget {
         parent: BouncingScrollPhysics(),
       ),
       padding: const EdgeInsets.only(bottom: 80),
-      scrollCacheExtent: spotlightVerseNum != null
-          ? const ScrollCacheExtent.pixels(30000)
-          : null,
+      cacheExtent: spotlightVerseNum != null ? 30000 : null,
       itemCount: chapter.sections.length + 1,
       itemBuilder: (ctx, i) {
         if (i == 0) {
@@ -258,8 +251,7 @@ class _ParallelSection extends StatelessWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
-  final void Function(String verseKey, ChapterAnnotations annotations)?
-  onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
   /// The section's verses paired with their counterpart, in reading order.
@@ -276,11 +268,14 @@ class _ParallelSection extends StatelessWidget {
     final paired = <int>{};
 
     for (final verse in section.verses) {
-      final match = verse.isNumbered
-          ? secondaryByNumber[verse.verseNumber]
-          : null;
+      final match =
+          verse.isNumbered ? secondaryByNumber[verse.verseNumber] : null;
       if (match != null) paired.add(verse.verseNumber);
-      rows.add((number: verse.verseNumber, primary: verse, secondary: match));
+      rows.add((
+        number: verse.verseNumber,
+        primary: verse,
+        secondary: match,
+      ));
     }
 
     // What the parallel edition splits into a verse the primary does not have
@@ -296,11 +291,10 @@ class _ParallelSection extends StatelessWidget {
           break;
         }
       }
-      rows.insert(insertAt, (
-        number: verse.verseNumber,
-        primary: null,
-        secondary: verse,
-      ));
+      rows.insert(
+        insertAt,
+        (number: verse.verseNumber, primary: null, secondary: verse),
+      );
     }
     return rows;
   }
@@ -371,11 +365,11 @@ class _ParallelSection extends StatelessWidget {
               primary: row.primary,
               secondary: row.secondary,
               verseKey: verseKeyFn(chapter.chapterNumber, secIdx, row.number),
-              selected: isSelectedFn(chapter.chapterNumber, secIdx, row.number),
+              selected:
+                  isSelectedFn(chapter.chapterNumber, secIdx, row.number),
               isSpotlight: spotlightVerseNum == row.number,
-              spotlightKey: spotlightVerseNum == row.number
-                  ? spotlightKey
-                  : null,
+              spotlightKey:
+                  spotlightVerseNum == row.number ? spotlightKey : null,
               twoColumn: twoColumn,
               showSecondary: showSecondary,
               fontSize: fontSize,
@@ -439,8 +433,7 @@ class _VersePair extends StatelessWidget {
   final bool useGeez;
   final ChapterAnnotations annotations;
   final ValueChanged<String> onVerseTap;
-  final void Function(String verseKey, ChapterAnnotations annotations)?
-  onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
   Widget _primaryCell() {
@@ -497,28 +490,26 @@ class _VersePair extends StatelessWidget {
                 ),
         ),
         child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: numStr.isEmpty ? '' : '$numStr ',
-                style: TextStyle(
-                  fontFamily: AppTypography.nokiaPureheadline,
-                  fontSize: fontSize * 0.58,
-                  fontWeight: FontWeight.w700,
-                  color: accentColor.withValues(alpha: 0.7),
-                ),
+          text: TextSpan(children: [
+            TextSpan(
+              text: numStr.isEmpty ? '' : '$numStr ',
+              style: TextStyle(
+                fontFamily: AppTypography.nokiaPureheadline,
+                fontSize: fontSize * 0.58,
+                fontWeight: FontWeight.w700,
+                color: accentColor.withValues(alpha: 0.7),
               ),
-              TextSpan(
-                text: verse.text,
-                style: TextStyle(
-                  fontFamily: fontFamily,
-                  fontSize: fontSize * 0.94,
-                  height: 1.8,
-                  color: textColor.withValues(alpha: 0.82),
-                ),
+            ),
+            TextSpan(
+              text: verse.text,
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontSize: fontSize * 0.94,
+                height: 1.8,
+                color: textColor.withValues(alpha: 0.82),
               ),
-            ],
-          ),
+            ),
+          ]),
         ),
       ),
     );
@@ -570,17 +561,19 @@ class _ColumnLabels extends StatelessWidget {
   final Color mutedColor;
 
   Widget _chip(String text, {required bool strong}) => Text(
-    text.toUpperCase(),
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-    style: TextStyle(
-      fontFamily: AppTypography.nokiaPureheadline,
-      fontSize: 9.5,
-      letterSpacing: 1.1,
-      fontWeight: FontWeight.w700,
-      color: strong ? accentColor.withValues(alpha: 0.85) : mutedColor,
-    ),
-  );
+        text.toUpperCase(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontFamily: AppTypography.nokiaPureheadline,
+          fontSize: 9.5,
+          letterSpacing: 1.1,
+          fontWeight: FontWeight.w700,
+          color: strong
+              ? accentColor.withValues(alpha: 0.85)
+              : mutedColor,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
