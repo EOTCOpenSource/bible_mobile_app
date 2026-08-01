@@ -22,6 +22,7 @@ class ReaderToolbar extends StatelessWidget {
     required this.onFontSettings,
     this.chapterNumber,
     this.onChapterTap,
+    this.onAudio,
   });
 
   final BookIndexEntry entry;

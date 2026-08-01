@@ -6,6 +6,7 @@ import '../widgets/reading_streak_card.dart';
 import '../widgets/daily_verse_card.dart';
 import '../widgets/continue_reading_section.dart';
 import '../widgets/reading_plans_section.dart';
+import '../../../topics/presentation/widgets/topics_section.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key, required this.onSwitchToBooks});
@@ -41,6 +42,8 @@ class HomeTab extends StatelessWidget {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
           const SliverToBoxAdapter(child: ReadingPlansSection()),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          const SliverToBoxAdapter(child: TopicsSection()),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),

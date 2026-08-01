@@ -178,16 +178,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     }
   }
 
-  /// Returns the verse number currently being read by audio on page [pageIdx],
-  /// or null if audio is not active on that page.
-  int? _audioVerseNum(int pageIdx) {
-    if (!_isAudioPlaying || _book == null) return null;
-    if (pageIdx != _currentChapter) return null;
-    final verseIdx = AudioService.instance.currentVerseIndexNotifier.value;
-    if (verseIdx == null) return null;
-    final chapter = _book!.chapters[_currentChapter];
-    if (verseIdx < 0 || verseIdx >= chapter.allVerses.length) return null;
-    return chapter.allVerses[verseIdx].verseNumber;
+  void _playCurrentChapterAudio() {
+    final book = _book;
+    if (book == null || _currentChapter >= book.chapters.length) return;
+    final ch = book.chapters[_currentChapter];
+    final versesText = ch.allVerses.map((v) => v.text).toList();
+    AudioService.instance.startChapter(
+      title: '${_entry.bookNameAm} ${ch.chapterNumber}',
+      verses: versesText,
+    );
   }
 
   @override

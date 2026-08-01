@@ -1,0 +1,129 @@
+[
+  {
+    "id": "prayer",
+    "labelAm": "ጸሎት",
+    "labelEn": "Prayer",
+    "icon": "🙏",
+    "image": "assets/topics/images/prayer.png",
+    "keywords": ["ጸሎት", "ጸልዩ", "ጸለየ", "ጸሊ"]
+  },
+  {
+    "id": "fasting",
+    "labelAm": "ጾም",
+    "labelEn": "Fasting",
+    "icon": "🍞",
+    "image": "assets/topics/images/fasting.png",
+    "keywords": ["በጾም", "ጾም", "ጹሙ", "ጾመ"]
+  },
+  {
+    "id": "repentance",
+    "labelAm": "ንስሐ",
+    "labelEn": "Repentance",
+    "icon": "💧",
+    "image": "assets/topics/images/repentance.png",
+    "keywords": ["ንስሐ", "ንሰሐ", "ተጸጸተ"]
+  },
+  {
+    "id": "trinity",
+    "labelAm": "ሥላሴ",
+    "labelEn": "Trinity",
+    "icon": "☀️",
+    "image": "assets/topics/images/trinity.png",
+    "keywords": ["ሥላሴ", "ሥልስና", "አብ ወልድ"]
+  },
+  {
+    "id": "virgin_mary",
+    "labelAm": "ድንግል ማርያም",
+    "labelEn": "Virgin Mary",
+    "icon": "🌹",
+    "image": "assets/topics/images/virgin_mary.png",
+    "keywords": ["ማርያም", "ድንግል", "እመቤት"]
+  },
+  {
+    "id": "holy_spirit",
+    "labelAm": "መንፈስ ቅዱስ",
+    "labelEn": "Holy Spirit",
+    "icon": "🕊️",
+    "image": "assets/topics/images/holy_spirit.png",
+    "keywords": ["መንፈስ ቅዱስ", "መንፈስ"]
+  },
+  {
+    "id": "angels",
+    "labelAm": "መላእክት",
+    "labelEn": "Angels",
+    "icon": "👼",
+    "image": "assets/topics/images/angels.png",
+    "keywords": ["መልአክ", "መላእክት"]
+  },
+  {
+    "id": "love",
+    "labelAm": "ፍቅር",
+    "labelEn": "Love",
+    "icon": "❤️",
+    "image": "assets/topics/images/love.png",
+    "keywords": ["ፍቅር", "ወደደ", "ይወዳል"]
+  },
+  {
+    "id": "cross",
+    "labelAm": "መስቀል",
+    "labelEn": "The Cross",
+    "icon": "✟",
+    "image": "assets/topics/images/cross.png",
+    "keywords": ["መስቀል", "መስቀሉ", "ተሰቀለ"]
+  },
+  {
+    "id": "resurrection",
+    "labelAm": "ትንሣኤ",
+    "labelEn": "Resurrection",
+    "icon": "🌅",
+    "image": "assets/topics/images/resurrection.png",
+    "keywords": ["ትንሣኤ", "ተነሣ", "ተነስቷል", "ሕይወት"]
+  },
+  {
+    "id": "saints",
+    "labelAm": "ቅዱሳን",
+    "labelEn": "Saints",
+    "icon": "🌟",
+    "image": "assets/topics/images/saints.png",
+    "keywords": ["ቅዱሳን", "ቅዱስ"]
+  },
+  {
+    "id": "heaven",
+    "labelAm": "መንግሥተ ሰማያት",
+    "labelEn": "Kingdom of Heaven",
+    "icon": "🏛️",
+    "image": "assets/topics/images/heaven.png",
+    "keywords": ["መንግሥተ ሰማያት", "መንግሥት"]
+  },
+  {
+    "id": "salvation",
+    "labelAm": "ድኅነት",
+    "labelEn": "Salvation",
+    "icon": "✝️",
+    "image": "assets/topics/images/salvation.png",
+    "keywords": ["ድኅነት", "አዳነ", "መድኃኒት", "ያድናል"]
+  },
+  {
+    "id": "mercy",
+    "labelAm": "ምሕረት",
+    "labelEn": "Mercy",
+    "icon": "🤲",
+    "image": "assets/topics/images/mercy.png",
+    "keywords": ["ምሕረት", "ምሕረቱ", "ይምራል", "ማረ"]
+  },
+  {
+    "id": "baptism",
+    "labelAm": "ጥምቀት",
+    "labelEn": "Baptism",
+    "icon": "💦",
+    "image": "assets/topics/images/baptism.png",
+    "keywords": ["ጥምቀት", "ተጠመቀ", "አጠመቀ"]
+  },
+  {
+    "id": "faith",
+    "labelAm": "እምነት",
+    "labelEn": "Faith",
+    "icon": "⛪",
+    "keywords": ["እምነት", "ያምናል", "ያመነ", "አመነ"]
+  }
+]

@@ -6,6 +6,7 @@ void main() {
   group('Deep Link URI Parsing', () {
     final mockIndex = [
       const BookIndexEntry(
+        id: 'GEN',
         bookNumber: 1,
         bookNameAm: 'ኦሪት ዘፍጥረት',
         bookNameEn: 'Genesis',
@@ -15,6 +16,7 @@ void main() {
         chapterCount: 50,
       ),
       const BookIndexEntry(
+        id: '1SA',
         bookNumber: 9,
         bookNameAm: 'መጽሐፈ ሳሙኤል ቀዳማዊ',
         bookNameEn: '1 Samuel',
@@ -24,6 +26,7 @@ void main() {
         chapterCount: 31,
       ),
       const BookIndexEntry(
+        id: 'JER',
         bookNumber: 24,
         bookNameAm: 'ትcontext ኤርምያስ',
         bookNameEn: 'Jeremiah',

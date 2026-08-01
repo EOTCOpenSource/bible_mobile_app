@@ -52,6 +52,15 @@ class AudioService {
     _isInitialized = true;
   }
 
+  Future<Directory> _getCacheDirectory() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final cacheDir = Directory('${appDir.path}/audio_cache');
+    if (!await cacheDir.exists()) {
+      await cacheDir.create(recursive: true);
+    }
+    return cacheDir;
+  }
+
   Future<void> startChapter({
     required String title,
     required List<String> verses,
@@ -73,14 +82,41 @@ class AudioService {
       // Set calm, slow 0.88x pace
       await _player.setSpeed(0.88);
 
-      final dir = await getTemporaryDirectory();
+      final cacheDir = await _getCacheDirectory();
+      final sanitizedTitle = title.replaceAll(RegExp(r'[^\w\s\u1200-\u137F]'), '').replaceAll(' ', '_');
       final audioSources = <AudioSource>[];
 
-      debugPrint("[AudioService] Generating verse-by-verse audio for ${verses.length} verses...");
+      debugPrint("[AudioService] Loading/generating verse-by-verse audio for ${verses.length} verses...");
 
       for (var i = 0; i < verses.length; i++) {
+        final cacheFile = File('${cacheDir.path}/${sanitizedTitle}_v$i.mp3');
+
+        // Reuse cached audio file if it exists and has content
+        if (await cacheFile.exists() && (await cacheFile.length()) > 0) {
+          debugPrint("[AudioService] Loaded verse $i from disk cache.");
+          audioSources.add(AudioSource.file(cacheFile.path));
+          continue;
+        }
+
         var verseText = verses[i].trim();
-        if (!verseText.endsWith('።') && !verseText.endsWith('.')) {
+
+        // ── Ethiopic punctuation → natural pauses ──────────────────────
+        // ፡  Hulet Netb   – word separator / light comma  → tiny pause
+        // ።  Arat Netb    – full stop / period             → long pause
+        // ፣  Netela Serez – comma                          → short pause
+        // ፤  Semicolon    – stronger comma                 → medium pause
+        // ፥  Colon        – introduces list/explanation    → medium pause
+        // ፦  Preface colon – introduces quotation/speech   → medium-long pause
+        verseText = verseText
+            .replaceAll('።', ' ።   ')   // full stop → long pause
+            .replaceAll('፦', ' ፦  ')     // preface colon → medium-long
+            .replaceAll('፤', ' ፤  ')     // semicolon → medium
+            .replaceAll('፥', ' ፥  ')     // colon → medium
+            .replaceAll('፣', ' ፣ ')      // comma → short
+            .replaceAll('፡', ' ፡ ')      // word separator → tiny
+            .replaceAll(RegExp(r'\s{4,}'), '   ');
+
+        if (!verseText.trimRight().endsWith('።')) {
           verseText = '$verseText ።';
         }
 
@@ -105,9 +141,9 @@ class AudioService {
           
           if (audioBase64 != null && audioBase64.isNotEmpty) {
             final bytes = base64Decode(audioBase64);
-            final file = File('${dir.path}/verse_audio_$i.mp3');
-            await file.writeAsBytes(bytes);
-            audioSources.add(AudioSource.file(file.path));
+            await cacheFile.writeAsBytes(bytes);
+            audioSources.add(AudioSource.file(cacheFile.path));
+            debugPrint("[AudioService] Generated & cached verse $i.");
           }
         } else {
           debugPrint("Addis AI Error on verse $i: ${response.statusCode} - ${response.body}");
@@ -120,8 +156,7 @@ class AudioService {
         return;
       }
 
-      final playlist = ConcatenatingAudioSource(children: audioSources);
-      await _player.setAudioSource(playlist);
+      await _player.setAudioSources(audioSources);
       await _player.play();
     } catch (e, stack) {
       debugPrint("Audio Error: $e\n$stack");
@@ -142,5 +177,13 @@ class AudioService {
     stateNotifier.value = AudioState.stopped;
     currentTitleNotifier.value = null;
     currentVerseIndexNotifier.value = null;
+  }
+
+  /// Clears the disk audio cache.
+  Future<void> clearAudioCache() async {
+    final cacheDir = await _getCacheDirectory();
+    if (await cacheDir.exists()) {
+      await cacheDir.delete(recursive: true);
+    }
   }
 }
