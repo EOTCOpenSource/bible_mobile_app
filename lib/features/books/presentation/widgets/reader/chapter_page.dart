@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../../../../../core/annotations/annotation_models.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
@@ -51,7 +52,8 @@ class ReaderChapterPage extends StatelessWidget {
   final GlobalKey? spotlightKey;
   final ChapterAnnotations annotations;
   final bool continuousReading;
-  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)?
+  onNoteTap;
 
   /// Opens the footnote / cross-reference sheet for a verse.
   final void Function(Verse verse)? onApparatusTap;
@@ -66,42 +68,44 @@ class ReaderChapterPage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 80),
       // Pre-build all sections when navigating to a specific verse so that
       // _spotlightKey.currentContext is non-null and ensureVisible can scroll to it.
-      cacheExtent: spotlightVerseNum != null ? 30000 : null,
+      scrollCacheExtent: spotlightVerseNum != null
+          ? const ScrollCacheExtent.pixels(30000)
+          : null,
       itemCount: chapter.sections.length + 1,
       itemBuilder: (ctx, i) {
         if (i == 0) {
           return ChapterHeader(
-            entry:       entry,
-            chapter:     chapter,
-            isAmharic:   isAmharic,
-            isDark:      isDark,
+            entry: entry,
+            chapter: chapter,
+            isAmharic: isAmharic,
+            isDark: isDark,
             accentColor: accentColor,
-            textColor:   textColor,
-            mutedColor:  mutedColor,
+            textColor: textColor,
+            mutedColor: mutedColor,
             titleFontFamily: titleFontFamily,
           );
         }
         final secIdx = i - 1;
         return SectionView(
-          section:          chapter.sections[secIdx],
-          secIdx:           secIdx,
-          chapter:          chapter,
-          fontSize:         fontSize,
-          fontFamily:       fontFamily,
-          titleFontFamily:  titleFontFamily,
-          textColor:        textColor,
-          accentColor:      accentColor,
-          isDark:           isDark,
-          useGeez:          useGeez,
-          isSelectedFn:     isSelectedFn,
-          onVerseTap:       onVerseTap,
-          verseKeyFn:       verseKeyFn,
-          annotations:      annotations,
+          section: chapter.sections[secIdx],
+          secIdx: secIdx,
+          chapter: chapter,
+          fontSize: fontSize,
+          fontFamily: fontFamily,
+          titleFontFamily: titleFontFamily,
+          textColor: textColor,
+          accentColor: accentColor,
+          isDark: isDark,
+          useGeez: useGeez,
+          isSelectedFn: isSelectedFn,
+          onVerseTap: onVerseTap,
+          verseKeyFn: verseKeyFn,
+          annotations: annotations,
           spotlightVerseNum: spotlightVerseNum,
-          spotlightKey:     spotlightKey,
+          spotlightKey: spotlightKey,
           continuousReading: continuousReading,
-          onNoteTap:        onNoteTap,
-          onApparatusTap:   onApparatusTap,
+          onNoteTap: onNoteTap,
+          onApparatusTap: onApparatusTap,
         );
       },
     );
@@ -141,9 +145,9 @@ class ChapterHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bookName     = isAmharic ? entry.bookNameAm : entry.bookNameEn;
-    final altName      = isAmharic ? entry.bookNameEn : entry.bookNameAm;
-    final shortName    = entry.bookShortNameAm.isNotEmpty
+    final bookName = isAmharic ? entry.bookNameAm : entry.bookNameEn;
+    final altName = isAmharic ? entry.bookNameEn : entry.bookNameAm;
+    final shortName = entry.bookShortNameAm.isNotEmpty
         ? entry.bookShortNameAm
         : entry.bookShortNameEn;
     final sectionTitle = _firstSectionTitle;
@@ -287,7 +291,8 @@ class SectionView extends StatelessWidget {
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
   final bool continuousReading;
-  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)?
+  onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
   @override
@@ -310,31 +315,38 @@ class SectionView extends StatelessWidget {
     final List<Widget> verseChildren = continuousReading
         ? [
             _ContinuousSection(
-              section:          section,
-              secIdx:           secIdx,
-              chapter:          chapter,
-              fontSize:         fontSize,
-              fontFamily:       fontFamily,
-              textColor:        textColor,
-              accentColor:      accentColor,
-              isDark:           isDark,
-              useGeez:          useGeez,
-              isSelectedFn:     isSelectedFn,
-              onVerseTap:       onVerseTap,
-              verseKeyFn:       verseKeyFn,
-              annotations:      annotations,
+              section: section,
+              secIdx: secIdx,
+              chapter: chapter,
+              fontSize: fontSize,
+              fontFamily: fontFamily,
+              textColor: textColor,
+              accentColor: accentColor,
+              isDark: isDark,
+              useGeez: useGeez,
+              isSelectedFn: isSelectedFn,
+              onVerseTap: onVerseTap,
+              verseKeyFn: verseKeyFn,
+              annotations: annotations,
               spotlightVerseNum: spotlightVerseNum,
-              spotlightKey:     spotlightKey,
-              onNoteTap:        onNoteTap,
+              spotlightKey: spotlightKey,
+              onNoteTap: onNoteTap,
             ),
           ]
         : section.verses
-            .map((verse) => VerseView(
+              .map(
+                (verse) => VerseView(
                   verse: verse,
                   verseKey: verseKeyFn(
-                      chapter.chapterNumber, secIdx, verse.verseNumber),
+                    chapter.chapterNumber,
+                    secIdx,
+                    verse.verseNumber,
+                  ),
                   selected: isSelectedFn(
-                      chapter.chapterNumber, secIdx, verse.verseNumber),
+                    chapter.chapterNumber,
+                    secIdx,
+                    verse.verseNumber,
+                  ),
                   isSpotlight: spotlightVerseNum == verse.verseNumber,
                   spotlightKey: spotlightVerseNum == verse.verseNumber
                       ? spotlightKey
@@ -349,8 +361,9 @@ class SectionView extends StatelessWidget {
                   onVerseTap: onVerseTap,
                   onNoteTap: onNoteTap,
                   onApparatusTap: onApparatusTap,
-                ))
-            .toList();
+                ),
+              )
+              .toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -451,22 +464,23 @@ class VerseView extends StatelessWidget {
   final ValueChanged<String> onVerseTap;
   final bool isSpotlight;
   final GlobalKey? spotlightKey;
-  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)?
+  onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
   @override
   Widget build(BuildContext context) {
     // The edition supplies the Ge'ez numeral in `alt` and the display label —
     // which covers the odd ones like `3b` — so neither is computed here.
-    final numStr       = verse.displayNumber(useGeez: useGeez);
-    final hlColor      = annotations.highlightColor(verse.verseNumber);
+    final numStr = verse.displayNumber(useGeez: useGeez);
+    final hlColor = annotations.highlightColor(verse.verseNumber);
     final isBookmarked = annotations.isBookmarked(verse.verseNumber);
-    final hasNote      = annotations.noteFor(verse.verseNumber) != null;
+    final hasNote = annotations.noteFor(verse.verseNumber) != null;
     final hasApparatus = verse.refs.isNotEmpty || verse.notes.isNotEmpty;
 
     final bgColor = selected
         ? (hlColor?.withValues(alpha: 0.5) ??
-            accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
+              accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
         : (hlColor?.withValues(alpha: 0.28) ?? Colors.transparent);
 
     final numberSpan = TextSpan(
@@ -511,11 +525,13 @@ class VerseView extends StatelessWidget {
     // or the other, never both.
     final Widget verseBody = verse.lines.isEmpty
         ? RichText(
-            text: TextSpan(children: [
-              numberSpan,
-              TextSpan(text: verse.text, style: bodyStyle),
-              ?apparatusSpan,
-            ]),
+            text: TextSpan(
+              children: [
+                numberSpan,
+                TextSpan(text: verse.text, style: bodyStyle),
+                ?apparatusSpan,
+              ],
+            ),
           )
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,11 +542,13 @@ class VerseView extends StatelessWidget {
                     left: verse.lines[li].indent * (fontSize * 0.9),
                   ),
                   child: RichText(
-                    text: TextSpan(children: [
-                      if (li == 0) numberSpan,
-                      TextSpan(text: verse.lines[li].text, style: bodyStyle),
-                      if (li == verse.lines.length - 1) ?apparatusSpan,
-                    ]),
+                    text: TextSpan(
+                      children: [
+                        if (li == 0) numberSpan,
+                        TextSpan(text: verse.lines[li].text, style: bodyStyle),
+                        if (li == verse.lines.length - 1) ?apparatusSpan,
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -577,8 +595,10 @@ class VerseView extends StatelessWidget {
     );
 
     if (isSpotlight) {
-      verseWidget =
-          SpotlightWrapper(accentColor: accentColor, child: verseWidget);
+      verseWidget = SpotlightWrapper(
+        accentColor: accentColor,
+        child: verseWidget,
+      );
     }
     return verseWidget;
   }
@@ -621,7 +641,8 @@ class _ContinuousSection extends StatefulWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
-  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final void Function(String verseKey, ChapterAnnotations annotations)?
+  onNoteTap;
 
   @override
   State<_ContinuousSection> createState() => _ContinuousSectionState();
@@ -662,7 +683,9 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
 
   bool get _sectionHasSpotlight =>
       widget.spotlightVerseNum != null &&
-      widget.section.verses.any((v) => v.verseNumber == widget.spotlightVerseNum);
+      widget.section.verses.any(
+        (v) => v.verseNumber == widget.spotlightVerseNum,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -670,9 +693,15 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
 
     for (final verse in widget.section.verses) {
       final key = widget.verseKeyFn(
-          widget.chapter.chapterNumber, widget.secIdx, verse.verseNumber);
+        widget.chapter.chapterNumber,
+        widget.secIdx,
+        verse.verseNumber,
+      );
       final selected = widget.isSelectedFn(
-          widget.chapter.chapterNumber, widget.secIdx, verse.verseNumber);
+        widget.chapter.chapterNumber,
+        widget.secIdx,
+        verse.verseNumber,
+      );
       final hlColor = widget.annotations.highlightColor(verse.verseNumber);
       final isBookmarked = widget.annotations.isBookmarked(verse.verseNumber);
       final hasNote = widget.annotations.noteFor(verse.verseNumber) != null;
@@ -683,72 +712,82 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
 
       final bgColor = selected
           ? (hlColor?.withValues(alpha: 0.5) ??
-              widget.accentColor.withValues(alpha: widget.isDark ? 0.18 : 0.15))
+                widget.accentColor.withValues(
+                  alpha: widget.isDark ? 0.18 : 0.15,
+                ))
           : hlColor?.withValues(alpha: 0.28);
 
       // Verse number — pill with accent background when bookmarked, plain otherwise
       if (isBookmarked) {
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Container(
-            margin: const EdgeInsets.only(right: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-            decoration: BoxDecoration(
-              color: widget.accentColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              numStr,
-              style: TextStyle(
-                fontFamily: AppTypography.nokiaPureheadline,
-                fontSize: widget.fontSize * 0.58,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Container(
+              margin: const EdgeInsets.only(right: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: widget.accentColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                numStr,
+                style: TextStyle(
+                  fontFamily: AppTypography.nokiaPureheadline,
+                  fontSize: widget.fontSize * 0.58,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
-        ));
+        );
       } else {
-        spans.add(TextSpan(
-          text: '$numStr ',
-          style: TextStyle(
-            fontFamily: AppTypography.nokiaPureheadline,
-            fontSize: widget.fontSize * 0.62,
-            fontWeight: FontWeight.w700,
-            color: widget.accentColor,
+        spans.add(
+          TextSpan(
+            text: '$numStr ',
+            style: TextStyle(
+              fontFamily: AppTypography.nokiaPureheadline,
+              fontSize: widget.fontSize * 0.62,
+              fontWeight: FontWeight.w700,
+              color: widget.accentColor,
+            ),
           ),
-        ));
+        );
       }
 
       // Verse text — tappable
-      spans.add(TextSpan(
-        text: verse.text,
-        recognizer: rec,
-        style: TextStyle(
-          fontFamily: widget.fontFamily,
-          fontSize: widget.fontSize,
-          height: 1.85,
-          color: widget.textColor,
-          backgroundColor: bgColor,
+      spans.add(
+        TextSpan(
+          text: verse.text,
+          recognizer: rec,
+          style: TextStyle(
+            fontFamily: widget.fontFamily,
+            fontSize: widget.fontSize,
+            height: 1.85,
+            color: widget.textColor,
+            backgroundColor: bgColor,
+          ),
         ),
-      ));
+      );
 
       // Note indicator — tappable inline icon
       if (hasNote) {
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.top,
-          child: GestureDetector(
-            onTap: () => widget.onNoteTap?.call(key, widget.annotations),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 2),
-              child: Icon(
-                Icons.sticky_note_2_rounded,
-                size: 11,
-                color: context.colors.accentDeep,
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.top,
+            child: GestureDetector(
+              onTap: () => widget.onNoteTap?.call(key, widget.annotations),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 2),
+                child: Icon(
+                  Icons.sticky_note_2_rounded,
+                  size: 11,
+                  color: context.colors.accentDeep,
+                ),
               ),
             ),
           ),
-        ));
+        );
       }
 
       spans.add(const TextSpan(text: ' '));
@@ -790,7 +829,7 @@ class _SpotlightWrapperState extends State<SpotlightWrapper>
     );
     _anim = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: ConstantTween(1.0),           weight: 20),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 20),
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 60),
     ]).animate(_ctrl);
     _ctrl.forward();
