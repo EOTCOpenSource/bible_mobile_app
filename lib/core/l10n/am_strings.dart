@@ -590,4 +590,22 @@ class AmStrings extends AppStrings {
   String get voiceGenderFemale => 'ሴት';
   @override
   String voiceSelectedToast(String name) => '$name ተመርጧል';
+
+  // ── Parallel reading ──────────────────────────────────────────────────────
+  @override
+  String get parallelSectionTitle => 'ጎን ለጎን ንባብ';
+  @override
+  String get parallelSectionSubtitle => 'ሁለት ትርጉሞችን በአንድ ገጽ ያንብቡ';
+  @override
+  String get parallelShowAlongside => 'ጎን ለጎን አሳይ';
+  @override
+  String get parallelSettingLabel => 'ጎን ለጎን ትርጉም';
+  @override
+  String get parallelOff => 'ጠፍቷል';
+  @override
+  String parallelEnabled(String title) => '$title ጎን ለጎን እየታየ ነው';
+  @override
+  String get parallelDisabled => 'ጎን ለጎን ንባብ ጠፍቷል';
+  @override
+  String parallelBookMissing(String title) => 'ይህ መጽሐፍ በ$title ትርጉም የለም';
 }

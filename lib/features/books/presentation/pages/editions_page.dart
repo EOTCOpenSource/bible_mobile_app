@@ -128,6 +128,10 @@ class _EditionsPageState extends ConsumerState<EditionsPage> {
       // Falls back to the bundled edition if the one just deleted was active.
       await repo.handleEditionRemoved(item.edition.id);
       ref.read(activeEditionIdProvider.notifier).state = repo.activeEditionId;
+      // Deleting the parallel edition turns parallel reading off; the chip and
+      // the settings row read that from this provider, not from the repository.
+      ref.read(secondaryEditionIdProvider.notifier).state =
+          repo.secondaryEditionId;
       ref.invalidate(editionListProvider);
     } on Object catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('$e')));
@@ -140,6 +144,8 @@ class _EditionsPageState extends ConsumerState<EditionsPage> {
     if (!await repo.switchEdition(item.edition.id)) return;
     if (!mounted) return;
     ref.read(activeEditionIdProvider.notifier).state = repo.activeEditionId;
+    ref.read(secondaryEditionIdProvider.notifier).state =
+        repo.secondaryEditionId;
     ref.invalidate(editionListProvider);
     messenger
       ..hideCurrentSnackBar()

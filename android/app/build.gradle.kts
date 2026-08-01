@@ -29,8 +29,8 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    if (keyPropertiesFile.exists()) {
-        signingConfigs {
+   signingConfigs {
+        if (keyPropertiesFile.exists()) {
             create("release") {
                 keyAlias = keyProperties["keyAlias"] as String
                 keyPassword = keyProperties["keyPassword"] as String
@@ -39,7 +39,6 @@ android {
             }
         }
     }
-
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "org.nehemiah_osc.bible"
@@ -51,10 +50,12 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
+   buildTypes {
         release {
-            if (keyPropertiesFile.exists()) {
-                signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (keyPropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
             }
         }
     }
@@ -63,6 +64,7 @@ android {
 flutter {
     source = "../.."
 }
+
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

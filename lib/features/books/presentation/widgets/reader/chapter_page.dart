@@ -329,142 +329,29 @@ class SectionView extends StatelessWidget {
               onNoteTap:        onNoteTap,
             ),
           ]
-        : section.verses.map((verse) {
-            final key          = verseKeyFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final selected     = isSelectedFn(chapter.chapterNumber, secIdx, verse.verseNumber);
-            final isSpotlight  = spotlightVerseNum == verse.verseNumber;
-            // The edition supplies the Ge'ez numeral in `alt` and the display
-            // label — which covers the odd ones like `3b` — so neither is
-            // computed here any more.
-            final numStr       = verse.displayNumber(useGeez: useGeez);
-            final hlColor      = annotations.highlightColor(verse.verseNumber);
-            final isBookmarked = annotations.isBookmarked(verse.verseNumber);
-            final hasNote      = annotations.noteFor(verse.verseNumber) != null;
-            final hasApparatus = verse.refs.isNotEmpty || verse.notes.isNotEmpty;
-
-            final bgColor = selected
-                ? (hlColor?.withValues(alpha: 0.5) ??
-                    accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
-                : (hlColor?.withValues(alpha: 0.28) ?? Colors.transparent);
-
-            final numberSpan = TextSpan(
-              text: numStr.isEmpty ? '' : '$numStr ',
-              style: TextStyle(
-                fontFamily: AppTypography.nokiaPureheadline,
-                fontSize: fontSize * 0.62,
-                fontWeight: FontWeight.w700,
-                color: accentColor,
-              ),
-            );
-            final bodyStyle = TextStyle(
-              fontFamily: fontFamily,
-              fontSize: fontSize,
-              height: 1.85,
-              color: textColor,
-              fontWeight: FontWeight.w400,
-            );
-            // A superscript marker rather than the footnote text itself:
-            // Genesis 1:1 carries fourteen cross references and would bury the
-            // verse it belongs to.
-            final apparatusSpan = hasApparatus
-                ? WidgetSpan(
-                    alignment: PlaceholderAlignment.top,
-                    child: GestureDetector(
-                      onTap: () => onApparatusTap?.call(verse),
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 2, right: 2),
-                        child: Text(
-                          verse.notes.isNotEmpty ? '✻' : '→',
-                          style: TextStyle(
-                            fontSize: fontSize * 0.5,
-                            color: accentColor.withValues(alpha: 0.75),
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                : null;
-
-            // `lines` is `text` split by poetic line, never extra content —
-            // render one or the other, never both.
-            final Widget verseBody = verse.lines.isEmpty
-                ? RichText(
-                    text: TextSpan(children: [
-                      numberSpan,
-                      TextSpan(text: verse.text, style: bodyStyle),
-                      ?apparatusSpan,
-                    ]),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var li = 0; li < verse.lines.length; li++)
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: verse.lines[li].indent * (fontSize * 0.9),
-                          ),
-                          child: RichText(
-                            text: TextSpan(children: [
-                              if (li == 0) numberSpan,
-                              TextSpan(
-                                text: verse.lines[li].text,
-                                style: bodyStyle,
-                              ),
-                              if (li == verse.lines.length - 1)
-                                ?apparatusSpan,
-                            ]),
-                          ),
-                        ),
-                    ],
-                  );
-
-            Widget verseWidget = Stack(
-              clipBehavior: Clip.none,
-              children: [
-                GestureDetector(
-                  key: isSpotlight ? spotlightKey : null,
-                  onTap: () => onVerseTap(key),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.only(bottom: 2),
-                    padding: EdgeInsets.fromLTRB(isBookmarked ? 3 : 6, 4, 6, 4),
-                    decoration: BoxDecoration(
-                      color: bgColor,
-                      borderRadius: BorderRadius.circular(6),
-                      border: isBookmarked
-                          ? Border(left: BorderSide(color: accentColor, width: 3))
-                          : null,
-                    ),
-                    child: verseBody,
-                  ),
-                ),
-                if (hasNote)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => onNoteTap?.call(key, annotations),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          Icons.sticky_note_2_rounded,
-                          size: 13,
-                          color: context.colors.accentDeep,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            );
-
-            if (isSpotlight) {
-              verseWidget = _SpotlightWrapper(accentColor: accentColor, child: verseWidget);
-            }
-
-            return verseWidget;
-          }).toList();
+        : section.verses
+            .map((verse) => VerseView(
+                  verse: verse,
+                  verseKey: verseKeyFn(
+                      chapter.chapterNumber, secIdx, verse.verseNumber),
+                  selected: isSelectedFn(
+                      chapter.chapterNumber, secIdx, verse.verseNumber),
+                  isSpotlight: spotlightVerseNum == verse.verseNumber,
+                  spotlightKey: spotlightVerseNum == verse.verseNumber
+                      ? spotlightKey
+                      : null,
+                  fontSize: fontSize,
+                  fontFamily: fontFamily,
+                  textColor: textColor,
+                  accentColor: accentColor,
+                  isDark: isDark,
+                  useGeez: useGeez,
+                  annotations: annotations,
+                  onVerseTap: onVerseTap,
+                  onNoteTap: onNoteTap,
+                  onApparatusTap: onApparatusTap,
+                ))
+            .toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -522,6 +409,179 @@ class SectionView extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ── One verse ────────────────────────────────────────────────────────────────
+
+/// A single tappable verse with its number, annotations and apparatus marker.
+///
+/// Extracted from [SectionView] so the parallel reader renders the primary
+/// column with exactly the same widget — a second copy of this drifts the two
+/// views apart the first time highlighting or bookmarking changes.
+class VerseView extends StatelessWidget {
+  const VerseView({
+    super.key,
+    required this.verse,
+    required this.verseKey,
+    required this.selected,
+    required this.fontSize,
+    required this.fontFamily,
+    required this.textColor,
+    required this.accentColor,
+    required this.isDark,
+    required this.useGeez,
+    required this.annotations,
+    required this.onVerseTap,
+    this.isSpotlight = false,
+    this.spotlightKey,
+    this.onNoteTap,
+    this.onApparatusTap,
+  });
+
+  final Verse verse;
+  final String verseKey;
+  final bool selected;
+  final double fontSize;
+  final String fontFamily;
+  final Color textColor;
+  final Color accentColor;
+  final bool isDark;
+  final bool useGeez;
+  final ChapterAnnotations annotations;
+  final ValueChanged<String> onVerseTap;
+  final bool isSpotlight;
+  final GlobalKey? spotlightKey;
+  final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final void Function(Verse verse)? onApparatusTap;
+
+  @override
+  Widget build(BuildContext context) {
+    // The edition supplies the Ge'ez numeral in `alt` and the display label —
+    // which covers the odd ones like `3b` — so neither is computed here.
+    final numStr       = verse.displayNumber(useGeez: useGeez);
+    final hlColor      = annotations.highlightColor(verse.verseNumber);
+    final isBookmarked = annotations.isBookmarked(verse.verseNumber);
+    final hasNote      = annotations.noteFor(verse.verseNumber) != null;
+    final hasApparatus = verse.refs.isNotEmpty || verse.notes.isNotEmpty;
+
+    final bgColor = selected
+        ? (hlColor?.withValues(alpha: 0.5) ??
+            accentColor.withValues(alpha: isDark ? 0.18 : 0.15))
+        : (hlColor?.withValues(alpha: 0.28) ?? Colors.transparent);
+
+    final numberSpan = TextSpan(
+      text: numStr.isEmpty ? '' : '$numStr ',
+      style: TextStyle(
+        fontFamily: AppTypography.nokiaPureheadline,
+        fontSize: fontSize * 0.62,
+        fontWeight: FontWeight.w700,
+        color: accentColor,
+      ),
+    );
+    final bodyStyle = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      height: 1.85,
+      color: textColor,
+      fontWeight: FontWeight.w400,
+    );
+    // A superscript marker rather than the footnote text itself: Genesis 1:1
+    // carries fourteen cross references and would bury the verse it belongs to.
+    final apparatusSpan = hasApparatus
+        ? WidgetSpan(
+            alignment: PlaceholderAlignment.top,
+            child: GestureDetector(
+              onTap: () => onApparatusTap?.call(verse),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 2, right: 2),
+                child: Text(
+                  verse.notes.isNotEmpty ? '✻' : '→',
+                  style: TextStyle(
+                    fontSize: fontSize * 0.5,
+                    color: accentColor.withValues(alpha: 0.75),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : null;
+
+    // `lines` is `text` split by poetic line, never extra content — render one
+    // or the other, never both.
+    final Widget verseBody = verse.lines.isEmpty
+        ? RichText(
+            text: TextSpan(children: [
+              numberSpan,
+              TextSpan(text: verse.text, style: bodyStyle),
+              ?apparatusSpan,
+            ]),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var li = 0; li < verse.lines.length; li++)
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: verse.lines[li].indent * (fontSize * 0.9),
+                  ),
+                  child: RichText(
+                    text: TextSpan(children: [
+                      if (li == 0) numberSpan,
+                      TextSpan(text: verse.lines[li].text, style: bodyStyle),
+                      if (li == verse.lines.length - 1) ?apparatusSpan,
+                    ]),
+                  ),
+                ),
+            ],
+          );
+
+    Widget verseWidget = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        GestureDetector(
+          key: isSpotlight ? spotlightKey : null,
+          onTap: () => onVerseTap(verseKey),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            margin: const EdgeInsets.only(bottom: 2),
+            padding: EdgeInsets.fromLTRB(isBookmarked ? 3 : 6, 4, 6, 4),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(6),
+              border: isBookmarked
+                  ? Border(left: BorderSide(color: accentColor, width: 3))
+                  : null,
+            ),
+            child: verseBody,
+          ),
+        ),
+        if (hasNote)
+          Positioned(
+            right: 0,
+            top: 0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onNoteTap?.call(verseKey, annotations),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  Icons.sticky_note_2_rounded,
+                  size: 13,
+                  color: context.colors.accentDeep,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+
+    if (isSpotlight) {
+      verseWidget =
+          SpotlightWrapper(accentColor: accentColor, child: verseWidget);
+    }
+    return verseWidget;
   }
 }
 
@@ -704,16 +764,20 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
 
 // ── Spotlight glow wrapper ────────────────────────────────────────────────────
 
-class _SpotlightWrapper extends StatefulWidget {
-  const _SpotlightWrapper({required this.accentColor, required this.child});
+class SpotlightWrapper extends StatefulWidget {
+  const SpotlightWrapper({
+    super.key,
+    required this.accentColor,
+    required this.child,
+  });
   final Color accentColor;
   final Widget child;
 
   @override
-  State<_SpotlightWrapper> createState() => _SpotlightWrapperState();
+  State<SpotlightWrapper> createState() => _SpotlightWrapperState();
 }
 
-class _SpotlightWrapperState extends State<_SpotlightWrapper>
+class _SpotlightWrapperState extends State<SpotlightWrapper>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _anim;
