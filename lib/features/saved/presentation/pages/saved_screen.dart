@@ -10,8 +10,10 @@ import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
+import '../../../../core/storage/app_database_provider.dart';
 import 'bookmarks_tab.dart';
 import 'highlights_tab.dart';
+import 'history_tab.dart';
 import 'notes_tab.dart';
 import 'saved_common.dart';
 
@@ -27,6 +29,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   bool _loading = true;
   bool _initialized = false;
 
+  List<AnnotationItem> _history = [];
   List<AnnotationItem> _highlights = [];
   List<AnnotationItem> _bookmarks = [];
   List<AnnotationItem> _notes = [];
@@ -62,6 +65,10 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
       ).pullAll();
     }
 
+    final rawHistory = await ref
+        .read(appDatabaseProvider)
+        .getReadingHistory(limit: 500);
+
     final results = await Future.wait([
       db.getAllBookmarks(),
       db.getAllHighlights(),
@@ -73,6 +80,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     final rawNotes = results[2] as List<Note>;
 
     final bookIds = {
+      ...rawHistory.map((h) => h['book_id'] as String),
       ...rawBookmarks.map((b) => b.bookId),
       ...rawHighlights.map((h) => h.bookId),
       ...rawNotes.map((n) => n.bookId),
@@ -81,6 +89,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     if (bookIds.isEmpty) {
       if (mounted) {
         setState(() {
+          _history = [];
           _highlights = [];
           _bookmarks = [];
           _notes = [];
@@ -122,6 +131,30 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     if (!mounted) return;
     setState(() {
+      _history = rawHistory
+          .map((row) {
+            final bookId = row['book_id'] as String;
+            final e = entries[bookId];
+            if (e == null) return null;
+
+            final chNum = row['chapter'] as int;
+            final verseNum = row['verse'] as int?;
+
+            return AnnotationItem(
+              id: row['id'] as int,
+              bookEntry: e,
+              chapter: chNum,
+              verseStart: verseNum ?? 1,
+              verseCount: 1,
+              verseText: getText(bookId, chNum, verseNum ?? 1, 1),
+              createdAt: DateTime.fromMillisecondsSinceEpoch(
+                row['opened_at'] as int,
+              ),
+            );
+          })
+          .whereType<AnnotationItem>()
+          .toList();
+
       _highlights = rawHighlights
           .map((h) {
             final e = entries[h.bookId];
@@ -133,7 +166,12 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     chapter: h.chapter,
                     verseStart: h.verseStart,
                     verseCount: h.verseCount,
-                    verseText: getText(h.bookId, h.chapter, h.verseStart, h.verseCount),
+                    verseText: getText(
+                      h.bookId,
+                      h.chapter,
+                      h.verseStart,
+                      h.verseCount,
+                    ),
                     createdAt: h.createdAt,
                     highlightColor: h.color,
                   );
@@ -152,7 +190,12 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     chapter: b.chapter,
                     verseStart: b.verseStart,
                     verseCount: b.verseCount,
-                    verseText: getText(b.bookId, b.chapter, b.verseStart, b.verseCount),
+                    verseText: getText(
+                      b.bookId,
+                      b.chapter,
+                      b.verseStart,
+                      b.verseCount,
+                    ),
                     createdAt: b.createdAt,
                   );
           })
@@ -170,7 +213,12 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     chapter: n.chapter,
                     verseStart: n.verseStart,
                     verseCount: n.verseCount,
-                    verseText: getText(n.bookId, n.chapter, n.verseStart, n.verseCount),
+                    verseText: getText(
+                      n.bookId,
+                      n.chapter,
+                      n.verseStart,
+                      n.verseCount,
+                    ),
                     createdAt: n.createdAt,
                     noteContent: n.content,
                   );
@@ -230,29 +278,37 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
           const SizedBox(height: 16),
 
           // ── Tab bar ───────────────────────────────────────────────────────
-          Padding(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 _TabLabel(
-                  label: s.savedHighlights,
-                  count: _highlights.length,
+                  label: s.savedHistory,
+                  count: _history.length,
                   active: _tab == 0,
                   onTap: () => setState(() => _tab = 0),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedBookmarks,
-                  count: _bookmarks.length,
+                  label: s.savedHighlights,
+                  count: _highlights.length,
                   active: _tab == 1,
                   onTap: () => setState(() => _tab = 1),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedNotes,
-                  count: _notes.length,
+                  label: s.savedBookmarks,
+                  count: _bookmarks.length,
                   active: _tab == 2,
                   onTap: () => setState(() => _tab = 2),
+                ),
+                const SizedBox(width: 24),
+                _TabLabel(
+                  label: s.savedNotes,
+                  count: _notes.length,
+                  active: _tab == 3,
+                  onTap: () => setState(() => _tab = 3),
                 ),
               ],
             ),
@@ -267,6 +323,17 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 : IndexedStack(
                     index: _tab,
                     children: [
+                      HistoryTab(
+                        items: _history,
+                        onOpen: _openVerse,
+                        onRefresh: _load,
+                        onClearHistory: () async {
+                          await ref
+                              .read(appDatabaseProvider)
+                              .clearReadingHistory();
+                          _load();
+                        },
+                      ),
                       HighlightsTab(
                         items: _highlights,
                         onOpen: _openVerse,
