@@ -37,7 +37,6 @@ import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../share/verse_card_sheet.dart';
-
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -98,6 +97,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   /// Page index used only to spotlight [initialVerse] on first open.
   int? _spotlightChapterPageIndex;
+  int _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
 
   /// Toolbar, breadcrumb, chapter footer, and home bottom nav follow this.
   bool _readerChromeVisible = true;
@@ -139,8 +139,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _dwellTimer?.cancel();
+      _recordHistory();
       _persistReadingPosition();
     } else if (state == AppLifecycleState.resumed) {
+      _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
       _persistReadingPosition();
       _scheduleDwellTimer();
     }
@@ -167,6 +169,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _dwellTimer?.cancel();
     _repo?.removeListener(_onEditionChanged);
     WidgetsBinding.instance.removeObserver(this);
+    _recordHistory();
     _persistReadingPosition();
     // Reset immersive/color providers while ref is still valid (before super.dispose).
     // _riverpodContainer is only for timer callbacks that may fire after dispose.
@@ -204,6 +207,27 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       }
     }
     return false;
+  }
+
+  void _recordHistory() {
+    if (_book == null) return;
+    final container = _riverpodContainer;
+    if (container == null) return;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final durationMs = now - _lastHistoryUpdateTime;
+    _lastHistoryUpdateTime = now;
+    if (durationMs < 1000) return;
+
+    final verse = _selectionVerseStart;
+    unawaited(
+      container.read(appDatabaseProvider).insertReadingHistory(
+        bookId: _entry.id,
+        chapter: _currentChapterNumber,
+        verse: verse,
+        durationMs: durationMs,
+      ),
+    );
   }
 
   void _persistReadingPosition() {
@@ -975,6 +999,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                     controller: _pageCtrl,
                                     itemCount: _book!.chapters.length,
                                     onPageChanged: (i) {
+                                      _recordHistory();
                                       setState(() => _currentChapter = i);
                                       _setReaderChromeVisible(true);
                                       _persistReadingPosition();
