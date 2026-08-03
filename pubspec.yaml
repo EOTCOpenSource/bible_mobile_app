@@ -62,7 +62,6 @@ dependencies:
   sqlite3: ^3.3.1
   sqlite3_flutter_libs: ^0.5.42
   crypto: ^3.0.3
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

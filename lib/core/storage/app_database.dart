@@ -6,7 +6,7 @@ import '../../features/books/data/models/book_identity.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 8;
+  static const _version = 9;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -69,6 +69,22 @@ class AppDatabase {
       await db.execute(
         'ALTER TABLE app_settings ADD COLUMN has_seen_reader_hint INTEGER NOT NULL DEFAULT 0',
       );
+    }
+    if (oldVersion < 9) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS reading_history (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          book_id     TEXT    NOT NULL,
+          chapter     INTEGER NOT NULL,
+          verse       INTEGER,
+          opened_at   INTEGER NOT NULL,
+          duration_ms INTEGER
+        )
+      ''');
+      await db.execute('''
+        CREATE INDEX IF NOT EXISTS idx_history_opened
+        ON reading_history (opened_at DESC)
+      ''');
     }
   }
 
@@ -217,6 +233,20 @@ class AppDatabase {
       'longest_streak_start': null,
       'longest_streak_end': null,
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reading_history (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        book_id     TEXT    NOT NULL,
+        chapter     INTEGER NOT NULL,
+        verse       INTEGER,
+        opened_at   INTEGER NOT NULL,
+        duration_ms INTEGER
+      )
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_history_opened
+      ON reading_history (opened_at DESC)
+    ''');
   }
 
   Future<void> _onCreate(Database db, int _) async {
@@ -401,6 +431,82 @@ class AppDatabase {
       where: 'id = ?',
       whereArgs: [1],
     );
+  }
+
+  // ── Reading History ────────────────────────────────────────────────────────
+
+  Future<void> insertReadingHistory({
+    required String bookId,
+    required int chapter,
+    int? verse,
+    required int durationMs,
+  }) async {
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    final recent = await db.query(
+      'reading_history',
+      orderBy: 'opened_at DESC',
+      limit: 1,
+    );
+
+    if (recent.isNotEmpty) {
+      final row = recent.first;
+      final oldBookId = row['book_id'] as String;
+      final oldChapter = row['chapter'] as int;
+      final openedAt = row['opened_at'] as int;
+      final oldDuration = (row['duration_ms'] as int?) ?? 0;
+
+      if (oldBookId == bookId &&
+          oldChapter == chapter &&
+          (now - openedAt) <= 30 * 60 * 1000) {
+        await db.update(
+          'reading_history',
+          {
+            'duration_ms': oldDuration + durationMs,
+            'verse': ?verse,
+          },
+          where: 'id = ?',
+          whereArgs: [row['id']],
+        );
+        return;
+      }
+    }
+
+    await db.insert('reading_history', {
+      'book_id': bookId,
+      'chapter': chapter,
+      'verse': verse,
+      'opened_at': now,
+      'duration_ms': durationMs,
+    });
+
+    final countRes = await db.rawQuery('SELECT COUNT(*) as c FROM reading_history');
+    final count = countRes.first['c'] as int;
+    if (count > 500) {
+      await db.execute('''
+        DELETE FROM reading_history 
+        WHERE id IN (
+          SELECT id FROM reading_history 
+          ORDER BY opened_at ASC 
+          LIMIT ?
+        )
+      ''', [count - 500]);
+    }
+  }
+
+  Future<List<Map<String, Object?>>> getReadingHistory({int? limit}) async {
+    final db = await database;
+    return db.query(
+      'reading_history',
+      orderBy: 'opened_at DESC',
+      limit: limit,
+    );
+  }
+
+  Future<void> clearReadingHistory() async {
+    final db = await database;
+    await db.delete('reading_history');
   }
 
   // ── Bookmarks ──────────────────────────────────────────────────────────────

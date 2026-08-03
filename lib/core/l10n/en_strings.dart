@@ -209,7 +209,9 @@ class EnStrings extends AppStrings {
   @override
   String get savedEyebrow => 'Saved';
   @override
-  String get savedTitle => 'Collection';
+  String get savedTitle => 'Saved';
+  @override
+  String get savedHistory => 'History';
   @override
   String get savedHighlights => 'Highlights';
   @override
@@ -249,9 +251,15 @@ class EnStrings extends AppStrings {
   @override
   String get savedEmptyBookmarksHint => 'Bookmark verses while reading';
   @override
-  String get savedEmptyNotesTitle => 'No notes yet';
+  String get savedEmptyNotesTitle => 'No Notes';
   @override
-  String get savedEmptyNotesHint => 'Write notes while reading';
+  String get savedEmptyNotesHint => 'Tap a verse and select "Note" to write down your thoughts. They will appear here.';
+  @override
+  String get savedClearHistory => 'Clear History';
+  @override
+  String get savedClearHistoryTitle => 'Clear Reading History?';
+  @override
+  String get savedClearHistoryMessage => 'This will remove all your reading history. This action cannot be undone.';
   @override
   String get savedEdit => 'Edit';
   @override
