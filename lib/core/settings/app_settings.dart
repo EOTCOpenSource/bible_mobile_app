@@ -19,6 +19,8 @@ class AppSettings {
     this.readingTimeNotificationEnabled = false,
     this.dailyVerseNotificationTime,
     this.readingTimeNotificationTime,
+    this.hasSeenOnboarding = false,
+    this.hasSeenReaderHint = false,
   });
 
   final bool useGeezNumbers;
@@ -58,6 +60,12 @@ class AppSettings {
   /// Preferred time for the reading time reminder (nullable, defaults to 8:00 PM if null).
   final TimeOfDay? readingTimeNotificationTime;
 
+  /// Whether the user has completed or skipped the first-run onboarding.
+  final bool hasSeenOnboarding;
+
+  /// Whether the user has seen the contextual reader action hint.
+  final bool hasSeenReaderHint;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
@@ -75,6 +83,8 @@ class AppSettings {
     bool? readingTimeNotificationEnabled,
     TimeOfDay? dailyVerseNotificationTime,
     TimeOfDay? readingTimeNotificationTime,
+    bool? hasSeenOnboarding,
+    bool? hasSeenReaderHint,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -97,6 +107,8 @@ class AppSettings {
             dailyVerseNotificationTime ?? this.dailyVerseNotificationTime,
         readingTimeNotificationTime:
             readingTimeNotificationTime ?? this.readingTimeNotificationTime,
+        hasSeenOnboarding: hasSeenOnboarding ?? this.hasSeenOnboarding,
+        hasSeenReaderHint: hasSeenReaderHint ?? this.hasSeenReaderHint,
       );
 
   @override
@@ -117,10 +129,12 @@ class AppSettings {
       other.dailyVerseNotificationEnabled == dailyVerseNotificationEnabled &&
       other.readingTimeNotificationEnabled == readingTimeNotificationEnabled &&
       other.dailyVerseNotificationTime == dailyVerseNotificationTime &&
-      other.readingTimeNotificationTime == readingTimeNotificationTime;
+      other.readingTimeNotificationTime == readingTimeNotificationTime &&
+      other.hasSeenOnboarding == hasSeenOnboarding &&
+      other.hasSeenReaderHint == hasSeenReaderHint;
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         useGeezNumbers,
         bodyFontIndex,
         titleFontIndex,
@@ -137,7 +151,9 @@ class AppSettings {
         readingTimeNotificationEnabled,
         dailyVerseNotificationTime,
         readingTimeNotificationTime,
-      );
+        hasSeenOnboarding,
+        hasSeenReaderHint,
+      ]);
 }
 
 class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
@@ -156,9 +172,7 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
     return s!.notifier!.value;
   }
 
-
-
-static void update(BuildContext context, AppSettings updated) {
+  static void update(BuildContext context, AppSettings updated) {
     final s = context.getInheritedWidgetOfExactType<Settings>();
     assert(s != null, 'No Settings found in widget tree.');
     s!.notifier!.value = updated;
@@ -171,6 +185,8 @@ static void update(BuildContext context, AppSettings updated) {
       dailyVerseMinute: updated.dailyVerseNotificationTime?.minute,
       readingTimeHour: updated.readingTimeNotificationTime?.hour,
       readingTimeMinute: updated.readingTimeNotificationTime?.minute,
+      hasSeenOnboarding: updated.hasSeenOnboarding,
+      hasSeenReaderHint: updated.hasSeenReaderHint,
     );
   }
 

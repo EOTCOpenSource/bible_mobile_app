@@ -6,10 +6,12 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../../core/audio/tts_providers.dart';
+import '../../../onboarding/presentation/pages/onboarding_screen.dart';
 import '../../../books/presentation/pages/editions_page.dart';
 import '../../../books/providers/edition_providers.dart';
 import 'reading_settings_page.dart';
@@ -58,6 +60,19 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     context,
                     MaterialPageRoute(builder: (_) => const EditionsPage()),
                   ),
+                ),
+                _ArrowRow(
+                  label: s.meShowIntroduction,
+                  onTap: () {
+                    // The flag stays true — replaying the intro must not make a
+                    // back-out reopen it on the next launch.
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OnboardingScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _ArrowRow(
                   label: s.settingReadingPrefs,

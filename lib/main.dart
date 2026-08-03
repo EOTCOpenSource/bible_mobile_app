@@ -15,6 +15,7 @@ import 'core/theme/app_theme.dart';
 import 'features/books/data/repositories/bible_repository.dart';
 import 'features/books/presentation/pages/reader_screen.dart';
 import 'features/home/presentation/pages/home_screen.dart';
+import 'features/onboarding/presentation/pages/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +42,8 @@ void main() async {
       readingTimeNotificationTime: saved['reading_time_hour'] != null
           ? TimeOfDay(hour: saved['reading_time_hour'] as int, minute: saved['reading_time_minute'] as int)
           : null,
+      hasSeenOnboarding: saved['has_seen_onboarding'] == 1,
+      hasSeenReaderHint: saved['has_seen_reader_hint'] == 1,
     );
   }
 
@@ -165,7 +168,9 @@ class _BibleMaterialAppState extends State<_BibleMaterialApp> {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: settings.isDarkReader ? ThemeMode.dark : ThemeMode.light,
-      home: const HomeScreen(),
+      home: settings.hasSeenOnboarding
+          ? const HomeScreen()
+          : const OnboardingScreen(),
     );
   }
 }

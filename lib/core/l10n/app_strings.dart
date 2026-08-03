@@ -298,13 +298,12 @@ abstract class AppStrings {
   String get profileUpdateFailed;
   // ── Notifications ─────────────────────────────────────────────────────────
   String get notificationPermissionDenied;
-String dailyVerseSet(String time);
-String get dailyVerseOff;
-String dailyVerseUpdated(String time);
-String get readingReminderOff;
-String readingReminderSet(String time);
-String readingReminderUpdated(String time);
-
+  String dailyVerseSet(String time);
+  String get dailyVerseOff;
+  String dailyVerseUpdated(String time);
+  String get readingReminderOff;
+  String readingReminderSet(String time);
+  String readingReminderUpdated(String time);
 
   // ── Verse card sheet ──────────────────────────────────────────────────────
   String get cardSheetTitle;
@@ -349,6 +348,36 @@ String readingReminderUpdated(String time);
   // background_picker snackbar
   String get cardImagePickFailed;
   String get cardShareAsText;
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  String get onboardingSkip;
+  String get onboardingNext;
+  String get onboardingDone;
+
+  // Screen 1: Welcome
+  String get onboardingWelcomeTitle;
+  String get onboardingWelcomeCanonNote;
+
+  // Screen 2: Preferences
+  String get onboardingPrefsTitle;
+  String get onboardingPrefsSubtitle;
+  String get onboardingPreviewVerseText;
+
+  // Screen 3: Verse actions
+  String get onboardingActionsTitle;
+  String get onboardingActionsSubtitle;
+
+  // Screen 4: Sign-in
+  String get onboardingSignInTitle;
+  String get onboardingSignInSubtitle;
+  String get onboardingSignInBtn;
+  String get onboardingNotNowBtn;
+
+  // MeScreen introduction row
+  String get meShowIntroduction;
+
+  // Reader coach mark
+  String get readerVerseActionHint;
   // ── Bible editions ────────────────────────────────────────────────────────
   /// Title of the edition picker / download screen.
   String get editionsTitle;
@@ -449,4 +478,7 @@ String readingReminderUpdated(String time);
   /// Shown in place of the second column when the parallel edition's canon
   /// does not carry the open book.
   String parallelBookMissing(String title);
+  // in your AppStrings abstract class
+  String get onboardingSampleVerseNumber;
+  String get onboardingSampleVerseText;
 }
