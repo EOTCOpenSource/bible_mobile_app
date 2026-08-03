@@ -58,21 +58,22 @@ class _ContinueReadingSectionState
               if (snaps.length == 1) {
                 return _ContinueReadingCard(snap: snaps.first, colors: c, s: s);
               }
+              final displaySnaps = snaps.take(3).toList();
               return Column(
                 children: [
                   SizedBox(
                     height: 122,
                     child: PageView.builder(
                       controller: _pageCtrl,
-                      itemCount: snaps.length,
+                      itemCount: displaySnaps.length,
                       onPageChanged: (i) => setState(() => _currentPage = i),
                       itemBuilder: (_, i) =>
-                          _ContinueReadingCard(snap: snaps[i], colors: c, s: s),
+                          _ContinueReadingCard(snap: displaySnaps[i], colors: c, s: s),
                     ),
                   ),
                   const SizedBox(height: 10),
                   _DotIndicator(
-                    count: snaps.length,
+                    count: displaySnaps.length,
                     current: _currentPage,
                     color: c.primary,
                   ),

@@ -180,9 +180,9 @@ class _BookmarksTabState extends ConsumerState<BookmarksTab> {
       await widget.onRefresh();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.savedBookmarkDeleted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s.savedBookmarkDeleted)));
       }
     }
   }
