@@ -131,6 +131,7 @@ class ParallelChapterPage extends StatelessWidget {
         parent: BouncingScrollPhysics(),
       ),
       padding: const EdgeInsets.only(bottom: 80),
+      // ignore: deprecated_member_use
       cacheExtent: spotlightVerseNum != null ? 30000 : null,
       itemCount: chapter.sections.length + 1,
       itemBuilder: (ctx, i) {
