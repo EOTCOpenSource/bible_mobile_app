@@ -15,7 +15,10 @@ final readingProgressRepositoryProvider = Provider<ReadingProgressRepository>(
 final continueReadingSnapshotsProvider =
     FutureProvider<List<ContinueReadingSnapshot>>((ref) async {
   final repo = ref.watch(readingProgressRepositoryProvider);
-  final positions = await repo.getAllReadingPositions();
+  var positions = await repo.getRecentReadingHistory(5);
+  if (positions.isEmpty) {
+    positions = (await repo.getAllReadingPositions()).take(5).toList();
+  }
   if (positions.isEmpty) return [];
 
   final index = await ref.watch(bibleRepositoryProvider).loadIndex();
