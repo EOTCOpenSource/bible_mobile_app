@@ -41,17 +41,46 @@ final voiceCatalogProvider =
       .watch(addisTtsClientProvider)
       .listVoices(apiKey: apiKey, language: language);
 
-  // Surface the catalog's own default first, then keep server order.
-  final sorted = [...voices];
-  sorted.sort((a, b) {
-    if (a.isDefault == b.isDefault) return 0;
-    return a.isDefault ? -1 : 1;
-  });
-  return sorted;
+  // Surface the voice the app actually reads in first, then the catalog's own
+  // default, then keep server order — the list runs to 19 voices, so the one
+  // in effect should not be somewhere down it. Bucketed rather than sorted
+  // because Dart's sort is not stable, and equal-ranked voices should stay in
+  // the order the catalog sent them.
+  final preferred = <AddisVoice>[];
+  final catalogDefault = <AddisVoice>[];
+  final rest = <AddisVoice>[];
+  for (final v in voices) {
+    if (isPreferredVoice(v)) {
+      preferred.add(v);
+    } else if (v.isDefault) {
+      catalogDefault.add(v);
+    } else {
+      rest.add(v);
+    }
+  }
+  return [...preferred, ...catalogDefault, ...rest];
 });
 
+/// The voice this app reads scripture in until the user picks another —
+/// Yohannes, a calm male narration voice.
+///
+/// A preference, never a requirement: the catalog is documented as changing,
+/// so if Addis AI retires this id the resolution below simply moves on to the
+/// next fallback instead of leaving the reader silent.
+const kPreferredVoiceId = 'am-yohanes-calm';
+
+/// Matches Yohannes by name when the id has moved on, since the catalog is
+/// served rather than compiled in.
+const _kPreferredVoiceName = 'yohan';
+
+/// Whether [voice] is the app's preferred default, by id or by name.
+bool isPreferredVoice(AddisVoice voice) =>
+    voice.id == kPreferredVoiceId ||
+    voice.name.toLowerCase().contains(_kPreferredVoiceName);
+
 /// The voice that will actually be used: the user's pick when it is still in
-/// the catalog, otherwise the catalog default, otherwise the first available.
+/// the catalog, otherwise Yohannes, otherwise the catalog default, otherwise
+/// the first available.
 ///
 /// Resolving here rather than at the call site means a voice that Addis AI
 /// retires degrades to a working default instead of failing every generation.
@@ -66,6 +95,11 @@ final effectiveVoiceProvider =
       if (v.id == chosenId) return v;
     }
   }
+
+  for (final v in voices) {
+    if (isPreferredVoice(v)) return v;
+  }
+
   for (final v in voices) {
     if (v.isDefault) return v;
   }
