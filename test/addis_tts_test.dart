@@ -156,10 +156,63 @@ void main() {
       expect(body['text'], 'ሰላም');
       expect(body['language'], 'am');
       expect(body['output_format'], 'mp3_44100');
-      // Omitted rather than sent as null when the caller does not supply one.
-      expect(body.containsKey('client_request_id'), isFalse);
+      // The live endpoint rejects a body without one even though the docs call
+      // it optional, so it is always sent.
+      expect(body['client_request_id'], isA<String>());
+      expect(body['client_request_id'], isNotEmpty);
 
       expect(url.toString(), 'https://cdn.example/clip_1.mp3?sig=abc');
+    });
+
+    test('every generation carries its own request id', () async {
+      final ids = <String>[];
+
+      final client = AddisTtsClient(
+        httpClient: MockClient((req) async {
+          final body = jsonDecode(req.body) as Map<String, dynamic>;
+          ids.add(body['client_request_id'] as String);
+          return http.Response(
+            jsonEncode({'audio_url': 'https://cdn.example/clip.mp3'}),
+            200,
+          );
+        }),
+      );
+
+      // A chapter generates verse after verse; ids that repeat would let the
+      // API serve one verse's audio for the next one.
+      for (var i = 0; i < 25; i++) {
+        await client.generate(
+          apiKey: 'sk_test',
+          text: 'ቁጥር $i',
+          voiceId: 'am-hamen',
+        );
+      }
+
+      expect(ids.toSet(), hasLength(25));
+    });
+
+    test('an explicit request id is kept, so a retry can replay it', () async {
+      late http.Request seen;
+
+      final client = AddisTtsClient(
+        httpClient: MockClient((req) async {
+          seen = req;
+          return http.Response(
+            jsonEncode({'audio_url': 'https://cdn.example/clip.mp3'}),
+            200,
+          );
+        }),
+      );
+
+      await client.generate(
+        apiKey: 'sk_test',
+        text: 'ሰላም',
+        voiceId: 'am-hamen',
+        clientRequestId: 'retry-me',
+      );
+
+      final body = jsonDecode(seen.body) as Map<String, dynamic>;
+      expect(body['client_request_id'], 'retry-me');
     });
 
     test('finds the audio URL nested under an envelope', () async {

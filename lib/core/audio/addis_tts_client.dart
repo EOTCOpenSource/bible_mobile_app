@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
@@ -73,6 +74,10 @@ class AddisTtsClient {
   }
 
   /// Generates [text] with [voiceId] and returns the signed audio URL.
+  ///
+  /// [clientRequestId] is the API's idempotency key. The docs call it optional
+  /// but the live endpoint rejects a body without one, so a unique id is
+  /// always sent; pass your own only to deliberately replay a request.
   Future<Uri> generate({
     required String apiKey,
     required String text,
@@ -89,7 +94,7 @@ class AddisTtsClient {
         'voice_id': voiceId,
         'language': language,
         'output_format': outputFormat,
-        'client_request_id': ?clientRequestId,
+        'client_request_id': clientRequestId ?? _newClientRequestId(),
       }),
     );
 
@@ -104,6 +109,21 @@ class AddisTtsClient {
   }
 
   void close() => _http.close();
+
+  /// A fresh idempotency key.
+  ///
+  /// A chapter fires one generation per verse in quick succession, so the
+  /// timestamp alone can repeat within the same microsecond tick — the counter
+  /// and the random suffix are what actually keep verses from deduplicating
+  /// into each other's audio.
+  String _newClientRequestId() {
+    final n = ++_requestCounter;
+    final noise = _random.nextInt(1 << 32).toRadixString(16);
+    return 'bibleflutter-${DateTime.now().microsecondsSinceEpoch}-$n-$noise';
+  }
+
+  static int _requestCounter = 0;
+  static final Random _random = Random();
 
   // ── response handling ─────────────────────────────────────────────────────
 

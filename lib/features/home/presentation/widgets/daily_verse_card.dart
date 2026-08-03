@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kenat/kenat.dart';
+import '../../../../core/audio/audio_service.dart';
+import '../../../../core/audio/play_verses.dart';
 import '../../../../core/constants/app_icons.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
@@ -9,14 +12,14 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/repositories/bible_repository.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
 
-class DailyVerseCard extends StatefulWidget {
+class DailyVerseCard extends ConsumerStatefulWidget {
   const DailyVerseCard({super.key});
 
   @override
-  State<DailyVerseCard> createState() => _DailyVerseCardState();
+  ConsumerState<DailyVerseCard> createState() => _DailyVerseCardState();
 }
 
-class _DailyVerseCardState extends State<DailyVerseCard> {
+class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
   Future<DailyVerseResult?>? _future;
 
   @override
@@ -50,6 +53,38 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
           initialVerse:   result.verse,
         ),
       ),
+    );
+  }
+
+  /// What the audio service is asked to call this verse.
+  ///
+  /// Deliberately not the displayed reference: that switches to Geez numerals
+  /// with the setting, and the title is compared against the playing title to
+  /// decide whether this card owns the audio.
+  String _audioTitle(DailyVerseResult r) =>
+      '${r.bookNameAm} ${r.chapter}:${r.verse}';
+
+  bool _isThisPlaying(String title) {
+    final audio = AudioService.instance;
+    return audio.currentTitleNotifier.value == title &&
+        audio.stateNotifier.value != AudioState.stopped;
+  }
+
+  /// Reads the daily verse with the same AI voice as the reader.
+  ///
+  /// One verse rather than a chapter, so it is a single generation on the
+  /// user's key — a second tap stops it instead of paying for it twice.
+  Future<void> _toggleAudio(DailyVerseResult result) async {
+    final title = _audioTitle(result);
+    if (_isThisPlaying(title)) {
+      await AudioService.instance.stop();
+      return;
+    }
+    await playVersesAloud(
+      context: context,
+      ref: ref,
+      title: title,
+      verses: [result.text],
     );
   }
 
@@ -191,7 +226,10 @@ class _DailyVerseCardState extends State<DailyVerseCard> {
                     const SizedBox(width: 2),
                     _IconAction(icon: Icons.bookmark_border_rounded),
                     const SizedBox(width: 2),
-                    _IconAction(icon: Icons.volume_up_outlined),
+                    _VoiceAction(
+                      onTap: result != null ? () => _toggleAudio(result) : null,
+                      title: result != null ? _audioTitle(result) : null,
+                    ),
                   ],
                 ),
               ],
@@ -233,8 +271,14 @@ class _LoadingLines extends StatelessWidget {
 }
 
 class _IconAction extends StatelessWidget {
-  const _IconAction({required this.icon});
+  const _IconAction({required this.icon, this.onTap, this.child});
+
   final IconData icon;
+  final VoidCallback? onTap;
+
+  /// Drawn in place of [icon] — used for the spinner while audio is being
+  /// generated, so the button keeps its size and position.
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -242,13 +286,62 @@ class _IconAction extends StatelessWidget {
       color: Colors.white.withValues(alpha: 0.12),
       shape: const CircleBorder(),
       child: InkWell(
-        onTap: () {},
+        onTap: onTap ?? () {},
         customBorder: const CircleBorder(),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Icon(icon, size: 18, color: context.colors.textOnDark),
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: child ??
+                Icon(icon, size: 18, color: context.colors.textOnDark),
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// The speaker button on the card, reflecting this verse's own playback.
+///
+/// It watches the audio service rather than local state because the reader can
+/// start something else on the same player: when that happens this button has
+/// to fall back to "play", not keep offering to stop audio it no longer owns.
+class _VoiceAction extends StatelessWidget {
+  const _VoiceAction({required this.onTap, required this.title});
+
+  final VoidCallback? onTap;
+  final String? title;
+
+  @override
+  Widget build(BuildContext context) {
+    final audio = AudioService.instance;
+
+    return ValueListenableBuilder<String?>(
+      valueListenable: audio.currentTitleNotifier,
+      builder: (context, playingTitle, _) {
+        final isThis = title != null && playingTitle == title;
+
+        return ValueListenableBuilder<AudioState>(
+          valueListenable: audio.stateNotifier,
+          builder: (context, state, _) {
+            final busy = isThis && state == AudioState.buffering;
+            final playing = isThis &&
+                (state == AudioState.playing || state == AudioState.paused);
+
+            return _IconAction(
+              icon: playing ? Icons.stop_rounded : Icons.volume_up_outlined,
+              onTap: onTap,
+              child: busy
+                  ? CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: context.colors.textOnDark,
+                    )
+                  : null,
+            );
+          },
+        );
+      },
     );
   }
 }
