@@ -22,6 +22,7 @@ class ReaderToolbar extends StatelessWidget {
     required this.onFontSettings,
     this.chapterNumber,
     this.onChapterTap,
+    this.onAudio,
   });
 
   final BookIndexEntry entry;
@@ -48,6 +49,7 @@ class ReaderToolbar extends StatelessWidget {
   final AppStrings s;
   final VoidCallback onBack;
   final VoidCallback onFontSettings;
+  final VoidCallback? onAudio;
 
   String get _label {
     final n    = chapterNumber ?? currentChapter + 1;
@@ -105,6 +107,11 @@ class ReaderToolbar extends StatelessWidget {
             sheetTheme: sheetTheme,
           ),
           const SizedBox(width: 2),
+          if (onAudio != null)
+            IconButton(
+              icon: Icon(Icons.volume_up_rounded, size: 20, color: mutedColor),
+              onPressed: onAudio,
+            ),
           // Aa — opens font settings
           GestureDetector(
             onTap: onFontSettings,

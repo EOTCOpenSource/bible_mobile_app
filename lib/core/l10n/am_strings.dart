@@ -734,6 +734,55 @@ class AmStrings extends AppStrings {
   String get onboardingSampleVerseText =>
       'በመጀመሪያ ቃል ነበረ፥ ቃልም በእግዚአብሔር ዘንድ ነበረ፥ ቃልም እግዚአብሔር ነበረ።';
 
+  // ── Audio reading ──────────────────────────────────────────────────────────
+  @override
+  String get voiceSettingsTitle => 'የንባብ ድምፅ';
+  @override
+  String get voiceSectionKey => 'የአዲስ AI ቁልፍ';
+  @override
+  String get voiceSectionVoices => 'ድምፅ ይምረጡ';
+  @override
+  String get voiceKeyIntro =>
+      'ድምፅ ንባብ የሚሠራው በአዲስ AI ነው። የራስዎን ቁልፍ ከአዲስ AI አግኝተው እዚህ ያስገቡ።';
+  @override
+  String get voiceKeyGetOne => 'ቁልፍ ያግኙ';
+  @override
+  String get voiceKeyLinkCopied => 'አገናኙ ተቀድቷል';
+  @override
+  String get voiceKeyFieldHint => 'ቁልፍዎን እዚህ ይለጥፉ';
+  @override
+  String get voiceKeySave => 'አስቀምጥ';
+  @override
+  String get voiceKeySaved => 'ቁልፍዎ ተቀምጧል';
+  @override
+  String get voiceKeyChange => 'ቁልፍ ቀይር';
+  @override
+  String get voiceKeyRemove => 'ቁልፍ አስወግድ';
+  @override
+  String get voiceKeyRemoved => 'ቁልፉ ተወግዷል';
+  @override
+  String get voiceKeyRejected => 'ቁልፉ ተቀባይነት አላገኘም። እባክዎ ያረጋግጡ።';
+  @override
+  String get voiceKeyRequired => 'ድምፅ ለመስማት መጀመሪያ ቁልፍዎን ያስገቡ።';
+  @override
+  String get voiceLoadFailed => 'የድምፅ ዝርዝሩን መጫን አልተቻለም።';
+  @override
+  String get voiceListEmpty => 'ለዚህ ቋንቋ ድምፅ አልተገኘም።';
+  @override
+  String get voiceRetry => 'እንደገና ሞክር';
+  @override
+  String get voicePreview => 'ስማ';
+  @override
+  String get voiceSelectedBadge => 'ተመርጧል';
+  @override
+  String get voiceDefaultBadge => 'ነባር';
+  @override
+  String get voiceGenderMale => 'ወንድ';
+  @override
+  String get voiceGenderFemale => 'ሴት';
+  @override
+  String voiceSelectedToast(String name) => '$name ተመርጧል';
+
   // ── Parallel reading ──────────────────────────────────────────────────────
   @override
   String get parallelSectionTitle => 'ጎን ለጎን ንባብ';

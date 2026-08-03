@@ -22,6 +22,8 @@ import '../widgets/edition_switcher.dart';
 import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
 import '../../../../core/deep_links/deep_link_uri.dart';
+import '../../../../core/audio/audio_service.dart';
+import '../../../../core/audio/play_verses.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
@@ -47,6 +49,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
     this.initialChapter = 0,
     this.initialChapterNumber,
     this.initialVerse,
+    this.autoStartAudio = false,
   });
 
   final BookIndexEntry entry;
@@ -57,6 +60,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
   /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
   final int? initialChapterNumber;
   final int? initialVerse;
+  final bool autoStartAudio;
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
@@ -92,6 +96,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   String? _selectedKey;
   String? _selectionEndKey;
   final GlobalKey _spotlightKey = GlobalKey();
+  final GlobalKey _audioScrollKey = GlobalKey();
+  bool _isAudioPlaying = false;
 
   Timer? _dwellTimer;
   int? _dwellChapterNumber;
@@ -112,6 +118,68 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _entry = widget.entry;
     _currentChapter = widget.initialChapter;
     _pageCtrl = PageController(initialPage: widget.initialChapter);
+    AudioService.instance.currentVerseIndexNotifier.addListener(_onAudioVerseIndexChanged);
+    AudioService.instance.stateNotifier.addListener(_onAudioStateChanged);
+  }
+
+  void _onAudioStateChanged() {
+    final state = AudioService.instance.stateNotifier.value;
+    final wasPlaying = _isAudioPlaying;
+    _isAudioPlaying = (state == AudioState.playing || state == AudioState.buffering);
+    if (wasPlaying && !_isAudioPlaying && mounted) {
+      setState(() {
+        _selectedKey = null;
+        _selectionEndKey = null;
+      });
+    }
+  }
+
+  void _onAudioVerseIndexChanged() {
+    final verseIdx = AudioService.instance.currentVerseIndexNotifier.value;
+    if (verseIdx == null || _book == null || !mounted) return;
+    if (_currentChapter >= _book!.chapters.length) return;
+    final chapter = _book!.chapters[_currentChapter];
+    if (verseIdx < 0 || verseIdx >= chapter.allVerses.length) return;
+
+    final verse = chapter.allVerses[verseIdx];
+    for (var sIdx = 0; sIdx < chapter.sections.length; sIdx++) {
+      if (chapter.sections[sIdx].verses.any((v) => v.verseNumber == verse.verseNumber)) {
+        final targetKey = _verseKey(chapter.chapterNumber, sIdx, verse.verseNumber);
+        if (_selectedKey != targetKey) {
+          setState(() {
+            _isAudioPlaying = true;
+            _selectedKey = targetKey;
+            _selectionEndKey = null;
+          });
+          // Auto-scroll to the active verse
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final ctx = _audioScrollKey.currentContext;
+            if (ctx != null) {
+              Scrollable.ensureVisible(
+                ctx,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                alignment: 0.3,
+              );
+            }
+          });
+        }
+        break;
+      }
+    }
+  }
+
+  /// Returns the verse number currently being read by audio on page [pageIdx],
+  /// or null if audio is not active on that page.
+  int? _audioVerseNum(int pageIdx) {
+    if (!_isAudioPlaying || _book == null) return null;
+    if (pageIdx != _currentChapter) return null;
+    final verseIdx = AudioService.instance.currentVerseIndexNotifier.value;
+    if (verseIdx == null) return null;
+    final chapter = _book!.chapters[_currentChapter];
+    if (verseIdx < 0 || verseIdx >= chapter.allVerses.length) return null;
+    return chapter.allVerses[verseIdx].verseNumber;
   }
 
   @override
@@ -164,6 +232,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   @override
   void dispose() {
+    AudioService.instance.currentVerseIndexNotifier.removeListener(_onAudioVerseIndexChanged);
+    AudioService.instance.stateNotifier.removeListener(_onAudioStateChanged);
     _dwellTimer?.cancel();
     _repo?.removeListener(_onEditionChanged);
     WidgetsBinding.instance.removeObserver(this);
@@ -293,7 +363,29 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _persistReadingPosition();
     _scheduleDwellTimer();
     _autoSelectInitialVerse(pageIdx);
+
+    if (widget.autoStartAudio) {
+      _playCurrentChapterAudio();
+    }
     unawaited(_refreshParallel());
+  }
+
+  /// Reads the open chapter aloud with the user's own key and chosen voice.
+  ///
+  /// Anything that stops it from starting routes to the voice settings page
+  /// rather than failing silently — a missing key is the common case on a
+  /// fresh install, and it is fixable right there.
+  Future<void> _playCurrentChapterAudio() async {
+    final book = _book;
+    if (book == null || _currentChapter >= book.chapters.length) return;
+    final ch = book.chapters[_currentChapter];
+
+    await playVersesAloud(
+      context: context,
+      ref: ref,
+      title: '${_entry.bookNameAm} ${ch.chapterNumber}',
+      verses: ch.allVerses.map((v) => v.text).toList(),
+    );
   }
 
   /// Re-reads the parallel column for the open book.
@@ -930,6 +1022,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 onBack: () => Navigator.pop(context),
                                 onFontSettings: () =>
                                     _showFontSheet(context, settings),
+                                onAudio: _playCurrentChapterAudio,
                               ),
                               if (chapterReady)
                                 ReaderBreadcrumb(
@@ -1077,8 +1170,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                               verse,
                                               pageChapterNum,
                                             ),
-                                            spotlightVerseNum: spotlightVerse,
-                                            spotlightKey: spotlightKey,
+                                            spotlightVerseNum: _audioVerseNum(i) ?? spotlightVerse,
+                                            spotlightKey: _audioVerseNum(i) != null
+                                                ? _audioScrollKey
+                                                : spotlightKey,
                                           );
                                         },
                                       );
@@ -1086,7 +1181,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   ),
                                   // Verse action bar
                                   AnimatedSlide(
-                                    offset: _selectedKey != null
+                                    offset: (_selectedKey != null && !_isAudioPlaying)
                                         ? Offset.zero
                                         : const Offset(0, 1),
                                     duration: const Duration(milliseconds: 220),
@@ -1241,6 +1336,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                             ),
                           ),
                   ),
+                  _buildAudioMiniPlayer(settings),
                   if (!_loading && _book != null)
                     ChapterNavBar(
                       currentChapter: _currentChapter,
@@ -1259,6 +1355,84 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildAudioMiniPlayer(AppSettings settings) {
+    return ValueListenableBuilder<AudioState>(
+      valueListenable: AudioService.instance.stateNotifier,
+      builder: (context, audioState, _) {
+        if (audioState == AudioState.stopped) return const SizedBox.shrink();
+        final isDark = settings.isDarkReader;
+        final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+        final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
+        final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            border: Border(
+              top: BorderSide(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              IconButton(
+                icon: audioState == AudioState.buffering
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: accentColor,
+                        ),
+                      )
+                    : Icon(
+                        audioState == AudioState.playing
+                            ? Icons.pause_circle_filled_rounded
+                            : Icons.play_circle_filled_rounded,
+                        size: 32,
+                        color: accentColor,
+                      ),
+                onPressed: audioState == AudioState.buffering
+                    ? null
+                    : () {
+                        if (audioState == AudioState.playing) {
+                          AudioService.instance.pause();
+                        } else {
+                          AudioService.instance.resume();
+                        }
+                      },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: AudioService.instance.currentTitleNotifier,
+                  builder: (context, title, _) {
+                    return Text(
+                      title ?? 'ድምፅ ንባብ',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.stop_rounded, color: Colors.redAccent),
+                onPressed: () => AudioService.instance.stop(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

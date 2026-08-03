@@ -28,6 +28,7 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
+
    signingConfigs {
         if (keyPropertiesFile.exists()) {
             create("release") {
@@ -63,6 +64,7 @@ android {
 flutter {
     source = "../.."
 }
+
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
