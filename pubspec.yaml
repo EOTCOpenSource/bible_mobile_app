@@ -92,6 +92,8 @@ flutter:
     # Curated daily-verse references (not scripture text).
     - assets/bibledata/ethiopian_daily_verses.json
     - assets/signin/
+    - assets/topics/
+    - assets/topics/images/
     - assets/eotc.jpg
 
   fonts:

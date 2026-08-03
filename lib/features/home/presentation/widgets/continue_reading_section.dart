@@ -19,7 +19,7 @@ class ContinueReadingSection extends ConsumerStatefulWidget {
 
 class _ContinueReadingSectionState
     extends ConsumerState<ContinueReadingSection> {
-  final _pageCtrl = PageController();
+  final _pageCtrl = PageController(viewportFraction: 0.92);
   int _currentPage = 0;
 
   @override
@@ -66,8 +66,14 @@ class _ContinueReadingSectionState
                       controller: _pageCtrl,
                       itemCount: snaps.length,
                       onPageChanged: (i) => setState(() => _currentPage = i),
-                      itemBuilder: (_, i) =>
-                          _ContinueReadingCard(snap: snaps[i], colors: c, s: s),
+                      itemBuilder: (_, i) => Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: _ContinueReadingCard(
+                          snap: snaps[i],
+                          colors: c,
+                          s: s,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
