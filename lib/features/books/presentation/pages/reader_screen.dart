@@ -27,6 +27,7 @@ import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
 import '../widgets/reader/chapter_page.dart';
 import '../widgets/reader/chapter_picker_sheet.dart';
+import '../widgets/reader/reference_jump_sheet.dart';
 import '../widgets/reader/parallel_chapter_page.dart';
 import '../widgets/reader/font_sheet.dart';
 import '../widgets/reader/highlight_sheet.dart';
@@ -221,12 +222,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     final verse = _selectionVerseStart;
     unawaited(
-      container.read(appDatabaseProvider).insertReadingHistory(
-        bookId: _entry.id,
-        chapter: _currentChapterNumber,
-        verse: verse,
-        durationMs: durationMs,
-      ),
+      () async {
+        try {
+          await container.read(appDatabaseProvider).insertReadingHistory(
+            bookId: _entry.id,
+            chapter: _currentChapterNumber,
+            verse: verse,
+            durationMs: durationMs,
+          );
+        } catch (e, st) {
+          debugPrint('Failed to insert reading history: $e\n$st');
+        }
+      }(),
     );
   }
 
@@ -516,6 +523,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           _goToChapter(i);
         },
       ),
+    );
+  }
+
+  void _showReferenceJumpSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const ReferenceJumpSheet(),
     );
   }
 
@@ -937,6 +953,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 onChapterTap: chapterReady
                                     ? () => _showChapterPicker(context, settings)
                                     : null,
+                                onSearchTap: () =>
+                                    _showReferenceJumpSheet(context),
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
