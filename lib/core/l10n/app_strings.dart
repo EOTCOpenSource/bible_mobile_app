@@ -167,6 +167,11 @@ abstract class AppStrings {
   String get savedNoteDeleted;
   String get savedBookmarkDeleted;
   String get savedHighlightDeleted;
+  String get timeMorning;
+  String get timeAfternoon;
+  String get historyEmptyHint;
+  String get loadMore;
+  String get savedDeleteHistoryTitle;
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"
