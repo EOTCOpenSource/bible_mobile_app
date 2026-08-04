@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 
 /// A closed Bible book cover widget.
 ///
@@ -13,12 +14,25 @@ class BookCover extends StatelessWidget {
     this.coverDarkColor,
     this.width = 56,
     this.height = 84,
+    this.title,
+    this.subtitle,
   });
 
   final Color? coverColor;
   final Color? coverDarkColor;
   final double width;
   final double height;
+
+  /// Set on the face under the cross, e.g. a short book name.
+  ///
+  /// With no title the cross stays centred, which is how every plain cover in
+  /// the app already looks. With one, the face becomes a title block — cross,
+  /// then name, then [subtitle] — so the three read top to bottom instead of
+  /// competing for the middle.
+  final String? title;
+
+  /// A line under [title], e.g. the chapter you are on. Ignored without a title.
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -130,16 +144,31 @@ class BookCover extends StatelessWidget {
                   ),
                 ),
               ),
-              // Cross
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.only(left: width * 0.07),
-                  child: CustomPaint(
-                    size: Size(width * 0.285, height * 0.262),
-                    painter: _CrossPainter(color: accent),
+              // Cross, alone or heading the title block.
+              if (title == null)
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: width * 0.07),
+                    child: CustomPaint(
+                      size: Size(width * 0.285, height * 0.262),
+                      painter: _CrossPainter(color: accent),
+                    ),
+                  ),
+                )
+              else
+                Positioned(
+                  left: width * 0.16,
+                  top: 6,
+                  right: 5,
+                  bottom: 6,
+                  child: _TitleBlock(
+                    title: title!,
+                    subtitle: subtitle,
+                    width: width,
+                    height: height,
+                    accent: accent,
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -150,6 +179,70 @@ class BookCover extends StatelessWidget {
   static Color _darken(Color c) {
     final hsl = HSLColor.fromColor(c);
     return hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0)).toColor();
+  }
+}
+
+/// Cross above, name below, chapter last — centred in the gold inlay.
+///
+/// Type sizes come off the cover width so a tile that shrinks with the strip
+/// keeps its proportions rather than turning into a caption under a big cross.
+class _TitleBlock extends StatelessWidget {
+  const _TitleBlock({
+    required this.title,
+    required this.subtitle,
+    required this.width,
+    required this.height,
+    required this.accent,
+  });
+
+  final String title;
+  final String? subtitle;
+  final double width;
+  final double height;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleSize = (width * 0.135).clamp(9.0, 15.0);
+    final subtitleSize = (width * 0.105).clamp(8.0, 12.0);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CustomPaint(
+          size: Size(width * 0.22, height * 0.19),
+          painter: _CrossPainter(color: accent),
+        ),
+        SizedBox(height: height * 0.055),
+        Flexible(
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.amharicLabel.copyWith(
+              color: accent,
+              fontSize: titleSize,
+              height: 1.2,
+            ),
+          ),
+        ),
+        if (subtitle != null) ...[
+          SizedBox(height: height * 0.02),
+          Text(
+            subtitle!,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.amharicCaption.copyWith(
+              color: accent.withValues(alpha: 0.72),
+              fontSize: subtitleSize,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }
 
