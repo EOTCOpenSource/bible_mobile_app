@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kenat/kenat.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'saved_common.dart';
@@ -11,15 +13,53 @@ class HistoryTab extends ConsumerWidget {
     required this.items,
     required this.onOpen,
     required this.onRefresh,
-    required this.onClearHistory,
+    required this.onDeleteItem,
+    this.onClearHistory,
+    this.onLoadMore,
+    this.hasMore = false,
   });
 
   final List<AnnotationItem> items;
   final void Function(AnnotationItem) onOpen;
   final Future<void> Function() onRefresh;
-  final VoidCallback onClearHistory;
+  final void Function(int id) onDeleteItem;
+  final VoidCallback? onClearHistory;
+  final VoidCallback? onLoadMore;
+  final bool hasMore;
 
-  String _formatDate(DateTime date, AppStrings s) {
+  static const _ethiopianMonthsAm = [
+    'መስከረም',
+    'ጥቅምት',
+    'ህዳር',
+    'ታኅሣሥ',
+    'ጥር',
+    'የካቲት',
+    'መጋቢት',
+    'ሚያዝያ',
+    'ግንቦት',
+    'ሰኔ',
+    'ሐምሌ',
+    'ነሐሴ',
+    'ጳጉሜ',
+  ];
+
+  static const _ethiopianMonthsEn = [
+    'Meskerem',
+    'Tikimt',
+    'Hidar',
+    'Tahsas',
+    'Tir',
+    'Yekatit',
+    'Megabit',
+    'Miazia',
+    'Ginbot',
+    'Sene',
+    'Hamle',
+    'Nehase',
+    'Pagume',
+  ];
+
+  String _formatDate(DateTime date, AppStrings s, bool isAmharic, bool useGeez) {
     final now = DateTime.now();
     final diff = DateTime(
       now.year,
@@ -30,22 +70,25 @@ class HistoryTab extends ConsumerWidget {
     if (diff == 0) return s.savedToday;
     if (diff == 1) return s.savedYesterday;
 
-    return s.savedDaysAgo(diff);
+    final et = Kenat(date).getEthiopian();
+    final month = (et['month'] as int).clamp(1, 13);
+    final day = et['day'] as int;
+    final dayStr = useGeez ? toGeez(day) : '$day';
+    final monthStr = isAmharic
+        ? _ethiopianMonthsAm[month - 1]
+        : _ethiopianMonthsEn[month - 1];
+    return '$monthStr $dayStr';
   }
 
   String _formatTime(DateTime time, AppStrings s) {
     final h = time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour);
     final m = time.minute.toString().padLeft(2, '0');
-    if (s is AmStrings) {
-      final p = time.hour < 12 ? 'ጠዋት' : 'ከሰዓት';
-      return '$h:$m $p';
-    } else {
-      final p = time.hour < 12 ? 'AM' : 'PM';
-      return '$h:$m $p';
-    }
+    final p = time.hour < 12 ? s.timeMorning : s.timeAfternoon;
+    return '$h:$m $p';
   }
 
-  void _confirmClear(BuildContext context, AppStrings s) async {
+  void _confirmDeleteSingleItem(
+      BuildContext context, AppStrings s, int itemId) async {
     final c = context.colors;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -53,18 +96,11 @@ class HistoryTab extends ConsumerWidget {
         backgroundColor: c.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          s.savedClearHistoryTitle,
+          s.savedDeleteHistoryTitle,
           style: AppTypography.amharicLabel.copyWith(
             color: c.textOnParchment,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          s.savedClearHistoryMessage,
-          style: AppTypography.amharicBody.copyWith(
-            color: c.textMuted,
-            fontSize: 15,
           ),
         ),
         actions: [
@@ -79,7 +115,7 @@ class HistoryTab extends ConsumerWidget {
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(
-              s.savedClearHistory,
+              s.savedDelete,
               style: AppTypography.amharicLabel.copyWith(
                 color: Colors.red,
                 fontWeight: FontWeight.bold,
@@ -91,7 +127,7 @@ class HistoryTab extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      onClearHistory();
+      onDeleteItem(itemId);
     }
   }
 
@@ -99,6 +135,8 @@ class HistoryTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = L10n.of(context);
     final c = context.colors;
+    final isAmharic = s is AmStrings;
+    final useGeez = Settings.of(context).useGeezNumbers;
 
     if (items.isEmpty) {
       return Center(
@@ -108,7 +146,7 @@ class HistoryTab extends ConsumerWidget {
             Icon(Icons.history_rounded, size: 64, color: c.borderSubtle),
             const SizedBox(height: 16),
             Text(
-              s.savedHistory,
+              s.historyEmptyHint,
               style: AppTypography.amharicBody.copyWith(
                 fontSize: 15,
                 color: c.textCaption,
@@ -121,7 +159,7 @@ class HistoryTab extends ConsumerWidget {
 
     final groups = <String, List<AnnotationItem>>{};
     for (final item in items) {
-      final key = _formatDate(item.createdAt, s);
+      final key = _formatDate(item.createdAt, s, isAmharic, useGeez);
       groups.putIfAbsent(key, () => []).add(item);
     }
 
@@ -132,23 +170,7 @@ class HistoryTab extends ConsumerWidget {
         color: c.primary,
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: TextButton.icon(
-                    onPressed: () => _confirmClear(context, s),
-                    icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                    label: Text(s.savedClearHistory),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      textStyle: AppTypography.amharicLabel,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            const SliverPadding(padding: EdgeInsets.only(top: 8)),
             for (final entry in groups.entries) ...[
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
@@ -174,11 +196,25 @@ class HistoryTab extends ConsumerWidget {
                       tab: 3,
                       trailingText: _formatTime(item.createdAt, s),
                       onTap: () => onOpen(item),
+                      onDelete: () =>
+                          _confirmDeleteSingleItem(context, s, item.id),
                     );
                   },
                 ),
               ),
             ],
+            if (hasMore && onLoadMore != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: OutlinedButton(
+                      onPressed: onLoadMore,
+                      child: Text(s.loadMore),
+                    ),
+                  ),
+                ),
+              ),
             const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
           ],
         ),
