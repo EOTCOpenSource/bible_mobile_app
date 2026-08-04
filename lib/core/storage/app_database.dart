@@ -3,6 +3,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../annotations/annotation_models.dart';
 import '../../features/books/data/models/book_identity.dart';
+import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
@@ -532,6 +533,131 @@ class AppDatabase {
       orderBy: 'book_number ASC, chapter ASC, verse_start ASC',
     );
     return rows.map(Note.fromMap).toList();
+  }
+
+  // ── Backup / Restore ──────────────────────────────────────────────────────
+
+  Future<int> countExistingConflicts({
+    required List<({String usfmBookId, int chapter, int verse})> bookmarks,
+    required List<({String usfmBookId, int chapter, int verse})> highlights,
+    required List<({String usfmBookId, int chapter, int verse})> notes,
+  }) async {
+    final db = await database;
+    var count = 0;
+
+    for (final b in bookmarks) {
+      final rows = await db.query(
+        'bookmarks',
+        columns: ['id'],
+        where: 'book_id = ? AND chapter = ? AND verse_start = ? AND sync_status != ?',
+        whereArgs: [b.usfmBookId, b.chapter, b.verse, SyncStatus.pendingDelete.name],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) count++;
+    }
+
+    for (final h in highlights) {
+      final rows = await db.query(
+        'highlights',
+        columns: ['id'],
+        where: 'book_id = ? AND chapter = ? AND verse_start = ? AND sync_status != ?',
+        whereArgs: [h.usfmBookId, h.chapter, h.verse, SyncStatus.pendingDelete.name],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) count++;
+    }
+
+    for (final n in notes) {
+      final rows = await db.query(
+        'notes',
+        columns: ['id'],
+        where: 'book_id = ? AND chapter = ? AND verse_start = ? AND sync_status != ?',
+        whereArgs: [n.usfmBookId, n.chapter, n.verse, SyncStatus.pendingDelete.name],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) count++;
+    }
+
+    return count;
+  }
+
+  Future<void> importAnnotations({
+    required List<Bookmark> bookmarks,
+    required List<Highlight> highlights,
+    required List<Note> notes,
+    required BackupConflictPolicy conflictPolicy,
+  }) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // 1. Bookmarks
+      for (final b in bookmarks) {
+        final existing = await txn.query(
+          'bookmarks',
+          where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+          whereArgs: [b.bookId, b.chapter, b.verseStart],
+          limit: 1,
+        );
+        if (existing.isEmpty) {
+          await txn.insert('bookmarks', b.toMap());
+        } else if (conflictPolicy == BackupConflictPolicy.replace) {
+          final existingId = existing.first['id'] as int;
+          final map = b.toMap()..['id'] = existingId;
+          await txn.update('bookmarks', map, where: 'id = ?', whereArgs: [existingId]);
+        }
+      }
+
+      // 2. Highlights
+      for (final h in highlights) {
+        final existing = await txn.query(
+          'highlights',
+          where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+          whereArgs: [h.bookId, h.chapter, h.verseStart],
+          limit: 1,
+        );
+        if (existing.isEmpty) {
+          await txn.insert('highlights', h.toMap());
+        } else if (conflictPolicy == BackupConflictPolicy.replace) {
+          final existingId = existing.first['id'] as int;
+          final map = h.toMap()..['id'] = existingId;
+          await txn.update('highlights', map, where: 'id = ?', whereArgs: [existingId]);
+        }
+      }
+
+      // 3. Notes
+      for (final n in notes) {
+        final existing = await txn.query(
+          'notes',
+          where: 'book_id = ? AND chapter = ? AND verse_start = ?',
+          whereArgs: [n.bookId, n.chapter, n.verseStart],
+          limit: 1,
+        );
+        if (existing.isEmpty) {
+          await txn.insert('notes', n.toMap());
+        } else {
+          final existingRow = existing.first;
+          final existingId = existingRow['id'] as int;
+          if (conflictPolicy == BackupConflictPolicy.replace) {
+            final map = n.toMap()..['id'] = existingId;
+            await txn.update('notes', map, where: 'id = ?', whereArgs: [existingId]);
+          } else if (conflictPolicy == BackupConflictPolicy.merge) {
+            final existingContent = existingRow['content'] as String? ?? '';
+            if (existingContent.trim() != n.content.trim()) {
+              final mergedContent = '$existingContent\n\n${n.content}';
+              await txn.update(
+                'notes',
+                {
+                  'content': mergedContent,
+                  'updated_at': DateTime.now().millisecondsSinceEpoch,
+                  'sync_status': SyncStatus.pendingUpdate.name,
+                },
+                where: 'id = ?',
+                whereArgs: [existingId],
+              );
+            }
+          }
+        }
+      }
+    });
   }
 
   // ── Sync helpers ───────────────────────────────────────────────────────────
