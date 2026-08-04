@@ -6,7 +6,7 @@ import '../../features/books/data/models/book_identity.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 9;
+  static const _version = 10;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -84,6 +84,34 @@ class AppDatabase {
         );
       }
     }
+    // v9→v10: the reading history log. `_createReadingTables` declares it too,
+    // so anything older than v2 already had it created above — this is only
+    // for databases that reached v9 without it.
+    if (oldVersion < 10) {
+      await _createReadingHistoryTable(db);
+    }
+  }
+
+  /// One row per stretch of reading, newest first.
+  ///
+  /// Separate from `reading_position` (one row per book, where you left off)
+  /// and `chapter_read` (first read only): this is the visit log the History
+  /// tab lists, so re-reading a chapter has to leave a new row behind.
+  Future<void> _createReadingHistoryTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reading_history (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        book_id     TEXT    NOT NULL,
+        chapter     INTEGER NOT NULL,
+        verse       INTEGER,
+        opened_at   INTEGER NOT NULL,
+        duration_ms INTEGER
+      )
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_history_opened
+      ON reading_history (opened_at DESC)
+    ''');
   }
 
   /// v8→v9: one row per calendar day the reader qualified on.
@@ -260,6 +288,7 @@ class AppDatabase {
       'longest_streak_start': null,
       'longest_streak_end': null,
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await _createReadingHistoryTable(db);
   }
 
   Future<void> _onCreate(Database db, int _) async {
@@ -493,6 +522,96 @@ class AppDatabase {
       },
       where: 'id = ?',
       whereArgs: [1],
+    );
+  }
+
+  // ── Reading History ────────────────────────────────────────────────────────
+
+  Future<void> insertReadingHistory({
+    required String bookId,
+    required int chapter,
+    int? verse,
+    required int durationMs,
+  }) async {
+    try {
+      final db = await database;
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      final recent = await db.query(
+        'reading_history',
+        orderBy: 'opened_at DESC',
+        limit: 1,
+      );
+
+      if (recent.isNotEmpty) {
+        final row = recent.first;
+        final oldBookId = row['book_id'] as String;
+        final oldChapter = row['chapter'] as int;
+        final openedAt = row['opened_at'] as int;
+        final oldDuration = (row['duration_ms'] as int?) ?? 0;
+
+        if (oldBookId == bookId &&
+            oldChapter == chapter &&
+            (now - openedAt) <= 30 * 60 * 1000) {
+          await db.update(
+            'reading_history',
+            {
+              'duration_ms': oldDuration + durationMs,
+              'verse': verse,
+              'opened_at': now,
+            },
+            where: 'id = ?',
+            whereArgs: [row['id']],
+          );
+          return;
+        }
+      }
+
+      await db.insert('reading_history', {
+        'book_id': bookId,
+        'chapter': chapter,
+        'verse': verse,
+        'opened_at': now,
+        'duration_ms': durationMs,
+      });
+
+      final countRes = await db.rawQuery('SELECT COUNT(*) as c FROM reading_history');
+      final count = countRes.first['c'] as int;
+      if (count > 500) {
+        await db.execute('''
+          DELETE FROM reading_history 
+          WHERE id IN (
+            SELECT id FROM reading_history 
+            ORDER BY opened_at ASC 
+            LIMIT ?
+          )
+        ''', [count - 500]);
+      }
+    } catch (e, st) {
+      debugPrint('AppDatabase.insertReadingHistory error: $e\n$st');
+    }
+  }
+
+  Future<List<Map<String, Object?>>> getReadingHistory({int? limit}) async {
+    final db = await database;
+    return db.query(
+      'reading_history',
+      orderBy: 'opened_at DESC',
+      limit: limit,
+    );
+  }
+
+  Future<void> clearReadingHistory() async {
+    final db = await database;
+    await db.delete('reading_history');
+  }
+
+  Future<void> deleteReadingHistoryItem(int id) async {
+    final db = await database;
+    await db.delete(
+      'reading_history',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

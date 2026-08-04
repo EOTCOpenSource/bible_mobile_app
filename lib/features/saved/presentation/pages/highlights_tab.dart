@@ -190,9 +190,9 @@ class _HighlightsTabState extends ConsumerState<HighlightsTab> {
       await widget.onRefresh();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.savedHighlightDeleted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s.savedHighlightDeleted)));
       }
     }
   }

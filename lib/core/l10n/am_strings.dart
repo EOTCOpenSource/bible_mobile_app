@@ -239,13 +239,15 @@ class AmStrings extends AppStrings {
   @override
   String get savedEyebrow => 'ያቀቡት';
   @override
-  String get savedTitle => 'ስብስቤ';
+  String get savedTitle => 'የተቀመጡ';
   @override
-  String get savedHighlights => 'ምልክቶ';
+  String get savedHistory => 'ታሪክ';
   @override
-  String get savedBookmarks => 'ክታቦ';
+  String get savedHighlights => 'ማድመቂያዎች';
   @override
-  String get savedNotes => 'ማስታወሻ';
+  String get savedBookmarks => 'ዕልባቶች';
+  @override
+  String get savedNotes => 'ማስታወሻዎች';
   @override
   String get savedFilterAll => 'ሁሉም';
   @override
@@ -281,9 +283,15 @@ class AmStrings extends AppStrings {
   @override
   String get savedEmptyNotesTitle => 'ምንም ማስታወሻ የለም';
   @override
-  String get savedEmptyNotesHint => 'ምንባብ ሲያነቡ ማስታወሻ ይጻፉ';
+  String get savedEmptyNotesHint => 'አንድን ጥቅስ ሲመርጡ "ማስታወሻ" የሚለውን በመጫን ሃሳብዎን መመዝገብ ይችላሉ። ማስታወሻዎችዎ እዚህ ይዘረዘራሉ።';
   @override
-  String get savedEdit => 'አስተካክል';
+  String get savedClearHistory => 'ታሪክ አጽዳ';
+  @override
+  String get savedClearHistoryTitle => 'የንባብ ታሪክን ያጽዱ?';
+  @override
+  String get savedClearHistoryMessage => 'ይህ እርምጃ የንባብ ታሪክዎን ይሰርዛል፤ ሊቀለበስ አይችልም።';
+  @override
+  String get savedEdit => 'አርትዕ';
   @override
   String get savedDelete => 'ሰርዝ';
   @override
@@ -309,6 +317,16 @@ class AmStrings extends AppStrings {
   String get savedBookmarkDeleted => 'ክታቦ ተሰርዟል';
   @override
   String get savedHighlightDeleted => 'ምልክቶ ተሰርዟል';
+  @override
+  String get timeMorning => 'ጠዋት';
+  @override
+  String get timeAfternoon => 'ከሰዓት';
+  @override
+  String get historyEmptyHint => 'ንባብ ሲጀምሩ ታሪክዎ እዚህ ይታያል';
+  @override
+  String get loadMore => 'ተጨማሪ አሳይ';
+  @override
+  String get savedDeleteHistoryTitle => 'ይህን መዝገብ ከታሪክ ያጥፋ?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

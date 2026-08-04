@@ -64,6 +64,16 @@ class ReadingProgressRepository {
     return rows.map(ReadingPosition.fromRow).toList();
   }
 
+  Future<List<ReadingPosition>> getRecentReadingHistory(int limit) async {
+    final rows = await _db.getReadingHistory(limit: limit);
+    return rows.map((row) => ReadingPosition(
+      bookId: row['book_id'] as String,
+      chapter: row['chapter'] as int,
+      verse: row['verse'] as int?,
+      updatedAtMs: row['opened_at'] as int,
+    )).toList();
+  }
+
   Future<ReadingStreakState> getReadingStreakState() async {
     final row = await _db.getReadingStreakRow();
     return ReadingStreakState.fromRow(row);

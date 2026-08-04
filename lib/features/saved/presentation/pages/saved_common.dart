@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kenat/kenat.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/models/book_index_entry.dart';
@@ -48,12 +50,16 @@ class AnnotationCard extends StatelessWidget {
     required this.tab,
     required this.onTap,
     this.onLongPress,
+    this.trailingText,
+    this.onDelete,
   });
 
   final AnnotationItem item;
   final int tab;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final String? trailingText;
+  final VoidCallback? onDelete;
 
   String _daysAgo(AppStrings strings) {
     final diff = DateTime.now().difference(item.createdAt);
@@ -66,14 +72,28 @@ class AnnotationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final c = context.colors;
+    final settings = Settings.of(context);
     final accent = tab == 0 && item.highlightColor != null
         ? item.highlightColor!
         : tab == 1
         ? c.primary
-        : c.accentDeep;
+        : tab == 2
+        ? c.accentDeep
+        : c.textMuted;
+
+    final chNum = settings.useGeezNumbers
+        ? toGeez(item.chapter)
+        : '${item.chapter}';
+    final vStart = settings.useGeezNumbers
+        ? toGeez(item.verseStart)
+        : '${item.verseStart}';
+    final vEnd = settings.useGeezNumbers
+        ? toGeez(item.verseStart + item.verseCount - 1)
+        : '${item.verseStart + item.verseCount - 1}';
+
     final chRef = item.verseCount > 1
-        ? '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}–${item.verseStart + item.verseCount - 1}'
-        : '${item.bookShortName(s)} ${item.chapter}:${item.verseStart}';
+        ? '${item.bookShortName(s)} $chNum:$vStart–$vEnd'
+        : '${item.bookShortName(s)} $chNum:$vStart';
 
     return GestureDetector(
       onTap: onTap,
@@ -125,12 +145,27 @@ class AnnotationCard extends StatelessWidget {
                             ),
                             const Spacer(),
                             Text(
-                              _daysAgo(s),
+                              trailingText ?? _daysAgo(s),
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 11,
                                 color: c.textCaption,
                               ),
                             ),
+                            if (onDelete != null) ...[
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: onDelete,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 18,
+                                    color: Colors.red.withValues(alpha: 0.70),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -255,7 +290,9 @@ class _TypeBadge extends StatelessWidget {
         ? Icons.format_color_fill_rounded
         : tab == 1
         ? Icons.bookmark_rounded
-        : Icons.sticky_note_2_rounded;
+        : tab == 2
+        ? Icons.sticky_note_2_rounded
+        : Icons.history_rounded;
 
     return Container(
       width: 22,

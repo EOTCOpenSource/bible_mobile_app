@@ -12,11 +12,40 @@ final readingProgressRepositoryProvider = Provider<ReadingProgressRepository>(
   (ref) => ReadingProgressRepository(ref.watch(appDatabaseProvider)),
 );
 
+/// How many books the continue-reading shelf carries.
+///
+/// Shared with [ContinueReadingSection] so the query can never come back
+/// shorter than the strip is willing to draw.
+const continueReadingBookLimit = 10;
+
 /// All books with reading progress, ordered by most recently read.
+///
+/// Two sources, in that order of precedence:
+///
+/// * `reading_history` — the visit log, so the front of the shelf is what you
+///   were last actually reading.
+/// * `reading_position` — one row per book ever opened.
+///
+/// The second is appended rather than used only as an empty-history fallback.
+/// History is only written from schema v10 onward, so on an install that
+/// predates it there are a handful of history rows and years of positions;
+/// falling back only when history is *completely* empty stranded every book
+/// but the last few read.
+///
+/// A book is listed once, at its most recent position — reading it puts it in
+/// both tables.
 final continueReadingSnapshotsProvider =
     FutureProvider<List<ContinueReadingSnapshot>>((ref) async {
   final repo = ref.watch(readingProgressRepositoryProvider);
-  final positions = await repo.getAllReadingPositions();
+  final seen = <String>{};
+  final positions = <ReadingPosition>[];
+  for (final pos in [
+    ...await repo.getRecentReadingHistory(continueReadingBookLimit * 10),
+    ...await repo.getAllReadingPositions(),
+  ]) {
+    if (positions.length == continueReadingBookLimit) break;
+    if (seen.add(pos.bookId)) positions.add(pos);
+  }
   if (positions.isEmpty) return [];
 
   final index = await ref.watch(bibleRepositoryProvider).loadIndex();
