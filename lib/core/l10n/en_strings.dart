@@ -882,6 +882,11 @@ class EnStrings extends AppStrings {
   @override
   String get backupMarkdownDisclaimer => 'This file cannot be re-imported';
   @override
+  String get backupMarkdownBody =>
+      'Your bookmarks, highlights and notes are written out as a plain document you can read, print or keep.';
+  @override
+  String get backupConfirmExport => 'Export';
+  @override
   String get backupConflictSkip => 'Skip existing';
   @override
   String get backupConflictMerge => 'Merge';

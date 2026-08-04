@@ -372,20 +372,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
 
     final proceed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.backupExportMarkdown),
-        content: Text('${s.backupMarkdownDisclaimer}.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(s.backupCancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(s.backupExportMarkdown),
-          ),
-        ],
-      ),
+      builder: (ctx) => const _MarkdownExportDialog(),
     );
 
     if (proceed != true || !mounted) return;
@@ -817,6 +804,152 @@ class _GuestCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Markdown export confirmation ───────────────────────────────────────────────
+
+/// Confirms the one-way Markdown export.
+///
+/// The whole reason this dialog exists is the caveat: a Markdown file is for
+/// reading, and `import_service` cannot parse it back. So the caveat gets its
+/// own callout rather than sitting in the body text where it reads as an aside,
+/// and the confirm button says the verb rather than repeating the title.
+class _MarkdownExportDialog extends StatelessWidget {
+  const _MarkdownExportDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final c = context.colors;
+
+    return AlertDialog(
+      backgroundColor: c.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: c.borderSubtle),
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      title: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: c.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.description_outlined, size: 20, color: c.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.backupExportMarkdown,
+                  style: AppTypography.amharicLabel.copyWith(
+                    color: c.textOnParchment,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'MARKDOWN',
+                  style: AppTypography.englishLabel.copyWith(
+                    color: c.textCaption,
+                    fontSize: 10,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            s.backupMarkdownBody,
+            style: AppTypography.amharicBody.copyWith(
+              color: c.textMuted,
+              fontSize: 14,
+              height: 1.55,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // The caveat, given its own weight — this is what the user is
+          // actually being asked to accept.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: c.accent.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: c.accent.withValues(alpha: 0.25)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: 17, color: c.accentDeep),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    s.backupMarkdownDisclaimer,
+                    style: AppTypography.amharicBody.copyWith(
+                      color: c.accentDeep,
+                      fontSize: 13,
+                      height: 1.45,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          child: Text(
+            s.backupCancel,
+            style: AppTypography.amharicLabel.copyWith(
+              color: c.textMuted,
+              fontSize: 14,
+            ),
+          ),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: FilledButton.styleFrom(
+            backgroundColor: c.primary,
+            foregroundColor: c.textOnDark,
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            s.backupConfirmExport,
+            style: AppTypography.amharicLabel.copyWith(
+              color: c.textOnDark,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

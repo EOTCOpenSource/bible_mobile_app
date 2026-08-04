@@ -524,6 +524,8 @@ abstract class AppStrings {
   String get backupImport;
   String get backupImportHint;
   String get backupMarkdownDisclaimer;
+  String get backupMarkdownBody;
+  String get backupConfirmExport;
   String get backupConflictSkip;
   String get backupConflictMerge;
   String get backupConflictReplace;

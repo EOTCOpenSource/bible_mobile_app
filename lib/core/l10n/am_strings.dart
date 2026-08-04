@@ -871,6 +871,11 @@ class AmStrings extends AppStrings {
   @override
   String get backupMarkdownDisclaimer => 'ይህ ፋይል ለንባብ ብቻ የተዘጋጀ ነው (መመለስ አይቻልም)';
   @override
+  String get backupMarkdownBody =>
+      'ዕልባቶችዎ፣ ምልክቶችዎ እና ማስታወሻዎችዎ ለማንበብ፣ ለማተም ወይም ለማስቀመጥ በሚመች ሰነድ ሆነው ይጻፋሉ።';
+  @override
+  String get backupConfirmExport => 'አውጣ';
+  @override
   String get backupConflictSkip => 'ነባሩን አስቀር';
   @override
   String get backupConflictMerge => 'ቀላቅል';
