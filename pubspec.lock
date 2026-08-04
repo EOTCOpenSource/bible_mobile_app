@@ -556,10 +556,10 @@ packages:
     dependency: "direct main"
     description:
       name: kenat
-      sha256: "7f855d36b7586175497c355941a984d1ff028727e00420f911cf1ee0a33a4cb9"
+      sha256: "3160e7ee29b1135fdf5d752be81bf29416229ba0ccf3ece75c367d5591f4184f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "2.0.0"
   leak_tracker:
     dependency: transitive
     description:
