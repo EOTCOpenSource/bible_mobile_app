@@ -12,13 +12,29 @@ final readingProgressRepositoryProvider = Provider<ReadingProgressRepository>(
   (ref) => ReadingProgressRepository(ref.watch(appDatabaseProvider)),
 );
 
+/// How many books the shelf can hold. Kept a little above what
+/// [ContinueReadingSection] draws so the tail of the strip is never empty.
+const _continueReadingBooks = 10;
+
 /// All books with reading progress, ordered by most recently read.
+///
+/// Prefers the history log over `reading_position` so the order is "what you
+/// were last actually reading" rather than "what the position row happened to
+/// be written for". History is one row per *visit*, though — three chapters of
+/// Genesis are three rows — so it is collapsed to one entry per book, keeping
+/// the newest. Without that the shelf shows the same cover several times over.
 final continueReadingSnapshotsProvider =
     FutureProvider<List<ContinueReadingSnapshot>>((ref) async {
   final repo = ref.watch(readingProgressRepositoryProvider);
-  var positions = await repo.getRecentReadingHistory(5);
+  final history = await repo.getRecentReadingHistory(_continueReadingBooks * 10);
+  final seen = <String>{};
+  var positions = [
+    for (final pos in history)
+      if (seen.add(pos.bookId)) pos,
+  ].take(_continueReadingBooks).toList();
   if (positions.isEmpty) {
-    positions = (await repo.getAllReadingPositions()).take(5).toList();
+    positions =
+        (await repo.getAllReadingPositions()).take(_continueReadingBooks).toList();
   }
   if (positions.isEmpty) return [];
 
