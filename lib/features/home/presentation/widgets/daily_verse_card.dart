@@ -8,8 +8,11 @@ import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../annotations/providers/annotation_providers.dart';
+import '../../../books/data/models/book.dart';
 import '../../../books/data/repositories/bible_repository.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
+import '../../../share/verse_card_sheet.dart';
 
 class DailyVerseCard extends ConsumerStatefulWidget {
   const DailyVerseCard({super.key});
@@ -20,6 +23,9 @@ class DailyVerseCard extends ConsumerStatefulWidget {
 
 class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
   Future<DailyVerseResult?>? _future;
+
+  /// Guards the share button while the chapter loads behind it.
+  bool _sharing = false;
 
   // The card is a fixed size whatever the verse costs. Psalm 119 and a one-line
   // proverb both land on the same footprint, so Home's layout below it never
@@ -92,6 +98,71 @@ class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
     final audio = AudioService.instance;
     return audio.currentTitleNotifier.value == title &&
         audio.stateNotifier.value != AudioState.stopped;
+  }
+
+  /// The annotation bucket this verse belongs to — the same one the reader
+  /// writes to, so a bookmark made here is already there when the chapter opens.
+  ChapterKey _chapterKey(DailyVerseResult r) =>
+      (bookId: r.bookEntry.id, chapter: r.chapter);
+
+  Future<void> _toggleBookmark(DailyVerseResult result) async {
+    await ref
+        .read(chapterAnnotationsProvider(_chapterKey(result)).notifier)
+        .toggleBookmark(
+          verseStart: result.verse,
+          bookNumber: result.bookEntry.bookNumber,
+        );
+  }
+
+  /// Opens the same share sheet the reader uses.
+  ///
+  /// The sheet renders a real [Verse], not a string, so the chapter has to be
+  /// loaded first — the daily verse arrives as plain text and does not carry
+  /// the line breaks and cross references the card lays out.
+  Future<void> _share(DailyVerseResult result) async {
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      final book = await BibleRepositoryProvider.of(context)
+          .loadBook(result.bookEntry);
+      if (!mounted) return;
+
+      final chapter = _findChapter(book, result.chapter);
+      final verse = chapter == null ? null : _findVerse(chapter, result.verse);
+      if (verse == null || chapter == null) {
+        // The edition moved or renumbered the verse under us; the reader is
+        // still a way to get to it, so say nothing and do nothing rather than
+        // sharing the wrong words.
+        return;
+      }
+
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => VerseCardSheet(
+          verses: [verse],
+          book: book,
+          chapterNumber: chapter.chapterNumber,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  static Chapter? _findChapter(Book book, int number) {
+    for (final c in book.chapters) {
+      if (c.chapterNumber == number) return c;
+    }
+    return null;
+  }
+
+  static Verse? _findVerse(Chapter chapter, int number) {
+    for (final v in chapter.allVerses) {
+      if (v.verseNumber == number) return v;
+    }
+    return null;
   }
 
   /// Reads the daily verse with the same AI voice as the reader.
@@ -260,12 +331,19 @@ class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
                     const SizedBox(width: 8),
                     _IconAction(
                       icon: Icons.share_outlined,
-                      onTap: result != null ? () {} : null,
+                      onTap: result != null ? () => _share(result) : null,
+                      child: _sharing
+                          ? CircularProgressIndicator(
+                              strokeWidth: 2, color: c.textOnDark)
+                          : null,
                     ),
                     const SizedBox(width: 8),
-                    _IconAction(
-                      icon: Icons.bookmark_border_rounded,
-                      onTap: result != null ? () {} : null,
+                    _BookmarkAction(
+                      chapterKey: result != null ? _chapterKey(result) : null,
+                      verse: result?.verse,
+                      onTap: result != null
+                          ? () => _toggleBookmark(result)
+                          : null,
                     ),
                     const SizedBox(width: 8),
                     _VoiceAction(
@@ -347,6 +425,37 @@ class _IconAction extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The bookmark button, filled once this verse is saved.
+///
+/// Reads the same chapter annotations the reader does, so bookmarking here and
+/// opening the chapter agree, and a bookmark removed in the reader empties this
+/// icon without the card being rebuilt by hand.
+class _BookmarkAction extends ConsumerWidget {
+  const _BookmarkAction({
+    required this.chapterKey,
+    required this.verse,
+    required this.onTap,
+  });
+
+  final ChapterKey? chapterKey;
+  final int? verse;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var saved = false;
+    if (chapterKey != null && verse != null) {
+      final annotations = ref.watch(chapterAnnotationsProvider(chapterKey!));
+      saved = annotations.value?.isBookmarked(verse!) ?? false;
+    }
+
+    return _IconAction(
+      icon: saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+      onTap: onTap,
     );
   }
 }

@@ -44,6 +44,12 @@ abstract class AppStrings {
 
   // ── Continue reading ──────────────────────────────────────────────────────
   String get continueReadingTitle;
+
+  /// Heading for the shelf shown before anything has been read.
+  String get startReadingTitle;
+
+  /// The call to action on a suggested book.
+  String get startReadingAction;
   String completedPercent(int pct);
 
   // ── Reading plans ─────────────────────────────────────────────────────────

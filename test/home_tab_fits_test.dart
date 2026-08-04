@@ -9,6 +9,7 @@ import 'package:bibleflutter/features/books/providers/reading_progress_providers
 import 'package:bibleflutter/core/widgets/book_cover.dart';
 import 'package:bibleflutter/features/home/presentation/pages/home_tab.dart';
 import 'package:bibleflutter/features/home/presentation/widgets/continue_reading_section.dart';
+import 'package:bibleflutter/features/home/providers/starter_books_provider.dart';
 import 'package:bibleflutter/features/topics/data/topic_models.dart';
 import 'package:bibleflutter/features/topics/providers/topic_providers.dart';
 import 'package:flutter/material.dart';
@@ -60,10 +61,26 @@ List<TopicEntry> _topics() => List.generate(
       ),
     );
 
+/// Stand-ins for the books a fresh install would be offered.
+List<BookIndexEntry> _starters(int n) => List.generate(
+      n,
+      (i) => BookIndexEntry(
+        id: ['JHN', 'PSA', 'GEN'][i % 3],
+        bookNumber: 40 + i,
+        bookNameAm: 'ወንጌለ ዮሐንስ',
+        bookNameEn: 'John',
+        bookShortNameAm: 'ዮሐ',
+        bookShortNameEn: 'Jn',
+        testament: 'NT',
+        chapterCount: 21,
+      ),
+    );
+
 Widget _app({
   AppSettings settings = const AppSettings(),
   double textScale = 1.0,
   int books = 0,
+  int starters = 3,
 }) =>
     ProviderScope(
       overrides: [
@@ -73,6 +90,7 @@ Widget _app({
         ),
         continueReadingSnapshotsProvider.overrideWith((ref) async => _snapshots(books)),
         topicsProvider.overrideWith((ref) async => _topics()),
+        starterBooksProvider.overrideWith((ref) async => _starters(starters)),
       ],
       child: BibleRepositoryProvider(
         // No edition is installed in a test, so the daily verse resolves to its
@@ -307,6 +325,81 @@ void main() {
         matching: find.byType(BookCover),
       );
       expect(covers.evaluate().length, greaterThanOrEqualTo(3));
+    });
+  });
+
+  group('a reader with no history', () {
+    testWidgets('is offered books to start rather than a dead end',
+        (tester) async {
+      tester.view.physicalSize = const Size(393, 851);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_app(books: 0, starters: 3));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      // Real covers, not a single signpost card.
+      final covers = find.descendant(
+        of: find.byType(ContinueReadingSection),
+        matching: find.byType(BookCover),
+      );
+      expect(covers.evaluate().length, greaterThanOrEqualTo(kMinStarterBooks));
+    });
+
+    testWidgets('never shows fewer than the minimum', (tester) async {
+      tester.view.physicalSize = const Size(393, 851);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_app(books: 0, starters: kMinStarterBooks));
+      await tester.pumpAndSettle();
+
+      final covers = find.descendant(
+        of: find.byType(ContinueReadingSection),
+        matching: find.byType(BookCover),
+      );
+      expect(covers.evaluate().length, kMinStarterBooks);
+    });
+
+    testWidgets('the heading says start, not continue', (tester) async {
+      tester.view.physicalSize = const Size(393, 851);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_app(books: 0));
+      await tester.pumpAndSettle();
+
+      const am = AmStrings();
+      expect(find.text(am.startReadingTitle), findsOneWidget);
+      expect(find.text(am.continueReadingTitle), findsNothing);
+    });
+
+    testWidgets('with an edition installed but no suggestions, the signpost '
+        'still shows', (tester) async {
+      tester.view.physicalSize = const Size(393, 851);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_app(books: 0, starters: 0));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      const am = AmStrings();
+      // Falls back to the "go to the books tab" card rather than a blank row.
+      expect(find.text(am.streakReadTodayHint), findsOneWidget);
+    });
+
+    testWidgets('the starter shelf fits a compact phone', (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_app(books: 0, starters: 3));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     });
   });
 

@@ -66,6 +66,10 @@ class AmStrings extends AppStrings {
   @override
   String get continueReadingTitle => 'ንባብ ቀጥል';
   @override
+  String get startReadingTitle => 'ንባብ ይጀምሩ';
+  @override
+  String get startReadingAction => 'ጀምር';
+  @override
   String completedPercent(int pct) => '$pct% ተጠናቅቋ';
 
   // ── Reading plans ─────────────────────────────────────────────────────────

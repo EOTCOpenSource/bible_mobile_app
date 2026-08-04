@@ -69,6 +69,10 @@ class EnStrings extends AppStrings {
   @override
   String get continueReadingTitle => 'Continue Reading';
   @override
+  String get startReadingTitle => 'Start Reading';
+  @override
+  String get startReadingAction => 'Start';
+  @override
   String completedPercent(int pct) => '$pct% complete';
 
   // ── Reading plans ─────────────────────────────────────────────────────────
