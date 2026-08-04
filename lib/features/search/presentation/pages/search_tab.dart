@@ -9,6 +9,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/models/book_index_entry.dart';
 import '../../../books/data/repositories/bible_repository.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
+import '../../../books/data/reference_parser.dart';
 
 // ── Highlight helper ──────────────────────────────────────────────────────────
 
@@ -79,6 +80,7 @@ class _SearchTabState extends State<SearchTab> {
   SearchMode  _mode  = SearchMode.smart;
   SearchScope _scope = SearchScope.all;
   late BookIndexEntry? _book;
+  List<ParsedReference> _parsedRefs = [];
 
   @override
   void initState() {
@@ -120,19 +122,31 @@ class _SearchTabState extends State<SearchTab> {
   Future<void> _run(String q) async {
     final v    = ++_version;
     final repo = BibleRepositoryProvider.of(context);
-    final hits = await repo.searchVerses(q, filter: _filter);
+    // Read off the context before the first await — after one, this State may
+    // no longer be mounted and the lookup is not safe.
+    final useGeez = Settings.of(context).useGeezNumbers;
+
+    final index = await repo.loadIndex();
+    final hitsFuture = repo.searchVerses(q, filter: _filter);
+
+    // Parsed while the search runs: "ዘፍ 3:16" should offer the verse itself,
+    // not just rows that happen to contain those words.
+    final refs = parseReference(q, index, useGeezNumbers: useGeez);
+
+    final hits = await hitsFuture;
     if (!mounted || _version != v) return;
     setState(() {
       _activeQuery = q;
       _hits  = hits;
-      _state = hits.isEmpty ? _SearchState.empty : _SearchState.results;
+      _parsedRefs = refs;
+      _state = (hits.isEmpty && refs.isEmpty) ? _SearchState.empty : _SearchState.results;
     });
   }
 
   void _clear() {
     _controller.clear();
     _debounce?.cancel();
-    setState(() { _state = _SearchState.idle; _hits = []; });
+    setState(() { _state = _SearchState.idle; _hits = []; _parsedRefs = []; });
   }
 
   // ── Filter helpers ────────────────────────────────────────────────────────
@@ -228,6 +242,7 @@ class _SearchTabState extends State<SearchTab> {
                   _SearchState.results => _ResultsList(
                       key:     const ValueKey('r'),
                       hits:    _hits,
+                      parsedRefs: _parsedRefs,
                       query:   _activeQuery,
                       mode:    _mode,
                       s:       s,
@@ -722,6 +737,7 @@ class _ResultsList extends StatelessWidget {
   const _ResultsList({
     super.key,
     required this.hits,
+    required this.parsedRefs,
     required this.query,
     required this.mode,
     required this.s,
@@ -730,6 +746,7 @@ class _ResultsList extends StatelessWidget {
   });
 
   final List<SearchHit> hits;
+  final List<ParsedReference> parsedRefs;
   final String query;
   final SearchMode mode;
   final AppStrings s;
@@ -741,6 +758,15 @@ class _ResultsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (parsedRefs.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: _JumpCard(
+              cand: parsedRefs.first,
+              isAm: isAm,
+              useGeez: useGeez,
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
           child: Text(
@@ -857,6 +883,66 @@ class _ResultTile extends StatelessWidget {
             const SizedBox(width: 8),
             Icon(Icons.bookmark_border_rounded,
                 size: 18, color: c.textCaption),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _JumpCard extends StatelessWidget {
+  const _JumpCard({
+    required this.cand,
+    required this.isAm,
+    required this.useGeez,
+  });
+
+  final ParsedReference cand;
+  final bool isAm;
+  final bool useGeez;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final bookName = isAm ? cand.book.bookNameAm : cand.book.bookNameEn;
+    final ch = useGeez ? toGeez(cand.chapter) : '${cand.chapter}';
+    final v = cand.verse == null ? '' : ':${useGeez ? toGeez(cand.verse!) : '${cand.verse!}'}';
+    
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ReaderScreen(
+              entry: cand.book,
+              initialChapterNumber: cand.chapter,
+              initialVerse: cand.verse,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: c.surfaceDim,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.arrow_forward_rounded, size: 20, color: c.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Go to $bookName $ch$v',
+                style: AppTypography.amharicLabel.copyWith(
+                  fontSize: 15,
+                  color: c.textOnParchment,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       ),

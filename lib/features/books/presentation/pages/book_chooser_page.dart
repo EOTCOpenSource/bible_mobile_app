@@ -9,6 +9,7 @@ import '../../data/models/book_index_entry.dart';
 import '../../data/repositories/bible_repository.dart'
     show BibleRepository, SearchScope;
 import '../widgets/edition_switcher.dart';
+import '../widgets/reader/reference_jump_sheet.dart';
 
 // ── Category filters ──────────────────────────────────────────────────────────
 
@@ -149,6 +150,43 @@ class _BookChooserPageState extends State<BookChooserPage>
                         : SearchScope.newTestament;
                     widget.onSearchTap!(scope);
                   },
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: InkWell(
+              onTap: () {
+                 showModalBottomSheet(
+                   context: context,
+                   isScrollControlled: true,
+                   backgroundColor: Colors.transparent,
+                   builder: (_) => ReferenceJumpSheet(
+                     useGeez: useGeez,
+                     isAmharic: L10n.of(context) is AmStrings,
+                     s: s,
+                   ),
+                 );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: context.colors.surfaceDim,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: context.colors.borderSubtle),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search_rounded, size: 18, color: context.colors.textCaption),
+                    const SizedBox(width: 8),
+                    Text(
+                      L10n.of(context) is AmStrings ? 'ወደ ጥቅስ ሂድ...' : 'Go to verse...',
+                      style: AppTypography.amharicBody.copyWith(color: context.colors.textCaption),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 10),
           _BooksTabBar(controller: _tabController, s: s),

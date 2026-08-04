@@ -8,6 +8,7 @@ abstract class AppStrings {
   String get navHome;
   String get navBooks;
   String get navSearch;
+  String get navPlans;
   String get navSaved;
   String get navMe;
 
@@ -20,12 +21,35 @@ abstract class AppStrings {
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
 
+  // ── Streak page ───────────────────────────────────────────────────────────
+  String get streakPageTitle;
+  String get streakDayStreakLabel;
+  String get streakStatLongest;
+  String get streakStatTotalDays;
+  String get streakStatChapters;
+
+  /// e.g. "18 / 30 days" under the month name.
+  String streakMonthProgress(String read, String total);
+
+  /// e.g. "2 rest days available".
+  String streakFreezeTitle(String count);
+  String get streakFreezeSubtitle;
+  String get streakFreezeEmptyTitle;
+  String get streakFreezeEmptySubtitle;
+  String get streakTodayDone;
+
   // ── Daily verse ───────────────────────────────────────────────────────────
   String get dailyVerseTag;
   String get dailyVerseUnavailable;
 
   // ── Continue reading ──────────────────────────────────────────────────────
   String get continueReadingTitle;
+
+  /// Heading for the shelf shown before anything has been read.
+  String get startReadingTitle;
+
+  /// The call to action on a suggested book.
+  String get startReadingAction;
   String completedPercent(int pct);
 
   // ── Reading plans ─────────────────────────────────────────────────────────
@@ -130,6 +154,7 @@ abstract class AppStrings {
   // ── Saved / Collection ───────────────────────────────────────────────────
   String get savedEyebrow;
   String get savedTitle;
+  String get savedHistory;
   String get savedHighlights;
   String get savedBookmarks;
   String get savedNotes;
@@ -151,6 +176,9 @@ abstract class AppStrings {
   String get savedEmptyBookmarksHint;
   String get savedEmptyNotesTitle;
   String get savedEmptyNotesHint;
+  String get savedClearHistory;
+  String get savedClearHistoryTitle;
+  String get savedClearHistoryMessage;
   String get savedEdit;
   String get savedDelete;
   String get savedDeleteNoteTitle;
@@ -163,6 +191,11 @@ abstract class AppStrings {
   String get savedNoteDeleted;
   String get savedBookmarkDeleted;
   String get savedHighlightDeleted;
+  String get timeMorning;
+  String get timeAfternoon;
+  String get historyEmptyHint;
+  String get loadMore;
+  String get savedDeleteHistoryTitle;
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"
@@ -259,6 +292,7 @@ abstract class AppStrings {
 
   // ── Profile screen ────────────────────────────────────────────────────────
   String get profileTitle;
+  String get profileSignedOut;
   String get profileMemberBadge;
   String get profileLogout;
   String get profileDeleteAccount;

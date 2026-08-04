@@ -146,6 +146,12 @@ void main() {
   });
 
   group('search', () {
+    test('finds fasting verses with a trigram length topic keyword', () async {
+      final hits = await repo.searchVerses('በጾም');
+
+      expect(hits, isNotEmpty);
+    });
+
     test('trigram index finds an agglutinated Amharic word', () async {
       final hits = await repo.searchVerses('እግዚአብሔር');
 

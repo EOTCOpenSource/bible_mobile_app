@@ -8,6 +8,7 @@ import '../../../me/presentation/pages/me_screen.dart';
 import '../../../saved/presentation/pages/saved_screen.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 import 'home_tab.dart';
+import 'reading_plans_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -49,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          const SearchTab(),
+          const ReadingPlansScreen(),
           SavedScreen(key: ValueKey(_savedKey)),
           const MeScreen(),
         ],

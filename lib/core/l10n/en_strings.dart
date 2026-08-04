@@ -11,6 +11,8 @@ class EnStrings extends AppStrings {
   @override
   String get navSearch => 'Search';
   @override
+  String get navPlans => 'Plans';
+  @override
   String get navSaved => 'Collection';
   @override
   String get navMe => 'Me';
@@ -28,6 +30,34 @@ class EnStrings extends AppStrings {
   String get streakReadTodayHint => 'Read a chapter today';
   @override
   String get streakReadTodayBtn => 'Read Now';
+
+  // ── Streak page ───────────────────────────────────────────────────────────
+  @override
+  String get streakPageTitle => 'Reading Streak';
+  @override
+  String get streakDayStreakLabel => 'day streak';
+  @override
+  String get streakStatLongest => 'Longest streak';
+  @override
+  String get streakStatTotalDays => 'Total days';
+  @override
+  String get streakStatChapters => 'Chapters';
+  @override
+  String streakMonthProgress(String read, String total) =>
+      '$read / $total days';
+  @override
+  String streakFreezeTitle(String count) => '$count rest days available';
+  @override
+  String get streakFreezeSubtitle =>
+      'A missed day is covered so your streak survives';
+  @override
+  String get streakFreezeEmptyTitle => 'No rest days yet';
+  @override
+  String get streakFreezeEmptySubtitle =>
+      'Every week of reading earns one rest day';
+  @override
+  String get streakTodayDone => 'Read today';
+
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override
   String get dailyVerseTag => 'Daily Verse';
@@ -38,6 +68,10 @@ class EnStrings extends AppStrings {
   // ── Continue reading ──────────────────────────────────────────────────────
   @override
   String get continueReadingTitle => 'Continue Reading';
+  @override
+  String get startReadingTitle => 'Start Reading';
+  @override
+  String get startReadingAction => 'Start';
   @override
   String completedPercent(int pct) => '$pct% complete';
 
@@ -209,7 +243,9 @@ class EnStrings extends AppStrings {
   @override
   String get savedEyebrow => 'Saved';
   @override
-  String get savedTitle => 'Collection';
+  String get savedTitle => 'Saved';
+  @override
+  String get savedHistory => 'History';
   @override
   String get savedHighlights => 'Highlights';
   @override
@@ -249,9 +285,15 @@ class EnStrings extends AppStrings {
   @override
   String get savedEmptyBookmarksHint => 'Bookmark verses while reading';
   @override
-  String get savedEmptyNotesTitle => 'No notes yet';
+  String get savedEmptyNotesTitle => 'No Notes';
   @override
-  String get savedEmptyNotesHint => 'Write notes while reading';
+  String get savedEmptyNotesHint => 'Tap a verse and select "Note" to write down your thoughts. They will appear here.';
+  @override
+  String get savedClearHistory => 'Clear History';
+  @override
+  String get savedClearHistoryTitle => 'Clear Reading History?';
+  @override
+  String get savedClearHistoryMessage => 'This will remove all your reading history. This action cannot be undone.';
   @override
   String get savedEdit => 'Edit';
   @override
@@ -279,6 +321,16 @@ class EnStrings extends AppStrings {
   String get savedBookmarkDeleted => 'Bookmark deleted';
   @override
   String get savedHighlightDeleted => 'Highlight deleted';
+  @override
+  String get timeMorning => 'AM';
+  @override
+  String get timeAfternoon => 'PM';
+  @override
+  String get historyEmptyHint => 'Start reading to see history here';
+  @override
+  String get loadMore => 'Load more';
+  @override
+  String get savedDeleteHistoryTitle => 'Remove this from history?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override
@@ -450,6 +502,8 @@ class EnStrings extends AppStrings {
   // ── Profile screen ────────────────────────────────────────────────────────
   @override
   String get profileTitle => 'Profile';
+  @override
+  String get profileSignedOut => 'You are signed out';
   @override
   String get profileMemberBadge => 'Member';
   @override

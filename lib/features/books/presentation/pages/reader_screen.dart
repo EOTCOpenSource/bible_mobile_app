@@ -29,6 +29,7 @@ import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
 import '../widgets/reader/chapter_page.dart';
 import '../widgets/reader/chapter_picker_sheet.dart';
+import '../widgets/reader/reference_jump_sheet.dart';
 import '../widgets/reader/parallel_chapter_page.dart';
 import '../widgets/reader/font_sheet.dart';
 import '../widgets/reader/highlight_sheet.dart';
@@ -38,8 +39,8 @@ import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
+import '../../../search/presentation/pages/search_tab.dart';
 import '../../../share/verse_card_sheet.dart';
-
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -104,6 +105,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   /// Page index used only to spotlight [initialVerse] on first open.
   int? _spotlightChapterPageIndex;
+  int _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
 
   /// Toolbar, breadcrumb, chapter footer, and home bottom nav follow this.
   bool _readerChromeVisible = true;
@@ -207,8 +209,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _dwellTimer?.cancel();
+      _recordHistory();
       _persistReadingPosition();
     } else if (state == AppLifecycleState.resumed) {
+      _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
       _persistReadingPosition();
       _scheduleDwellTimer();
     }
@@ -237,6 +241,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _dwellTimer?.cancel();
     _repo?.removeListener(_onEditionChanged);
     WidgetsBinding.instance.removeObserver(this);
+    _recordHistory();
     _persistReadingPosition();
     // Reset immersive/color providers while ref is still valid (before super.dispose).
     // _riverpodContainer is only for timer callbacks that may fire after dispose.
@@ -274,6 +279,33 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       }
     }
     return false;
+  }
+
+  void _recordHistory() {
+    if (_book == null) return;
+    final container = _riverpodContainer;
+    if (container == null) return;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final durationMs = now - _lastHistoryUpdateTime;
+    _lastHistoryUpdateTime = now;
+    if (durationMs < 1000) return;
+
+    final verse = _selectionVerseStart;
+    unawaited(
+      () async {
+        try {
+          await container.read(appDatabaseProvider).insertReadingHistory(
+            bookId: _entry.id,
+            chapter: _currentChapterNumber,
+            verse: verse,
+            durationMs: durationMs,
+          );
+        } catch (e, st) {
+          debugPrint('Failed to insert reading history: $e\n$st');
+        }
+      }(),
+    );
   }
 
   void _persistReadingPosition() {
@@ -741,6 +773,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Reference Jump sheet ──────────────────────────────────────────────────
+
+  void _showReferenceJumpSheet(BuildContext ctx, AppSettings settings) {
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ReferenceJumpSheet(
+        useGeez: settings.useGeezNumbers,
+        isAmharic: L10n.of(ctx) is AmStrings,
+        s: L10n.of(ctx),
+      ),
+    );
+  }
+
   // ── Highlight sheet ───────────────────────────────────────────────────────
 
   void _showHighlightSheet(
@@ -1005,6 +1052,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 onChapterTap: chapterReady
                                     ? () => _showChapterPicker(context, settings)
                                     : null,
+                                onGoToReference: () =>
+                                    _showReferenceJumpSheet(context, settings),
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
@@ -1019,6 +1068,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   border: mutedColor.withValues(alpha: 0.25),
                                 ),
                                 s: s,
+                                onSearch: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        SearchTab(initialBook: _entry),
+                                  ),
+                                ),
                                 onBack: () => Navigator.pop(context),
                                 onFontSettings: () =>
                                     _showFontSheet(context, settings),
@@ -1068,6 +1124,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                     controller: _pageCtrl,
                                     itemCount: _book!.chapters.length,
                                     onPageChanged: (i) {
+                                      _recordHistory();
                                       setState(() => _currentChapter = i);
                                       _setReaderChromeVisible(true);
                                       _persistReadingPosition();
