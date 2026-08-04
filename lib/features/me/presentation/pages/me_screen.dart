@@ -1,11 +1,15 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/auth/user_profile.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/settings/app_settings.dart';
-import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
@@ -14,6 +18,8 @@ import '../../../../core/audio/tts_providers.dart';
 import '../../../onboarding/presentation/pages/onboarding_screen.dart';
 import '../../../books/presentation/pages/editions_page.dart';
 import '../../../books/providers/edition_providers.dart';
+import '../../../backup/data/backup_models.dart';
+import '../../../backup/providers/backup_providers.dart';
 import 'reading_settings_page.dart';
 import 'voice_settings_page.dart';
 
@@ -292,11 +298,264 @@ class _MeScreenState extends ConsumerState<MeScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+          // ── Backup & Restore ─────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: _SettingsSection(
+              amLabel: s.sectionBackup,
+              enLabel: 'BACKUP',
+              rows: [
+                _ArrowRow(
+                  label: s.backupExportJson,
+                  hint: s.backupExportJsonHint,
+                  onTap: _isBackupBusy ? null : () => _handleExportJson(context),
+                ),
+                _ArrowRow(
+                  label: s.backupExportMarkdown,
+                  hint: s.backupExportMarkdownHint,
+                  onTap: _isBackupBusy ? null : () => _handleExportMarkdown(context),
+                ),
+                _ArrowRow(
+                  label: s.backupImport,
+                  hint: s.backupImportHint,
+                  onTap: _isBackupBusy ? null : () => _handleImportJson(context),
+                ),
+              ],
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
           SliverToBoxAdapter(child: _LogoutSection(s: s)),
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
     );
+  }
+
+  bool _isBackupBusy = false;
+
+  Future<void> _handleExportJson(BuildContext context) async {
+    final s = L10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final exportService = ref.read(exportServiceProvider);
+
+    setState(() => _isBackupBusy = true);
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final dateStr = DateTime.now().toIso8601String().split('T').first;
+      final file = File('${tempDir.path}/eotcbible-backup-$dateStr.json');
+      await exportService.exportToJson(file);
+
+      if (!mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          subject: 'EOTC Bible Annotations Backup',
+        ),
+      );
+      messenger.showSnackBar(
+        SnackBar(content: Text(s.backupExportSuccess)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('${s.backupImportFailed}: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isBackupBusy = false);
+    }
+  }
+
+  Future<void> _handleExportMarkdown(BuildContext context) async {
+    final s = L10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final exportService = ref.read(exportServiceProvider);
+
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.backupExportMarkdown),
+        content: Text('${s.backupMarkdownDisclaimer}.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.backupCancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.backupExportMarkdown),
+          ),
+        ],
+      ),
+    );
+
+    if (proceed != true || !mounted) return;
+
+    setState(() => _isBackupBusy = true);
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final dateStr = DateTime.now().toIso8601String().split('T').first;
+      final file = File('${tempDir.path}/eotcbible-annotations-$dateStr.md');
+      await exportService.exportToMarkdown(file);
+
+      if (!mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          subject: 'EOTC Bible Annotations (Markdown)',
+        ),
+      );
+      messenger.showSnackBar(
+        SnackBar(content: Text(s.backupExportSuccess)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('${s.backupImportFailed}: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isBackupBusy = false);
+    }
+  }
+
+  Future<void> _handleImportJson(BuildContext context) async {
+    final s = L10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final importService = ref.read(importServiceProvider);
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+
+      final path = result.files.single.path;
+      if (path == null) return;
+
+      setState(() => _isBackupBusy = true);
+      final jsonFile = File(path);
+      final content = await jsonFile.readAsString();
+
+      final preview = await importService.parseAndPreview(content);
+
+      if (!mounted) return;
+      setState(() => _isBackupBusy = false);
+
+      var selectedPolicy = BackupConflictPolicy.skip;
+
+      if (!context.mounted) return;
+      final confirmedPolicy = await showDialog<BackupConflictPolicy>(
+        context: context,
+        builder: (ctx) {
+          return StatefulBuilder(
+            builder: (dialogContext, setDialogState) {
+              return AlertDialog(
+                title: Text(s.backupImport),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.backupPreviewText(
+                        preview.bookmarkCount,
+                        preview.highlightCount,
+                        preview.noteCount,
+                        preview.existingCount,
+                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      s.backupConflictTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    RadioGroup<BackupConflictPolicy>(
+                      groupValue: selectedPolicy,
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => selectedPolicy = val);
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RadioListTile<BackupConflictPolicy>(
+                            title: Text(s.backupConflictSkip),
+                            value: BackupConflictPolicy.skip,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          RadioListTile<BackupConflictPolicy>(
+                            title: Text(s.backupConflictMerge),
+                            value: BackupConflictPolicy.merge,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          RadioListTile<BackupConflictPolicy>(
+                            title: Text(s.backupConflictReplace),
+                            value: BackupConflictPolicy.replace,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, null),
+                    child: Text(s.backupCancel),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, selectedPolicy),
+                    child: Text(s.backupConfirmImport),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (confirmedPolicy == null || !mounted) return;
+
+      setState(() => _isBackupBusy = true);
+      await importService.executeImport(
+        payload: preview.payload,
+        conflictPolicy: confirmedPolicy,
+      );
+
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(s.backupImportSuccess),
+          backgroundColor: AppColors.accentDeep,
+        ),
+      );
+    } catch (e) {
+      if (!mounted || !context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(s.backupImportFailed),
+          content: Text(e is FormatException ? e.message : e.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isBackupBusy = false);
+    }
   }
 }
 
