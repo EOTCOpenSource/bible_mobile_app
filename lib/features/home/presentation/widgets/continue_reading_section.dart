@@ -9,7 +9,9 @@ import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/book_cover.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
+import '../../../books/data/models/book_index_entry.dart';
 import '../../../books/providers/reading_progress_providers.dart';
+import '../../providers/starter_books_provider.dart';
 
 /// The books you have open, most recently read first.
 ///
@@ -42,13 +44,17 @@ class ContinueReadingSection extends ConsumerWidget {
     final c = context.colors;
     final asyncSnaps = ref.watch(continueReadingSnapshotsProvider);
 
+    // Nothing read yet means the shelf is offering books rather than resuming
+    // them, and the heading has to say so.
+    final hasHistory = asyncSnaps.value?.isNotEmpty ?? false;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            s.continueReadingTitle,
+            hasHistory ? s.continueReadingTitle : s.startReadingTitle,
             style: AppTypography.amharicSubheading.copyWith(
               color: c.textOnParchment,
             ),
@@ -67,11 +73,13 @@ class ContinueReadingSection extends ConsumerWidget {
                   colors: c, s: s, onOpenBooks: onOpenBooksTab),
             ),
             data: (snaps) {
+              // A fresh install used to get one card that only said "go to the
+              // books tab". It now gets books it can actually open.
               if (snaps.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _EmptyContinueCard(
-                      colors: c, s: s, onOpenBooks: onOpenBooksTab),
+                return _StarterShelf(
+                  colors: c,
+                  s: s,
+                  onOpenBooks: onOpenBooksTab,
                 );
               }
 
@@ -98,10 +106,17 @@ class ContinueReadingSection extends ConsumerWidget {
                     itemCount: recent.length,
                     separatorBuilder: (_, _) => const SizedBox(width: gap),
                     itemBuilder: (_, i) => _BookTile(
-                      snap: recent[i],
+                      entry: recent[i].entry,
                       width: shelf / _tilesInView,
-                      colors: c,
-                      s: s,
+                      subtitle: _chapterLabel(context, s, recent[i].position.chapter),
+                      footer: _Progress(
+                          percent: recent[i].progressPercent, colors: c),
+                      onTap: () => _openReader(
+                        context,
+                        recent[i].entry,
+                        chapter: recent[i].position.chapter,
+                        verse: recent[i].position.verse,
+                      ),
                     ),
                   );
                 },
@@ -114,23 +129,30 @@ class ContinueReadingSection extends ConsumerWidget {
   }
 }
 
-/// One book: its cover with the name set on the face, and how far through it
-/// you are underneath.
+/// Shared geometry for the shelf: how wide a tile is, how the cover is sized
+/// inside it, and where the footer sits. Both shelves — books you are reading
+/// and books you could start — are the same object with a different footer.
 class _BookTile extends StatelessWidget {
   const _BookTile({
-    required this.snap,
+    required this.entry,
     required this.width,
-    required this.colors,
-    required this.s,
+    required this.subtitle,
+    required this.footer,
+    required this.onTap,
   });
 
-  final ContinueReadingSnapshot snap;
+  final BookIndexEntry entry;
   final double width;
-  final AppColorScheme colors;
-  final AppStrings s;
 
-  /// Height of the progress bar, its percentage, and the gap above them.
-  static const double _progressBlock = 26;
+  /// The line under the name on the cover face.
+  final String subtitle;
+
+  /// Drawn under the cover — progress, or a call to action.
+  final Widget footer;
+  final VoidCallback onTap;
+
+  /// Height of the footer and the gap above it.
+  static const double _footerBlock = 26;
 
   /// A closed book is taller than it is wide; covers keep that ratio until the
   /// strip is too short for it, then they shrink rather than crop.
@@ -138,34 +160,18 @@ class _BookTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = colors;
-    final useGeez = Settings.of(context).useGeezNumbers;
-    final chapter = snap.position.chapter;
-    final chapterLabel =
-        '${s.chapterAbbr} ${useGeez ? toGeez(chapter) : chapter}';
-
     return SizedBox(
       width: width,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => Navigator.push<void>(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => ReaderScreen(
-                entry: snap.entry,
-                initialChapterNumber: snap.position.chapter,
-                initialVerse: snap.position.verse,
-              ),
-            ),
-          ),
+          onTap: onTap,
           child: LayoutBuilder(
             builder: (context, constraints) {
               // BookCover reserves 10dp past the face for its page edges, so
               // the face is sized inside that rather than over it.
-              final maxFaceHeight =
-                  constraints.maxHeight - _progressBlock - 10;
+              final maxFaceHeight = constraints.maxHeight - _footerBlock - 10;
               final faceWidth = width - 10;
               final faceHeight =
                   math.min(faceWidth * _coverAspect, maxFaceHeight);
@@ -177,13 +183,13 @@ class _BookTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _Cover(
-                    snap: snap,
+                    entry: entry,
                     faceWidth: faceWidth,
                     faceHeight: faceHeight,
-                    chapterLabel: chapterLabel,
+                    subtitle: subtitle,
                   ),
                   const Spacer(),
-                  _Progress(percent: snap.progressPercent, colors: c),
+                  footer,
                 ],
               );
             },
@@ -196,34 +202,32 @@ class _BookTile extends StatelessWidget {
 
 class _Cover extends StatelessWidget {
   const _Cover({
-    required this.snap,
+    required this.entry,
     required this.faceWidth,
     required this.faceHeight,
-    required this.chapterLabel,
+    required this.subtitle,
   });
 
-  final ContinueReadingSnapshot snap;
+  final BookIndexEntry entry;
   final double faceWidth;
   final double faceHeight;
-  final String chapterLabel;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     // Short name, not the full one: "መዝ" fits the face at this size where
     // "መዝሙረ ዳዊት" wrapped to two lines and crowded out the chapter.
     final isAm = L10n.of(context) is AmStrings;
-    final name = isAm
-        ? snap.entry.bookShortNameAm
-        : snap.entry.bookShortNameEn;
+    final name = isAm ? entry.bookShortNameAm : entry.bookShortNameEn;
 
     return BookCover(
-      coverColor: testamentColor(snap.entry.bookNameEn),
+      coverColor: testamentColor(entry.bookNameEn),
       width: faceWidth,
       height: faceHeight,
       title: name.isNotEmpty
           ? name
-          : (isAm ? snap.entry.bookNameAm : snap.entry.bookNameEn),
-      subtitle: chapterLabel,
+          : (isAm ? entry.bookNameAm : entry.bookNameEn),
+      subtitle: subtitle,
     );
   }
 }
@@ -263,6 +267,133 @@ class _Progress extends StatelessWidget {
       ],
     );
   }
+}
+
+// ── Starter shelf ────────────────────────────────────────────────────────────
+
+/// What the shelf shows before anything has been read.
+///
+/// Suggested books rather than a card pointing at the books tab: the first
+/// thing a new reader sees should be openable, not a signpost.
+class _StarterShelf extends ConsumerWidget {
+  const _StarterShelf({
+    required this.colors,
+    required this.s,
+    required this.onOpenBooks,
+  });
+
+  final AppColorScheme colors;
+  final AppStrings s;
+  final VoidCallback onOpenBooks;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = colors;
+    final books = ref.watch(starterBooksProvider).value ?? const [];
+
+    // No edition installed yet, so there is nothing to suggest — the signpost
+    // is still the only honest thing to show.
+    if (books.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: _EmptyContinueCard(colors: c, s: s, onOpenBooks: onOpenBooks),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 10.0;
+        final shelf = constraints.maxWidth -
+            ContinueReadingSection._leadInset -
+            ContinueReadingSection._trailInset -
+            gap * (ContinueReadingSection._tilesInView - 1);
+
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(
+            left: ContinueReadingSection._leadInset,
+            right: ContinueReadingSection._trailInset,
+          ),
+          itemCount: books.length,
+          separatorBuilder: (_, _) => const SizedBox(width: gap),
+          itemBuilder: (_, i) => _BookTile(
+            entry: books[i],
+            width: shelf / ContinueReadingSection._tilesInView,
+            subtitle: _chapterCountLabel(context, s, books[i]),
+            footer: _StartAction(label: s.startReadingAction, colors: c),
+            onTap: () => _openReader(context, books[i], chapter: 1),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Stands where the progress bar sits on a book already being read, so the two
+/// shelves line up rather than one riding higher than the other.
+class _StartAction extends StatelessWidget {
+  const _StartAction({required this.label, required this.colors});
+
+  final String label;
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return Row(
+      children: [
+        Icon(Icons.play_arrow_rounded, size: 14, color: c.primary),
+        const SizedBox(width: 3),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.amharicCaption.copyWith(
+              color: c.primary,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Shared helpers ───────────────────────────────────────────────────────────
+
+String _chapterLabel(BuildContext context, AppStrings s, int chapter) {
+  final useGeez = Settings.of(context).useGeezNumbers;
+  return '${s.chapterAbbr} ${useGeez ? toGeez(chapter) : chapter}';
+}
+
+/// How long the book is, for a reader deciding where to start.
+String _chapterCountLabel(
+    BuildContext context, AppStrings s, BookIndexEntry entry) {
+  final count = entry.chapterCount;
+  if (count == null || count <= 0) return '';
+  final useGeez = Settings.of(context).useGeezNumbers;
+  return '${useGeez ? toGeez(count) : count} ${s.booksChapterSuffix}';
+}
+
+void _openReader(
+  BuildContext context,
+  BookIndexEntry entry, {
+  required int chapter,
+  int? verse,
+}) {
+  Navigator.push<void>(
+    context,
+    MaterialPageRoute<void>(
+      builder: (_) => ReaderScreen(
+        entry: entry,
+        initialChapterNumber: chapter,
+        initialVerse: verse,
+      ),
+    ),
+  );
 }
 
 class _EmptyContinueCard extends StatelessWidget {
