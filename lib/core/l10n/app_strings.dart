@@ -478,7 +478,27 @@ abstract class AppStrings {
   /// Shown in place of the second column when the parallel edition's canon
   /// does not carry the open book.
   String parallelBookMissing(String title);
-  // in your AppStrings abstract class
   String get onboardingSampleVerseNumber;
   String get onboardingSampleVerseText;
+
+  // ── Backup & Restore ──────────────────────────────────────────────────────
+  String get sectionBackup;
+  String get backupExportJson;
+  String get backupExportJsonHint;
+  String get backupExportMarkdown;
+  String get backupExportMarkdownHint;
+  String get backupImport;
+  String get backupImportHint;
+  String get backupMarkdownDisclaimer;
+  String get backupConflictSkip;
+  String get backupConflictMerge;
+  String get backupConflictReplace;
+  String get backupConflictTitle;
+  String get backupCancel;
+  String get backupConfirmImport;
+  String backupPreviewText(int b, int h, int n, int existing);
+  String get backupImportSuccess;
+  String get backupImportFailed;
+  String get backupExportSuccess;
+  String get backupNoFilePicked;
 }
