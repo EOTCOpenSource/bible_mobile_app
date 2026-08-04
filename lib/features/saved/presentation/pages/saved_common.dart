@@ -51,6 +51,7 @@ class AnnotationCard extends StatelessWidget {
     required this.onTap,
     this.onLongPress,
     this.trailingText,
+    this.onDelete,
   });
 
   final AnnotationItem item;
@@ -58,6 +59,7 @@ class AnnotationCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
   final String? trailingText;
+  final VoidCallback? onDelete;
 
   String _daysAgo(AppStrings strings) {
     final diff = DateTime.now().difference(item.createdAt);
@@ -149,6 +151,21 @@ class AnnotationCard extends StatelessWidget {
                                 color: c.textCaption,
                               ),
                             ),
+                            if (onDelete != null) ...[
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: onDelete,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 18,
+                                    color: Colors.red.withValues(alpha: 0.70),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                         const SizedBox(height: 8),
