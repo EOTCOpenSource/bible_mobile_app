@@ -1,6 +1,5 @@
 import 'package:bibleflutter/core/annotations/annotation_models.dart';
 import 'package:bibleflutter/core/storage/app_database.dart';
-import 'package:bibleflutter/core/storage/app_database_provider.dart';
 import 'package:bibleflutter/features/annotations/providers/annotation_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
