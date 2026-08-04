@@ -852,4 +852,50 @@ class AmStrings extends AppStrings {
   String get parallelDisabled => 'ጎን ለጎን ንባብ ጠፍቷል';
   @override
   String parallelBookMissing(String title) => 'ይህ መጽሐፍ በ$title ትርጉም የለም';
+
+  // ── Backup & Restore ──────────────────────────────────────────────────────
+  @override
+  String get sectionBackup => 'መጠባበቂያ (Backup)';
+  @override
+  String get backupExportJson => 'መጠባበቂያ ፋይል አውጣ (JSON)';
+  @override
+  String get backupExportJsonHint => 'የJSON ባክአፕ ፋይል ያዘጋጃል';
+  @override
+  String get backupExportMarkdown => 'በMarkdown ፋይል አውጣ';
+  @override
+  String get backupExportMarkdownHint => 'ለቀላል ንባብ የሚሆን ፋይል (ሊመለስ የማይችል)';
+  @override
+  String get backupImport => 'መጠባበቂያ ፋይል መልስ (Import)';
+  @override
+  String get backupImportHint => 'ማስታወሻዎችን ከJSON ፋይል ይመልሳል';
+  @override
+  String get backupMarkdownDisclaimer => 'ይህ ፋይል ለንባብ ብቻ የተዘጋጀ ነው (መመለስ አይቻልም)';
+  @override
+  String get backupMarkdownBody =>
+      'ዕልባቶችዎ፣ ምልክቶችዎ እና ማስታወሻዎችዎ ለማንበብ፣ ለማተም ወይም ለማስቀመጥ በሚመች ሰነድ ሆነው ይጻፋሉ።';
+  @override
+  String get backupConfirmExport => 'አውጣ';
+  @override
+  String get backupConflictSkip => 'ነባሩን አስቀር';
+  @override
+  String get backupConflictMerge => 'ቀላቅል';
+  @override
+  String get backupConflictReplace => 'ተካ';
+  @override
+  String get backupConflictTitle => 'የግጭት መፍቻ መመሪያ';
+  @override
+  String get backupCancel => 'ተወው';
+  @override
+  String get backupConfirmImport => 'አስገባ';
+  @override
+  String backupPreviewText(int b, int h, int n, int existing) =>
+      '$b ዕልባቶች፣ $h ምልክቶች፣ $n ማስታወሻዎች — $existing አስቀድመው አሉ';
+  @override
+  String get backupImportSuccess => 'መጠባበቂያው በተሳካ ሁኔታ ተመልሷል';
+  @override
+  String get backupImportFailed => 'ማስገባት አልተሳካም — ፋይሉ ተበላሽቶ ሊሆን ይችላል';
+  @override
+  String get backupExportSuccess => 'መጠባበቂያው በተሳካ ሁኔታ ወጥቷል';
+  @override
+  String get backupNoFilePicked => 'ምንም መጠባበቂያ ፋይል አልተመረጠም';
 }
