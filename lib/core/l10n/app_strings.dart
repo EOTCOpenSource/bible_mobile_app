@@ -8,6 +8,7 @@ abstract class AppStrings {
   String get navHome;
   String get navBooks;
   String get navSearch;
+  String get navPlans;
   String get navSaved;
   String get navMe;
 
@@ -19,6 +20,23 @@ abstract class AppStrings {
   String get streakDaysSuffix;
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
+
+  // ── Streak page ───────────────────────────────────────────────────────────
+  String get streakPageTitle;
+  String get streakDayStreakLabel;
+  String get streakStatLongest;
+  String get streakStatTotalDays;
+  String get streakStatChapters;
+
+  /// e.g. "18 / 30 days" under the month name.
+  String streakMonthProgress(String read, String total);
+
+  /// e.g. "2 rest days available".
+  String streakFreezeTitle(String count);
+  String get streakFreezeSubtitle;
+  String get streakFreezeEmptyTitle;
+  String get streakFreezeEmptySubtitle;
+  String get streakTodayDone;
 
   // ── Daily verse ───────────────────────────────────────────────────────────
   String get dailyVerseTag;
@@ -259,6 +277,7 @@ abstract class AppStrings {
 
   // ── Profile screen ────────────────────────────────────────────────────────
   String get profileTitle;
+  String get profileSignedOut;
   String get profileMemberBadge;
   String get profileLogout;
   String get profileDeleteAccount;

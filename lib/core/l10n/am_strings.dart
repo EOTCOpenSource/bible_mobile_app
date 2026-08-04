@@ -11,6 +11,8 @@ class AmStrings extends AppStrings {
   @override
   String get navSearch => 'ፈልግ';
   @override
+  String get navPlans => 'እቅዶች';
+  @override
   String get navSaved => 'ስብስቤ';
   @override
   String get navMe => 'እኔ';
@@ -28,6 +30,32 @@ class AmStrings extends AppStrings {
   String get streakReadTodayHint => 'ዛሬ ምዕራፍ ያንብቡ';
   @override
   String get streakReadTodayBtn => 'ዛሬ ያንብቡ';
+
+  // ── Streak page ───────────────────────────────────────────────────────────
+  @override
+  String get streakPageTitle => 'ተከታታይ ንባብ';
+  @override
+  String get streakDayStreakLabel => 'ተከታታይ ቀናት';
+  @override
+  String get streakStatLongest => 'ረጅሙ ተከታታይ';
+  @override
+  String get streakStatTotalDays => 'ጠቅላላ ቀናት';
+  @override
+  String get streakStatChapters => 'ምዕራፎች';
+  @override
+  String streakMonthProgress(String read, String total) =>
+      '$read / $total ቀናት';
+  @override
+  String streakFreezeTitle(String count) => '$count የእረፍት ቀን አለዎት';
+  @override
+  String get streakFreezeSubtitle => 'ንባብ ባያደርጉ ተከታታይዎ ይጠበቃል';
+  @override
+  String get streakFreezeEmptyTitle => 'የእረፍት ቀን የለዎትም';
+  @override
+  String get streakFreezeEmptySubtitle => 'በየሳምንቱ ንባብ አንድ የእረፍት ቀን ያስገኛል';
+  @override
+  String get streakTodayDone => 'ዛሬ ተነቧል';
+
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override
   String get dailyVerseTag => 'የዕለቱ ቃል';
@@ -447,6 +475,8 @@ class AmStrings extends AppStrings {
   // ── Profile screen ────────────────────────────────────────────────────────
   @override
   String get profileTitle => 'ፕሮፋይል';
+  @override
+  String get profileSignedOut => 'አልገቡም';
   @override
   String get profileMemberBadge => 'አባል';
   @override
