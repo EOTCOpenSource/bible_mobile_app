@@ -810,4 +810,44 @@ class EnStrings extends AppStrings {
   String parallelBookMissing(String title) =>
       'This book is not available in the $title translation';
 
+  // ── Backup & Restore ──────────────────────────────────────────────────────
+  @override
+  String get sectionBackup => 'Backup';
+  @override
+  String get backupExportJson => 'Export backup';
+  @override
+  String get backupExportJsonHint => 'Generates JSON backup file';
+  @override
+  String get backupExportMarkdown => 'Export as Markdown';
+  @override
+  String get backupExportMarkdownHint => 'Human-readable export (non-importable)';
+  @override
+  String get backupImport => 'Import backup';
+  @override
+  String get backupImportHint => 'Restore annotations from JSON backup';
+  @override
+  String get backupMarkdownDisclaimer => 'This file cannot be re-imported';
+  @override
+  String get backupConflictSkip => 'Skip existing';
+  @override
+  String get backupConflictMerge => 'Merge';
+  @override
+  String get backupConflictReplace => 'Replace';
+  @override
+  String get backupConflictTitle => 'Conflict Resolution Policy';
+  @override
+  String get backupCancel => 'Cancel';
+  @override
+  String get backupConfirmImport => 'Import';
+  @override
+  String backupPreviewText(int b, int h, int n, int existing) =>
+      '$b bookmarks, $h highlights, $n notes — $existing already exist';
+  @override
+  String get backupImportSuccess => 'Backup imported successfully';
+  @override
+  String get backupImportFailed => 'Import failed — file may be corrupted';
+  @override
+  String get backupExportSuccess => 'Backup exported successfully';
+  @override
+  String get backupNoFilePicked => 'No backup file selected';
 }
