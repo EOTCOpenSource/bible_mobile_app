@@ -12,6 +12,7 @@ import 'core/settings/app_settings.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/storage/app_database.dart';
 import 'core/theme/app_theme.dart';
+import 'core/web_reader/web_reader_providers.dart';
 import 'features/books/data/repositories/bible_repository.dart';
 import 'features/books/presentation/pages/reader_screen.dart';
 import 'features/home/presentation/pages/home_screen.dart';
@@ -81,19 +82,42 @@ class BibleApp extends ConsumerWidget {
 }
 
 /// [MaterialApp] must read [Settings] so night mode updates the whole UI (not only the reader).
-class _BibleMaterialApp extends StatefulWidget {
+class _BibleMaterialApp extends ConsumerStatefulWidget {
   const _BibleMaterialApp();
 
   @override
-  State<_BibleMaterialApp> createState() => _BibleMaterialAppState();
+  ConsumerState<_BibleMaterialApp> createState() => _BibleMaterialAppState();
 }
 
-class _BibleMaterialAppState extends State<_BibleMaterialApp> {
+class _BibleMaterialAppState extends ConsumerState<_BibleMaterialApp>
+    with WidgetsBindingObserver {
   static final _navigatorKey = GlobalKey<NavigatorState>();
 
   BibleRepository? _repo;
   StreamSubscription<Uri>? _linkSub;
   bool _deepLinksInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Releases the Local Web Reader's port whenever the app leaves the
+  /// foreground.
+  ///
+  /// A server the user cannot see is a server they cannot turn off, so leaving
+  /// it running while backgrounded would keep the device reachable on the LAN
+  /// with nothing on screen to say so. Starting it again is always a deliberate
+  /// tap.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      unawaited(ref.read(webReaderProvider.notifier).stopForLifecycle());
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -154,6 +178,7 @@ class _BibleMaterialAppState extends State<_BibleMaterialApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _linkSub?.cancel();
     super.dispose();
   }

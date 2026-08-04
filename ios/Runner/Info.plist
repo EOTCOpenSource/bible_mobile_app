@@ -26,6 +26,15 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Local Web Reader. iOS also needs the Local Network capability enabled
+	     in Xcode (Signing & Capabilities → + Capability → Local Network);
+	     these keys alone are not enough on device. -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Used to serve the Bible reader to other devices on your local network.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_http._tcp</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

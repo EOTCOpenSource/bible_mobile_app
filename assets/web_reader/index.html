@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="am">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>መጽሐፍ ቅዱስ</title>
+    <!--
+      The Local Web Reader.
+
+      Served from the phone at http://<lan-ip>:7777 by LocalServerService. One
+      file, no build step, and deliberately no external requests: the device
+      running this may have no internet at all, and every byte — including the
+      nine Ethiopic fonts — comes from the phone over the local router.
+    -->
+    <style>
+        :root {
+            /* The app's own palette. AppColors.primary / accent / parchment. */
+            --burgundy: #6B1F2A;
+            --burgundy-soft: #8B3A47;
+            --gold: #F4D38A;
+            --gold-deep: #D4A853;
+
+            --parchment: #EFE9DF;
+            --surface: #ffffff;
+
+            --text: #241914;
+            --text-dim: #6b5a52;
+
+            --nav-bg: rgba(239, 233, 223, .95);
+            --line: rgba(107, 90, 82, .12);
+            --hover: rgba(0, 0, 0, .03);
+
+            --shell-dark: #151210;
+            --paper-dark: #1f1917;
+            --nav-dark: rgba(31, 25, 23, .95);
+            --text-dark: #EFE6D8;
+            --text-dim-dark: #9b8a7e;
+            --line-dark: rgba(255, 255, 255, .06);
+            --hover-dark: rgba(255, 255, 255, .04);
+
+            --font-ethi: 'Shiromeda', system-ui, serif;
+            --font-latn: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+            --reader-size: 21px;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-ethi);
+            background: var(--surface);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color .4s cubic-bezier(.4, 0, .2, 1), color .4s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        /* ── header ─────────────────────────────────────────────────────── */
+        #app-header {
+            position: fixed;
+            inset: 0 0 auto 0;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 20px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
+            z-index: 1000;
+        }
+
+        #app-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        #app-title h1 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -.4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #app-title .sub {
+            display: block;
+            font-family: var(--font-latn);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: .3px;
+            color: var(--text-dim);
+        }
+
+        #app-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .control-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font-latn);
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--hover);
+            border-color: var(--line);
+        }
+
+        .control-btn.on {
+            background: var(--burgundy);
+            color: var(--gold);
+        }
+
+        #size-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px;
+            border-radius: 14px;
+            background: var(--hover);
+        }
+
+        #size-controls .control-btn {
+            padding: 7px 11px;
+            border-radius: 10px;
+        }
+
+        #font-select {
+            appearance: none;
+            padding: 9px 26px 9px 11px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font-ethi);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b5a52' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 9px center;
+        }
+
+        /* ── layout ─────────────────────────────────────────────────────── */
+        #app-container {
+            height: 100vh;
+            display: flex;
+            padding-top: 64px;
+            box-sizing: border-box;
+        }
+
+        #nav-panel {
+            width: 380px;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            background: var(--parchment);
+            border-right: 1px solid var(--line);
+            z-index: 60;
+            transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        #testament-tabs {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .tt-tab {
+            flex: 1;
+            padding: 10px 6px;
+            border: none;
+            border-radius: 9px;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: var(--font-ethi);
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .tt-tab:hover {
+            background: var(--hover);
+        }
+
+        .tt-tab.active {
+            background: var(--burgundy);
+            color: var(--gold);
+        }
+
+        #lists {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #books-side {
+            width: 58%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--line);
+        }
+
+        #chapters-side {
+            width: 42%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-head {
+            margin: 0;
+            padding: 12px 16px;
+            font-family: var(--font-latn);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        #books-list,
+        #chapters-list {
+            flex: 1;
+            margin: 0;
+            padding: 4px 0 20px;
+            list-style: none;
+            overflow-y: auto;
+        }
+
+        #chapters-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+            gap: 2px;
+            padding: 4px 8px 20px;
+            align-content: start;
+        }
+
+        #books-list li {
+            margin: 2px 10px;
+            padding: 10px 16px;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: all .18s ease;
+        }
+
+        #chapters-list li {
+            padding: 9px 4px;
+            border-radius: 9px;
+            font-family: var(--font-latn);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text);
+            cursor: pointer;
+            transition: all .18s ease;
+        }
+
+        #books-list li:hover,
+        #chapters-list li:hover {
+            background: var(--hover);
+        }
+
+        #books-list li:hover {
+            padding-left: 20px;
+        }
+
+        .active-item {
+            background: var(--burgundy) !important;
+            color: var(--gold) !important;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(107, 31, 42, .18);
+        }
+
+        .book-mark {
+            float: right;
+            font-size: 11px;
+            opacity: .75;
+        }
+
+        /* ── reading pane ───────────────────────────────────────────────── */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 48px 80px;
+            background: var(--parchment);
+            scroll-behavior: smooth;
+        }
+
+        #content-area {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        #chapter-title {
+            margin: 0 0 8px;
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--burgundy);
+        }
+
+        #chapter-sub {
+            margin-bottom: 36px;
+            font-family: var(--font-latn);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: .3px;
+            color: var(--text-dim);
+        }
+
+        #text-container {
+            font-size: var(--reader-size);
+            line-height: 1.95;
+            transition: font-size .25s ease;
+        }
+
+        .heading {
+            margin: 40px 0 18px;
+            font-weight: 700;
+            line-height: 1.4;
+            color: var(--burgundy);
+        }
+
+        .heading:first-child {
+            margin-top: 0;
+        }
+
+        .heading.major {
+            font-size: .95em;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--line);
+        }
+
+        .heading.section {
+            font-size: 1.05em;
+        }
+
+        .heading.descriptive {
+            font-size: .82em;
+            font-weight: 500;
+            font-style: italic;
+            color: var(--text-dim);
+        }
+
+        .heading.reference {
+            margin: 6px 0 18px;
+            font-size: .74em;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .verse {
+            margin: 0 0 14px;
+            padding: 2px 8px;
+            margin-left: -8px;
+            margin-right: -8px;
+            border-radius: 10px;
+            text-align: justify;
+            cursor: pointer;
+            transition: background-color .18s ease;
+        }
+
+        .verse:hover {
+            background: rgba(107, 31, 42, .04);
+        }
+
+        .verse.open {
+            background: rgba(107, 31, 42, .06);
+            cursor: default;
+        }
+
+        .verse.flash {
+            animation: flash 1.6s ease-out;
+        }
+
+        @keyframes flash {
+
+            0%,
+            45% {
+                background: rgba(212, 168, 83, .38);
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        .vnum {
+            margin-right: 7px;
+            font-family: var(--font-latn);
+            font-size: .58em;
+            font-weight: 800;
+            color: var(--burgundy);
+            vertical-align: super;
+            user-select: none;
+        }
+
+        .vnum.geez {
+            font-family: var(--font-ethi);
+            font-size: .62em;
+        }
+
+        /* Highlight rides on the text, not the block, so it reads as a marker
+           pen rather than a table row. */
+        .verse.hl .vtext {
+            background: var(--hl);
+            padding: .08em .12em;
+            border-radius: 4px;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+        }
+
+        .vline {
+            display: block;
+        }
+
+        .vline.q1 {
+            padding-left: 1.6em;
+        }
+
+        .vline.q2 {
+            padding-left: 3em;
+        }
+
+        .vline.q3,
+        .vline.q4 {
+            padding-left: 4.4em;
+        }
+
+        .vline.pc {
+            padding: 0;
+            text-align: center;
+        }
+
+        .vflag {
+            margin-left: 6px;
+            font-size: .62em;
+            vertical-align: super;
+            user-select: none;
+        }
+
+        .vflag.bm {
+            color: var(--burgundy);
+        }
+
+        .vflag.nt {
+            color: var(--gold-deep);
+            cursor: help;
+        }
+
+        .aux {
+            display: block;
+            margin: 6px 0 0 1.2em;
+            padding-left: 12px;
+            border-left: 2px solid var(--line);
+            font-family: var(--font-latn);
+            font-size: .62em;
+            line-height: 1.7;
+            color: var(--text-dim);
+        }
+
+        .aux b {
+            color: var(--burgundy);
+            font-weight: 700;
+        }
+
+        /* ── per-verse actions ──────────────────────────────────────────── */
+        .strip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin: 10px 0 4px;
+            padding: 8px 10px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--surface);
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(36, 25, 20, .08);
+        }
+
+        .strip button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font-ethi);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .18s;
+        }
+
+        .strip button:hover {
+            background: var(--hover);
+            border-color: var(--line);
+        }
+
+        .strip button.on {
+            background: var(--burgundy);
+            color: var(--gold);
+        }
+
+        .swatches {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 4px;
+        }
+
+        .swatch {
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: 2px solid rgba(0, 0, 0, .12);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform .15s;
+        }
+
+        .swatch:hover {
+            transform: scale(1.15);
+        }
+
+        .swatch.on {
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 2px var(--gold);
+        }
+
+        .swatch.clear {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: var(--font-latn);
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .note-editor {
+            margin: 8px 0 4px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--surface);
+        }
+
+        .note-editor textarea {
+            width: 100%;
+            min-height: 84px;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font-ethi);
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .note-editor textarea:focus {
+            outline: 2px solid var(--burgundy);
+            outline-offset: -1px;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .btn-primary {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 9px;
+            background: var(--burgundy);
+            color: var(--gold);
+            font-family: var(--font-ethi);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-ghost {
+            padding: 8px 14px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: var(--font-ethi);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-ghost:hover {
+            background: var(--hover);
+        }
+
+        /* ── pager ──────────────────────────────────────────────────────── */
+        #pager {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 56px 0 20px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+        }
+
+        .pager-btn {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font-ethi);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .pager-btn:hover:not(:disabled) {
+            background: var(--burgundy);
+            color: var(--gold);
+            border-color: transparent;
+        }
+
+        .pager-btn:disabled {
+            opacity: .32;
+            cursor: default;
+        }
+
+        .msg {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
+        /* ── saved drawer ───────────────────────────────────────────────── */
+        #saved-panel {
+            position: fixed;
+            top: 64px;
+            right: 0;
+            bottom: 0;
+            width: 380px;
+            max-width: 92vw;
+            display: flex;
+            flex-direction: column;
+            background: var(--parchment);
+            border-left: 1px solid var(--line);
+            transform: translateX(100%);
+            transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+            z-index: 900;
+        }
+
+        #saved-panel.open {
+            transform: translateX(0);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, .16);
+        }
+
+        #saved-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        #saved-list {
+            flex: 1;
+            margin: 0;
+            padding: 8px 0 24px;
+            list-style: none;
+            overflow-y: auto;
+        }
+
+        #saved-list li {
+            margin: 4px 10px;
+            padding: 11px 14px;
+            border-radius: 11px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            cursor: pointer;
+            transition: all .18s;
+        }
+
+        #saved-list li:hover {
+            border-color: var(--burgundy);
+            transform: translateX(-2px);
+        }
+
+        .saved-ref {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--burgundy);
+        }
+
+        .saved-body {
+            margin-top: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-dim);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .saved-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, .15);
+            flex-shrink: 0;
+        }
+
+        .empty-note {
+            padding: 24px 18px;
+            font-family: var(--font-latn);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-dim);
+        }
+
+        #scrim {
+            position: fixed;
+            inset: 0;
+            background: rgba(44, 24, 16, .35);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+            z-index: 800;
+        }
+
+        #scrim.on {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translate(-50%, 20px);
+            padding: 11px 20px;
+            border-radius: 12px;
+            background: var(--burgundy);
+            color: var(--gold);
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: all .25s;
+            z-index: 3000;
+        }
+
+        #toast.on {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        /* ── dark ───────────────────────────────────────────────────────── */
+        body.dark {
+            background: var(--shell-dark);
+            color: var(--text-dark);
+        }
+
+        body.dark #app-header {
+            background: var(--nav-dark);
+            border-bottom-color: var(--line-dark);
+        }
+
+        body.dark #nav-panel,
+        body.dark #saved-panel {
+            background: var(--nav-dark);
+            border-color: var(--line-dark);
+        }
+
+        body.dark main {
+            background: var(--paper-dark);
+        }
+
+        body.dark #app-title .sub,
+        body.dark .list-head,
+        body.dark .tt-tab,
+        body.dark #chapter-sub,
+        body.dark .msg,
+        body.dark .empty-note,
+        body.dark .saved-body,
+        body.dark .heading.descriptive,
+        body.dark .heading.reference,
+        body.dark .aux {
+            color: var(--text-dim-dark);
+        }
+
+        body.dark .control-btn,
+        body.dark #font-select,
+        body.dark #books-list li,
+        body.dark #chapters-list li,
+        body.dark .pager-btn,
+        body.dark #text-container,
+        body.dark .strip button,
+        body.dark .note-editor textarea {
+            color: var(--text-dark);
+        }
+
+        body.dark .control-btn:hover,
+        body.dark .tt-tab:hover,
+        body.dark #books-list li:hover,
+        body.dark #chapters-list li:hover,
+        body.dark .strip button:hover,
+        body.dark .btn-ghost:hover {
+            background: var(--hover-dark);
+            border-color: var(--line-dark);
+        }
+
+        body.dark .control-btn.on,
+        body.dark .tt-tab.active,
+        body.dark .strip button.on {
+            background: var(--burgundy);
+            color: var(--gold);
+        }
+
+        body.dark #size-controls {
+            background: var(--hover-dark);
+        }
+
+        body.dark #chapter-title,
+        body.dark .heading,
+        body.dark .vnum,
+        body.dark .aux b,
+        body.dark .saved-ref,
+        body.dark .vflag.bm {
+            color: var(--gold);
+        }
+
+        body.dark .verse:hover {
+            background: rgba(244, 211, 138, .05);
+        }
+
+        body.dark .verse.open {
+            background: rgba(244, 211, 138, .07);
+        }
+
+        body.dark .strip,
+        body.dark .note-editor,
+        body.dark #saved-list li {
+            background: rgba(255, 255, 255, .03);
+            border-color: var(--line-dark);
+        }
+
+        body.dark .heading.major,
+        body.dark #pager,
+        body.dark #books-side,
+        body.dark #testament-tabs,
+        body.dark #saved-tabs,
+        body.dark .list-head,
+        body.dark .aux,
+        body.dark .pager-btn,
+        body.dark #font-select {
+            border-color: var(--line-dark);
+        }
+
+        /* ── responsive ─────────────────────────────────────────────────── */
+        #menu-btn {
+            display: none;
+        }
+
+        @media (max-width: 980px) {
+            #menu-btn {
+                display: flex;
+            }
+
+            #nav-panel {
+                position: fixed;
+                top: 64px;
+                left: 0;
+                bottom: 0;
+                width: 88%;
+                max-width: 360px;
+                transform: translateX(-100%);
+                z-index: 2000;
+            }
+
+            #nav-panel.open {
+                transform: translateX(0);
+                box-shadow: 20px 0 50px rgba(0, 0, 0, .2);
+            }
+
+            main {
+                padding: 32px 20px;
+            }
+
+            #chapter-title {
+                font-size: 30px;
+            }
+
+            #size-controls,
+            #font-select {
+                display: none;
+            }
+        }
+
+        @media (max-width: 520px) {
+            #app-header {
+                padding: 0 12px;
+            }
+
+            #numerals-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header id="app-header">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+            <button id="menu-btn" class="control-btn" title="መጻሕፍት" aria-label="መጻሕፍት">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+            </button>
+            <div id="app-title">
+                <span style="font-size:24px; color:var(--burgundy); flex-shrink:0;">✠</span>
+                <div style="min-width:0;">
+                    <h1>መጽሐፍ ቅዱስ</h1>
+                    <span class="sub" id="title-sub">…</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="app-controls">
+            <button class="control-btn" id="numerals-btn" title="የቁጥር ዓይነት (፩ / 1)">፩</button>
+            <button class="control-btn" id="aux-btn" title="ማጣቀሻና ማስታወሻ አሳይ">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+            </button>
+            <select id="font-select" title="ፊደል"></select>
+            <div id="size-controls">
+                <button class="control-btn" id="size-down" title="ፊደል አሳንስ">A-</button>
+                <button class="control-btn" id="size-up" title="ፊደል አሳድግ">A+</button>
+            </div>
+            <button class="control-btn" id="saved-btn" title="የተቀመጡ">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
+            </button>
+            <button class="control-btn" id="theme-btn" title="ገጽታ ቀይር">
+                <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+            </button>
+        </div>
+    </header>
+
+    <div id="app-container">
+        <nav id="nav-panel" aria-label="መጻሕፍትና ምዕራፎች">
+            <div id="testament-tabs">
+                <button class="tt-tab active" data-t="old">ብሉይ ኪዳን</button>
+                <button class="tt-tab" data-t="new">አዲስ ኪዳን</button>
+            </div>
+            <div id="lists">
+                <aside id="books-side">
+                    <h2 class="list-head">መጻሕፍት</h2>
+                    <ul id="books-list"></ul>
+                </aside>
+                <aside id="chapters-side">
+                    <h2 class="list-head">ምዕራፍ</h2>
+                    <ul id="chapters-list"></ul>
+                </aside>
+            </div>
+        </nav>
+
+        <main id="reading-pane">
+            <div id="content-area">
+                <h2 id="chapter-title"></h2>
+                <div id="chapter-sub"></div>
+                <div id="text-container">
+                    <p class="msg">በመጫን ላይ…</p>
+                </div>
+                <div id="pager" style="display:none;">
+                    <button class="pager-btn" id="prev-ch">← ያለፈው ምዕራፍ</button>
+                    <button class="pager-btn" id="next-ch">ቀጣይ ምዕራፍ →</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <aside id="saved-panel" aria-label="የተቀመጡ">
+        <div id="saved-tabs">
+            <button class="tt-tab active" data-s="bookmarks">ዕልባቶች</button>
+            <button class="tt-tab" data-s="highlights">ማድመቂያ</button>
+            <button class="tt-tab" data-s="notes">ማስታወሻ</button>
+        </div>
+        <ul id="saved-list"></ul>
+    </aside>
+
+    <div id="scrim"></div>
+    <div id="toast"></div>
+
+    <script>
+        'use strict';
+
+        // ── state ────────────────────────────────────────────────────────────
+        const S = {
+            books: [],
+            byId: new Map(),
+            edition: null,
+            fonts: [],
+            book: null,          // BookIndexEntry of the open book
+            chapter: null,       // { n, alt, sections }
+            chapterNum: 0,
+            testament: 'old',
+            geez: true,
+            aux: false,
+            openVerse: null,     // verse key with its action strip showing
+            savedTab: 'bookmarks',
+            bookmarks: [],
+            highlights: [],
+            notes: [],
+        };
+
+        // The app's own highlight palette (highlightPalette in
+        // annotation_models.dart), in the same order so a colour picked here is
+        // the colour the app shows.
+        const PALETTE = ['#FFE062', '#3BAD49', '#FF4B26', '#5778C5', '#B61F21', '#704A6A'];
+
+        const LS = {
+            get: (k, d) => { try { const v = localStorage.getItem('wr.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+            set: (k, v) => { try { localStorage.setItem('wr.' + k, JSON.stringify(v)); } catch (e) { } },
+        };
+
+        const $ = (id) => document.getElementById(id);
+
+        // ── Ge'ez numerals ───────────────────────────────────────────────────
+        // The same digits `kenat` uses. Editions supply their own `alt` numeral
+        // for most chapters and verses; this covers everything else (saved-list
+        // references, books whose rows have no alt).
+        const GE_ONES = ['', '፩', '፪', '፫', '፬', '፭', '፮', '፯', '፰', '፱'];
+        const GE_TENS = ['', '፲', '፳', '፴', '፵', '፶', '፷', '፸', '፹', '፺'];
+
+        function toGeez(n) {
+            n = Math.floor(n);
+            if (!isFinite(n) || n < 1 || n >= 10000) return String(n);
+            if (n < 10) return GE_ONES[n];
+            if (n < 100) return GE_TENS[Math.floor(n / 10)] + GE_ONES[n % 10];
+            const hundreds = Math.floor(n / 100), rest = n % 100;
+            // ፻ stands alone for one hundred — ፩፻ is not how it is written.
+            return (hundreds === 1 ? '፻' : toGeez(hundreds) + '፻') + (rest ? toGeez(rest) : '');
+        }
+
+        /** Numeral for display, preferring the edition's own `alt`. */
+        function num(value, alt) {
+            if (!S.geez) return String(value);
+            return (alt && alt.length) ? alt : toGeez(value);
+        }
+
+        // ── api ──────────────────────────────────────────────────────────────
+        async function api(path, options) {
+            const res = await fetch(path, Object.assign({ headers: { 'content-type': 'application/json' } }, options || {}));
+            if (res.status === 204) return null;
+            if (!res.ok) {
+                let detail = res.statusText;
+                try { detail = (await res.json()).error || detail; } catch (e) { }
+                throw new Error(detail);
+            }
+            return res.json();
+        }
+
+        let toastTimer = null;
+        function toast(text) {
+            const el = $('toast');
+            el.textContent = text;
+            el.classList.add('on');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('on'), 2200);
+        }
+
+        // ── annotation lookup ────────────────────────────────────────────────
+        // Annotations store a verse range (verseStart + verseCount), matching
+        // ChapterAnnotations in the app — so a verse is covered by any row whose
+        // range contains it, not only by one that starts on it.
+        const covers = (a, ch, v) =>
+            a.chapter === ch && v >= a.verseStart && v < a.verseStart + a.verseCount;
+
+        const findFor = (list, v) =>
+            list.find((a) => a.bookId === (S.book && S.book.id) && covers(a, S.chapterNum, v)) || null;
+
+        async function loadAnnotations() {
+            const [b, h, n] = await Promise.all([
+                api('/api/bookmarks'), api('/api/highlights'), api('/api/notes'),
+            ]);
+            S.bookmarks = b.bookmarks;
+            S.highlights = h.highlights;
+            S.notes = n.notes;
+        }
+
+        // ── boot ─────────────────────────────────────────────────────────────
+        async function boot() {
+            applyTheme(LS.get('theme', 'light'));
+            S.geez = LS.get('geez', true);
+            S.aux = LS.get('aux', false);
+            setSize(LS.get('size', 21));
+            $('numerals-btn').classList.toggle('on', S.geez);
+            $('numerals-btn').textContent = S.geez ? '፩' : '1';
+            $('aux-btn').classList.toggle('on', S.aux);
+
+            try {
+                const [index, fonts] = await Promise.all([api('/api/index'), api('/api/fonts')]);
+                S.books = index.books;
+                S.byId = new Map(S.books.map((b) => [b.id, b]));
+                S.edition = index.edition;
+                S.fonts = fonts.fonts;
+                $('title-sub').textContent = S.edition.title || S.edition.id;
+                installFonts();
+                await loadAnnotations();
+            } catch (e) {
+                $('text-container').innerHTML =
+                    '<p class="msg">ከመተግበሪያው ጋር መገናኘት አልተቻለም።<br>' + escapeHtml(e.message) + '</p>';
+                return;
+            }
+
+            // Resume where this browser left off, else the first book.
+            const lastBook = LS.get('book', null);
+            const lastChapter = LS.get('chapter', 1);
+            const start = (lastBook && S.byId.get(lastBook)) || S.books[0];
+            if (!start) {
+                $('text-container').innerHTML = '<p class="msg">በዚህ ዕትም ውስጥ መጽሐፍ የለም።</p>';
+                return;
+            }
+            S.testament = start.testament === 'new' ? 'new' : 'old';
+            syncTestamentTabs();
+            renderBooks();
+            await openBook(start, lastBook === start.id ? lastChapter : 1);
+        }
+
+        function installFonts() {
+            const sel = $('font-select');
+            let css = '';
+            S.fonts.forEach((f) => {
+                css += `@font-face{font-family:'${f.family}';src:url('/fonts/${f.regular}');font-weight:400;font-display:swap;}`;
+                if (f.bold) {
+                    css += `@font-face{font-family:'${f.family}';src:url('/fonts/${f.bold}');font-weight:700;font-display:swap;}`;
+                }
+                const opt = document.createElement('option');
+                opt.value = f.family;
+                opt.textContent = f.label;
+                sel.appendChild(opt);
+            });
+            const style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+
+            const saved = LS.get('font', S.fonts[0] && S.fonts[0].family);
+            if (saved) { sel.value = saved; applyFont(saved); }
+        }
+
+        function applyFont(family) {
+            document.documentElement.style.setProperty(
+                '--font-ethi', `'${family}', system-ui, serif`);
+        }
+
+        function setSize(px) {
+            const clamped = Math.max(15, Math.min(34, px));
+            document.documentElement.style.setProperty('--reader-size', clamped + 'px');
+            LS.set('size', clamped);
+            return clamped;
+        }
+
+        function applyTheme(mode) {
+            const dark = mode === 'dark';
+            document.body.classList.toggle('dark', dark);
+            LS.set('theme', mode);
+            // Sun when dark (tap for light), moon when light.
+            $('theme-icon').innerHTML = dark
+                ? '<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+                : '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+        }
+
+        // ── nav lists ────────────────────────────────────────────────────────
+        // Two tabs, matching the app: `isOldTestament` there is "not new", so
+        // the deuterocanon sits with the Old Testament rather than in a third
+        // list the reader would have to learn.
+        const inTestament = (b, t) => t === 'new' ? b.testament === 'new' : b.testament !== 'new';
+
+        function syncTestamentTabs() {
+            document.querySelectorAll('#testament-tabs .tt-tab').forEach((el) =>
+                el.classList.toggle('active', el.dataset.t === S.testament));
+        }
+
+        function renderBooks() {
+            const list = $('books-list');
+            list.innerHTML = '';
+            const books = S.books.filter((b) => inTestament(b, S.testament));
+            if (!books.length) {
+                list.innerHTML = '<li class="empty-note" style="cursor:default">በዚህ ዕትም ውስጥ የለም።</li>';
+                return;
+            }
+            books.forEach((b) => {
+                const li = document.createElement('li');
+                li.textContent = b.nameAm || b.nameEn;
+                li.title = b.nameEn;
+                if (S.book && b.id === S.book.id) li.classList.add('active-item');
+                li.onclick = () => openBook(b, 1);
+                list.appendChild(li);
+            });
+        }
+
+        function renderChapters() {
+            const list = $('chapters-list');
+            list.innerHTML = '';
+            if (!S.book) return;
+            const count = S.book.chapterCount || 0;
+            for (let i = 1; i <= count; i++) {
+                const li = document.createElement('li');
+                li.textContent = S.geez ? toGeez(i) : String(i);
+                if (i === S.chapterNum) li.classList.add('active-item');
+                li.onclick = () => openChapter(i);
+                list.appendChild(li);
+            }
+        }
+
+        // ── loading ──────────────────────────────────────────────────────────
+        async function openBook(book, chapter) {
+            S.book = book;
+            S.testament = book.testament === 'new' ? 'new' : 'old';
+            syncTestamentTabs();
+            renderBooks();
+            LS.set('book', book.id);
+            await openChapter(chapter || 1);
+        }
+
+        async function openChapter(n, focusVerse) {
+            if (!S.book) return;
+            S.chapterNum = n;
+            S.openVerse = null;
+            LS.set('chapter', n);
+            renderChapters();
+            closeNav();
+
+            $('chapter-title').textContent =
+                (S.book.nameAm || S.book.nameEn) + ' ' + (S.geez ? toGeez(n) : n);
+            $('chapter-sub').textContent = S.book.nameEn + ' ' + n +
+                (S.edition ? ' · ' + (S.edition.abbrev || S.edition.id) : '');
+            $('text-container').innerHTML = '<p class="msg">በመጫን ላይ…</p>';
+
+            try {
+                const data = await api('/api/book/' + encodeURIComponent(S.book.id) + '/' + n);
+                S.chapter = data.chapter;
+                // The index's chapterCount is the edition's; trust it, but the
+                // book payload confirms the book itself is still there.
+                S.book = Object.assign({}, S.book, data.book);
+                S.byId.set(S.book.id, S.book);
+            } catch (e) {
+                $('text-container').innerHTML = '<p class="msg">' + escapeHtml(e.message) + '</p>';
+                $('pager').style.display = 'none';
+                return;
+            }
+            renderChapter();
+            if (focusVerse != null) flashVerse(focusVerse);
+            else $('reading-pane').scrollTop = 0;
+        }
+
+        // ── rendering ────────────────────────────────────────────────────────
+        function escapeHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function renderChapter() {
+            // Nothing loaded — leave whatever is there, which is the loading
+            // or error message, rather than blanking the pane.
+            if (!S.chapter) return;
+            const box = $('text-container');
+            box.innerHTML = '';
+
+            S.chapter.sections.forEach((section) => {
+                section.headings.forEach((h) => {
+                    if (!h.text) return;
+                    // `major` repeats the chapter number the header already
+                    // shows, exactly as in the app's reader — skip it.
+                    if (h.kind === 'major') return;
+                    const el = document.createElement('div');
+                    el.className = 'heading ' + h.kind;
+                    el.textContent = h.text;
+                    box.appendChild(el);
+                });
+                section.verses.forEach((v) => box.appendChild(renderVerse(v)));
+            });
+
+            const count = S.book.chapterCount || 0;
+            $('pager').style.display = 'flex';
+            $('prev-ch').disabled = S.chapterNum <= 1;
+            $('next-ch').disabled = S.chapterNum >= count;
+        }
+
+        function renderVerse(v) {
+            const p = document.createElement('p');
+            p.className = 'verse';
+            p.dataset.v = v.verse;
+            p.id = 'v' + v.verse;
+
+            const hl = findFor(S.highlights, v.verse);
+            if (hl) { p.classList.add('hl'); p.style.setProperty('--hl', hl.color); }
+
+            let html = '';
+            if (v.numbered) {
+                html += '<span class="vnum' + (S.geez ? ' geez' : '') + '">' +
+                    escapeHtml(num(v.verse, v.alt)) + '</span>';
+            }
+
+            if (v.lines && v.lines.length) {
+                html += '<span class="vtext">' + v.lines.map((l) =>
+                    '<span class="vline ' + escapeHtml(l.style) + '">' + escapeHtml(l.text) + '</span>'
+                ).join('') + '</span>';
+            } else {
+                html += '<span class="vtext">' + escapeHtml(v.text) + '</span>';
+            }
+
+            if (findFor(S.bookmarks, v.verse)) html += '<span class="vflag bm">🔖</span>';
+            const note = findFor(S.notes, v.verse);
+            if (note) {
+                html += '<span class="vflag nt" title="' + escapeHtml(note.content) + '">✎</span>';
+            }
+
+            if (S.aux) {
+                (v.refs || []).forEach((r) => {
+                    html += '<span class="aux"><b>' + escapeHtml(r.origin) + '</b> ' +
+                        escapeHtml(r.target) + '</span>';
+                });
+                (v.notes || []).forEach((n) => {
+                    html += '<span class="aux"><b>' + escapeHtml(n.caller) + '</b> ' +
+                        escapeHtml(n.body) + '</span>';
+                });
+            }
+
+            p.innerHTML = html;
+            p.onclick = (e) => {
+                // Clicks inside the strip or note editor are the strip's own.
+                if (e.target.closest('.strip, .note-editor')) return;
+                toggleVerse(v.verse);
+            };
+
+            if (S.openVerse === v.verse) {
+                p.classList.add('open');
+                p.appendChild(buildStrip(v));
+            }
+            return p;
+        }
+
+        function toggleVerse(verse) {
+            S.openVerse = S.openVerse === verse ? null : verse;
+            renderChapter();
+            if (S.openVerse !== null) {
+                const el = $('v' + verse);
+                if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        function buildStrip(v) {
+            const strip = document.createElement('div');
+            strip.className = 'strip';
+
+            const bookmarked = !!findFor(S.bookmarks, v.verse);
+            const bm = document.createElement('button');
+            bm.className = bookmarked ? 'on' : '';
+            bm.innerHTML = '<span>🔖</span><span>' + (bookmarked ? 'ተቀምጧል' : 'ዕልባት') + '</span>';
+            bm.onclick = () => toggleBookmark(v.verse);
+            strip.appendChild(bm);
+
+            const current = findFor(S.highlights, v.verse);
+            const sw = document.createElement('div');
+            sw.className = 'swatches';
+            PALETTE.forEach((color) => {
+                const b = document.createElement('button');
+                b.className = 'swatch' + (current && current.color.toUpperCase() === color ? ' on' : '');
+                b.style.background = color;
+                b.title = color;
+                b.onclick = () => setHighlight(v.verse, color);
+                sw.appendChild(b);
+            });
+            if (current) {
+                const clear = document.createElement('button');
+                clear.className = 'swatch clear';
+                clear.textContent = '✕';
+                clear.title = 'ማድመቂያ አጥፋ';
+                clear.onclick = () => removeHighlight(current.id);
+                sw.appendChild(clear);
+            }
+            strip.appendChild(sw);
+
+            strip.appendChild(Object.assign(document.createElement('div'), { className: 'spacer' }));
+
+            const note = findFor(S.notes, v.verse);
+            const nb = document.createElement('button');
+            nb.className = note ? 'on' : '';
+            nb.innerHTML = '<span>✏️</span><span>' + (note ? 'ማስታወሻ አርትዕ' : 'ማስታወሻ') + '</span>';
+            nb.onclick = () => openNoteEditor(v.verse, strip.parentElement);
+            strip.appendChild(nb);
+
+            return strip;
+        }
+
+        function openNoteEditor(verse, verseEl) {
+            if (!verseEl || verseEl.querySelector('.note-editor')) return;
+            const existing = findFor(S.notes, verse);
+
+            const box = document.createElement('div');
+            box.className = 'note-editor';
+            const ta = document.createElement('textarea');
+            ta.value = existing ? existing.content : '';
+            ta.placeholder = 'ማስታወሻህን እዚህ ጻፍ…';
+            box.appendChild(ta);
+
+            const actions = document.createElement('div');
+            actions.className = 'note-actions';
+
+            const save = document.createElement('button');
+            save.className = 'btn-primary';
+            save.textContent = 'አስቀምጥ';
+            save.onclick = () => saveNote(verse, ta.value, existing);
+            actions.appendChild(save);
+
+            if (existing) {
+                const del = document.createElement('button');
+                del.className = 'btn-ghost';
+                del.textContent = 'አጥፋ';
+                del.onclick = () => deleteNote(existing.id);
+                actions.appendChild(del);
+            }
+
+            const cancel = document.createElement('button');
+            cancel.className = 'btn-ghost';
+            cancel.textContent = 'ተወው';
+            cancel.onclick = () => box.remove();
+            actions.appendChild(cancel);
+
+            box.appendChild(actions);
+            verseEl.appendChild(box);
+            ta.focus();
+        }
+
+        function flashVerse(verse) {
+            const el = $('v' + verse);
+            if (!el) return;
+            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            el.classList.add('flash');
+            setTimeout(() => el.classList.remove('flash'), 1700);
+        }
+
+        // ── annotation writes ────────────────────────────────────────────────
+        const refBody = (verse) => ({
+            bookId: S.book.id,
+            bookNumber: S.book.bookNumber,
+            chapter: S.chapterNum,
+            verseStart: verse,
+            verseCount: 1,
+        });
+
+        async function toggleBookmark(verse) {
+            const existing = findFor(S.bookmarks, verse);
+            try {
+                if (existing) {
+                    await api('/api/bookmarks/' + existing.id, { method: 'DELETE' });
+                    toast('ዕልባት ተነሳ');
+                } else {
+                    await api('/api/bookmarks', { method: 'POST', body: JSON.stringify(refBody(verse)) });
+                    toast('ዕልባት ተቀመጠ');
+                }
+                await refresh();
+            } catch (e) { toast(e.message); }
+        }
+
+        async function setHighlight(verse, color) {
+            try {
+                await api('/api/highlights', {
+                    method: 'POST',
+                    body: JSON.stringify(Object.assign(refBody(verse), { color: color })),
+                });
+                toast('ተደምቋል');
+                await refresh();
+            } catch (e) { toast(e.message); }
+        }
+
+        async function removeHighlight(id) {
+            try {
+                await api('/api/highlights/' + id, { method: 'DELETE' });
+                toast('ማድመቂያ ተነሳ');
+                await refresh();
+            } catch (e) { toast(e.message); }
+        }
+
+        async function saveNote(verse, content, existing) {
+            if (!content.trim()) { toast('ማስታወሻው ባዶ ነው'); return; }
+            try {
+                if (existing) {
+                    await api('/api/notes/' + existing.id, {
+                        method: 'PATCH', body: JSON.stringify({ content: content }),
+                    });
+                } else {
+                    await api('/api/notes', {
+                        method: 'POST',
+                        body: JSON.stringify(Object.assign(refBody(verse), { content: content })),
+                    });
+                }
+                toast('ማስታወሻ ተቀመጠ');
+                S.openVerse = null;
+                await refresh();
+            } catch (e) { toast(e.message); }
+        }
+
+        async function deleteNote(id) {
+            try {
+                await api('/api/notes/' + id, { method: 'DELETE' });
+                toast('ማስታወሻ ተጠፋ');
+                S.openVerse = null;
+                await refresh();
+            } catch (e) { toast(e.message); }
+        }
+
+        /** Re-reads annotations and repaints both the chapter and the drawer. */
+        async function refresh() {
+            await loadAnnotations();
+            renderChapter();
+            renderSaved();
+        }
+
+        // ── saved drawer ─────────────────────────────────────────────────────
+        function refLabel(a) {
+            const b = S.byId.get(a.bookId);
+            const name = b ? (b.nameAm || b.nameEn) : a.bookId;
+            const ch = S.geez ? toGeez(a.chapter) : a.chapter;
+            const vs = a.verseStart > 0 ? (S.geez ? toGeez(a.verseStart) : a.verseStart) : '–';
+            const span = a.verseCount > 1 ? '-' + (S.geez ? toGeez(a.verseStart + a.verseCount - 1)
+                : a.verseStart + a.verseCount - 1) : '';
+            return name + ' ' + ch + '፥' + vs + span;
+        }
+
+        function renderSaved() {
+            const list = $('saved-list');
+            list.innerHTML = '';
+            const items = S.savedTab === 'bookmarks' ? S.bookmarks
+                : S.savedTab === 'highlights' ? S.highlights : S.notes;
+
+            if (!items.length) {
+                list.innerHTML = '<li class="empty-note" style="cursor:default;background:none;border:none">ገና ምንም የለም።</li>';
+                return;
+            }
+
+            // Newest first — the app's Saved tab orders the same way.
+            [...items].sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+                .forEach((a) => {
+                    const li = document.createElement('li');
+                    const ref = document.createElement('div');
+                    ref.className = 'saved-ref';
+                    if (S.savedTab === 'highlights') {
+                        const dot = document.createElement('span');
+                        dot.className = 'saved-dot';
+                        dot.style.background = a.color;
+                        ref.appendChild(dot);
+                    }
+                    ref.appendChild(document.createTextNode(refLabel(a)));
+                    li.appendChild(ref);
+
+                    if (S.savedTab === 'notes' && a.content) {
+                        const body = document.createElement('div');
+                        body.className = 'saved-body';
+                        body.textContent = a.content;
+                        li.appendChild(body);
+                    }
+
+                    li.onclick = () => goTo(a);
+                    list.appendChild(li);
+                });
+        }
+
+        async function goTo(a) {
+            const book = S.byId.get(a.bookId);
+            if (!book) { toast('በዚህ ዕትም ውስጥ የለም'); return; }
+            closeSaved();
+            if (!S.book || S.book.id !== book.id) await openBook(book, a.chapter);
+            if (S.chapterNum !== a.chapter) await openChapter(a.chapter, a.verseStart);
+            else flashVerse(a.verseStart);
+        }
+
+        // ── drawers ──────────────────────────────────────────────────────────
+        const navOpen = () => $('nav-panel').classList.contains('open');
+        function closeNav() { $('nav-panel').classList.remove('open'); syncScrim(); }
+        function closeSaved() { $('saved-panel').classList.remove('open'); syncScrim(); }
+        function syncScrim() {
+            $('scrim').classList.toggle('on',
+                navOpen() || $('saved-panel').classList.contains('open'));
+        }
+
+        // ── wiring ───────────────────────────────────────────────────────────
+        $('menu-btn').onclick = () => { $('nav-panel').classList.toggle('open'); syncScrim(); };
+        $('scrim').onclick = () => { closeNav(); closeSaved(); };
+
+        $('saved-btn').onclick = () => {
+            const panel = $('saved-panel');
+            panel.classList.toggle('open');
+            $('saved-btn').classList.toggle('on', panel.classList.contains('open'));
+            if (panel.classList.contains('open')) renderSaved();
+            syncScrim();
+        };
+
+        document.querySelectorAll('#saved-tabs .tt-tab').forEach((tab) => {
+            tab.onclick = () => {
+                S.savedTab = tab.dataset.s;
+                document.querySelectorAll('#saved-tabs .tt-tab').forEach((t) =>
+                    t.classList.toggle('active', t === tab));
+                renderSaved();
+            };
+        });
+
+        document.querySelectorAll('#testament-tabs .tt-tab').forEach((tab) => {
+            tab.onclick = () => { S.testament = tab.dataset.t; syncTestamentTabs(); renderBooks(); };
+        });
+
+        $('prev-ch').onclick = () => { if (S.chapterNum > 1) openChapter(S.chapterNum - 1); };
+        $('next-ch').onclick = () => {
+            if (S.book && S.chapterNum < (S.book.chapterCount || 0)) openChapter(S.chapterNum + 1);
+        };
+
+        $('theme-btn').onclick = () =>
+            applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+
+        $('numerals-btn').onclick = () => {
+            S.geez = !S.geez;
+            LS.set('geez', S.geez);
+            $('numerals-btn').classList.toggle('on', S.geez);
+            $('numerals-btn').textContent = S.geez ? '፩' : '1';
+            renderChapters();
+            renderChapter();
+            renderSaved();
+            // The button is live from the first paint, so it can be pressed
+            // before — or instead of — a book ever loading.
+            if (S.book) {
+                $('chapter-title').textContent = (S.book.nameAm || S.book.nameEn) +
+                    ' ' + (S.geez ? toGeez(S.chapterNum) : S.chapterNum);
+            }
+        };
+
+        $('aux-btn').onclick = () => {
+            S.aux = !S.aux;
+            LS.set('aux', S.aux);
+            $('aux-btn').classList.toggle('on', S.aux);
+            renderChapter();
+        };
+
+        $('size-up').onclick = () => setSize(LS.get('size', 21) + 2);
+        $('size-down').onclick = () => setSize(LS.get('size', 21) - 2);
+
+        $('font-select').onchange = (e) => { applyFont(e.target.value); LS.set('font', e.target.value); };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+            if (e.key === 'ArrowLeft' && !$('prev-ch').disabled) $('prev-ch').click();
+            if (e.key === 'ArrowRight' && !$('next-ch').disabled) $('next-ch').click();
+            if (e.key === 'Escape') { closeNav(); closeSaved(); $('saved-btn').classList.remove('on'); }
+        });
+
+        boot();
+    </script>
+</body>
+
+</html>
