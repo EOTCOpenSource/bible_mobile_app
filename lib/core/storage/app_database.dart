@@ -441,57 +441,62 @@ class AppDatabase {
     int? verse,
     required int durationMs,
   }) async {
-    final db = await database;
-    final now = DateTime.now().millisecondsSinceEpoch;
+    try {
+      final db = await database;
+      final now = DateTime.now().millisecondsSinceEpoch;
 
-    final recent = await db.query(
-      'reading_history',
-      orderBy: 'opened_at DESC',
-      limit: 1,
-    );
+      final recent = await db.query(
+        'reading_history',
+        orderBy: 'opened_at DESC',
+        limit: 1,
+      );
 
-    if (recent.isNotEmpty) {
-      final row = recent.first;
-      final oldBookId = row['book_id'] as String;
-      final oldChapter = row['chapter'] as int;
-      final openedAt = row['opened_at'] as int;
-      final oldDuration = (row['duration_ms'] as int?) ?? 0;
+      if (recent.isNotEmpty) {
+        final row = recent.first;
+        final oldBookId = row['book_id'] as String;
+        final oldChapter = row['chapter'] as int;
+        final openedAt = row['opened_at'] as int;
+        final oldDuration = (row['duration_ms'] as int?) ?? 0;
 
-      if (oldBookId == bookId &&
-          oldChapter == chapter &&
-          (now - openedAt) <= 30 * 60 * 1000) {
-        await db.update(
-          'reading_history',
-          {
-            'duration_ms': oldDuration + durationMs,
-            'verse': ?verse,
-          },
-          where: 'id = ?',
-          whereArgs: [row['id']],
-        );
-        return;
+        if (oldBookId == bookId &&
+            oldChapter == chapter &&
+            (now - openedAt) <= 30 * 60 * 1000) {
+          await db.update(
+            'reading_history',
+            {
+              'duration_ms': oldDuration + durationMs,
+              'verse': verse,
+              'opened_at': now,
+            },
+            where: 'id = ?',
+            whereArgs: [row['id']],
+          );
+          return;
+        }
       }
-    }
 
-    await db.insert('reading_history', {
-      'book_id': bookId,
-      'chapter': chapter,
-      'verse': verse,
-      'opened_at': now,
-      'duration_ms': durationMs,
-    });
+      await db.insert('reading_history', {
+        'book_id': bookId,
+        'chapter': chapter,
+        'verse': verse,
+        'opened_at': now,
+        'duration_ms': durationMs,
+      });
 
-    final countRes = await db.rawQuery('SELECT COUNT(*) as c FROM reading_history');
-    final count = countRes.first['c'] as int;
-    if (count > 500) {
-      await db.execute('''
-        DELETE FROM reading_history 
-        WHERE id IN (
-          SELECT id FROM reading_history 
-          ORDER BY opened_at ASC 
-          LIMIT ?
-        )
-      ''', [count - 500]);
+      final countRes = await db.rawQuery('SELECT COUNT(*) as c FROM reading_history');
+      final count = countRes.first['c'] as int;
+      if (count > 500) {
+        await db.execute('''
+          DELETE FROM reading_history 
+          WHERE id IN (
+            SELECT id FROM reading_history 
+            ORDER BY opened_at ASC 
+            LIMIT ?
+          )
+        ''', [count - 500]);
+      }
+    } catch (e, st) {
+      debugPrint('AppDatabase.insertReadingHistory error: $e\n$st');
     }
   }
 
@@ -507,6 +512,15 @@ class AppDatabase {
   Future<void> clearReadingHistory() async {
     final db = await database;
     await db.delete('reading_history');
+  }
+
+  Future<void> deleteReadingHistoryItem(int id) async {
+    final db = await database;
+    await db.delete(
+      'reading_history',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // ── Bookmarks ──────────────────────────────────────────────────────────────
