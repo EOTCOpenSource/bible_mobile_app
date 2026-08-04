@@ -287,29 +287,29 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             child: Row(
               children: [
                 _TabLabel(
-                  label: s.savedHistory,
-                  count: _history.length,
+                  label: s.savedHighlights,
+                  count: _highlights.length,
                   active: _tab == 0,
                   onTap: () => setState(() => _tab = 0),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedHighlights,
-                  count: _highlights.length,
+                  label: s.savedBookmarks,
+                  count: _bookmarks.length,
                   active: _tab == 1,
                   onTap: () => setState(() => _tab = 1),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedBookmarks,
-                  count: _bookmarks.length,
+                  label: s.savedNotes,
+                  count: _notes.length,
                   active: _tab == 2,
                   onTap: () => setState(() => _tab = 2),
                 ),
                 const SizedBox(width: 24),
                 _TabLabel(
-                  label: s.savedNotes,
-                  count: _notes.length,
+                  label: s.savedHistory,
+                  count: _history.length,
                   active: _tab == 3,
                   onTap: () => setState(() => _tab = 3),
                 ),
@@ -326,6 +326,21 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 : IndexedStack(
                     index: _tab,
                     children: [
+                      HighlightsTab(
+                        items: _highlights,
+                        onOpen: _openVerse,
+                        onRefresh: _load,
+                      ),
+                      BookmarksTab(
+                        items: _bookmarks,
+                        onOpen: _openVerse,
+                        onRefresh: _load,
+                      ),
+                      NotesTab(
+                        items: _notes,
+                        onOpen: _openVerse,
+                        onRefresh: _load,
+                      ),
                       HistoryTab(
                         items: _history,
                         onOpen: _openVerse,
@@ -341,21 +356,6 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                               .deleteReadingHistoryItem(id);
                           _load();
                         },
-                      ),
-                      HighlightsTab(
-                        items: _highlights,
-                        onOpen: _openVerse,
-                        onRefresh: _load,
-                      ),
-                      BookmarksTab(
-                        items: _bookmarks,
-                        onOpen: _openVerse,
-                        onRefresh: _load,
-                      ),
-                      NotesTab(
-                        items: _notes,
-                        onOpen: _openVerse,
-                        onRefresh: _load,
                       ),
                     ],
                   ),
