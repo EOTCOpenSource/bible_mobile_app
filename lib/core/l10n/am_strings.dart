@@ -285,6 +285,16 @@ class AmStrings extends AppStrings {
   String get savedBookmarkDeleted => 'ክታቦ ተሰርዟል';
   @override
   String get savedHighlightDeleted => 'ምልክቶ ተሰርዟል';
+  @override
+  String get timeMorning => 'ጠዋት';
+  @override
+  String get timeAfternoon => 'ከሰዓት';
+  @override
+  String get historyEmptyHint => 'ንባብ ሲጀምሩ ታሪክዎ እዚህ ይታያል';
+  @override
+  String get loadMore => 'ተጨማሪ አሳይ';
+  @override
+  String get savedDeleteHistoryTitle => 'ይህን መዝገብ ከታሪክ ያጥፋ?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

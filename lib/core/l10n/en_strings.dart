@@ -287,6 +287,16 @@ class EnStrings extends AppStrings {
   String get savedBookmarkDeleted => 'Bookmark deleted';
   @override
   String get savedHighlightDeleted => 'Highlight deleted';
+  @override
+  String get timeMorning => 'AM';
+  @override
+  String get timeAfternoon => 'PM';
+  @override
+  String get historyEmptyHint => 'Start reading to see history here';
+  @override
+  String get loadMore => 'Load more';
+  @override
+  String get savedDeleteHistoryTitle => 'Remove this from history?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override
