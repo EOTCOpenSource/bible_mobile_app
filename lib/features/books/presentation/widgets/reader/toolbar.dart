@@ -24,6 +24,7 @@ class ReaderToolbar extends StatelessWidget {
     this.onChapterTap,
     this.onAudio,
     this.onSearch,
+    this.onGoToReference,
   });
 
   final BookIndexEntry entry;
@@ -55,6 +56,14 @@ class ReaderToolbar extends StatelessWidget {
   /// Opens search scoped to the book being read. Null disables the button
   /// rather than leaving it tappable and inert, which is what it was.
   final VoidCallback? onSearch;
+
+  /// Opens the reference jump sheet.
+  ///
+  /// Deliberately its own button rather than sharing the magnifier with
+  /// [onSearch]: one finds words anywhere, the other goes to a verse you can
+  /// already name. Both arrived on the same icon and only one would have
+  /// survived.
+  final VoidCallback? onGoToReference;
 
   String get _label {
     final n    = chapterNumber ?? currentChapter + 1;
@@ -133,6 +142,12 @@ class ReaderToolbar extends StatelessWidget {
               ),
             ),
           ),
+          // Go to reference — type "ዘፍ 3:16" and jump straight there.
+          if (onGoToReference != null)
+            IconButton(
+              icon: Icon(Icons.numbers_rounded, size: 20, color: mutedColor),
+              onPressed: onGoToReference,
+            ),
           // Search
           IconButton(
             icon: Icon(Icons.search_rounded, size: 20, color: mutedColor),

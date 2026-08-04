@@ -37,6 +37,7 @@ import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
+import '../widgets/reader/reference_jump_sheet.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 import '../../../share/verse_card_sheet.dart';
@@ -742,6 +743,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Reference Jump sheet ──────────────────────────────────────────────────
+
+  void _showReferenceJumpSheet(BuildContext ctx, AppSettings settings) {
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ReferenceJumpSheet(
+        useGeez: settings.useGeezNumbers,
+        isAmharic: L10n.of(ctx) is AmStrings,
+        s: L10n.of(ctx),
+      ),
+    );
+  }
+
   // ── Highlight sheet ───────────────────────────────────────────────────────
 
   void _showHighlightSheet(
@@ -1006,6 +1022,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 onChapterTap: chapterReady
                                     ? () => _showChapterPicker(context, settings)
                                     : null,
+                                onGoToReference: () =>
+                                    _showReferenceJumpSheet(context, settings),
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
