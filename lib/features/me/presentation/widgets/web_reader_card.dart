@@ -84,7 +84,7 @@ class WebReaderCard extends ConsumerWidget {
           ],
           if (state.url != null) ...[
             const SizedBox(height: 14),
-            _AddressRow(url: state.url!),
+            _AddressRow(url: state.url!, interfaceName: state.interfaceName),
             const SizedBox(height: 14),
             _QrThumb(url: state.url!),
           ],
@@ -156,9 +156,10 @@ class _ActionButton extends StatelessWidget {
 }
 
 class _AddressRow extends StatelessWidget {
-  const _AddressRow({required this.url});
+  const _AddressRow({required this.url, this.interfaceName});
 
   final String url;
+  final String? interfaceName;
 
   @override
   Widget build(BuildContext context) {
@@ -186,14 +187,29 @@ class _AddressRow extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: SelectableText(
-                url,
-                style: AppTypography.englishBody.copyWith(
-                  color: c.primary,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: .2,
-                ),
-                maxLines: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SelectableText(
+                    url,
+                    style: AppTypography.englishBody.copyWith(
+                      color: c.primary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: .2,
+                    ),
+                    maxLines: 1,
+                  ),
+                  // The interface is a technical identifier, the same in every
+                  // language, so it needs no translation — and it is the one
+                  // thing that explains an address the user did not expect.
+                  if (interfaceName != null && interfaceName!.isNotEmpty)
+                    Text(
+                      interfaceName!,
+                      style: AppTypography.englishCaption.copyWith(
+                        color: c.textCaption,
+                      ),
+                    ),
+                ],
               ),
             ),
             const SizedBox(width: 8),

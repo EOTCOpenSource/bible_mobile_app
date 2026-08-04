@@ -454,6 +454,107 @@ void main() {
       expect(service.baseUrl, isNull);
     });
 
+    // Every case here is an address that is private, and therefore looks
+    // plausible, but that a browser on the room's WiFi cannot reach.
+    group('address picking', () {
+      int score(String iface, String ip) =>
+          LocalServerService.addressScore(iface, ip);
+
+      void beats(
+        ({String iface, String ip}) winner,
+        ({String iface, String ip}) loser,
+      ) =>
+          expect(
+            score(winner.iface, winner.ip),
+            greaterThan(score(loser.iface, loser.ip)),
+            reason: '${winner.iface} ${winner.ip} should beat '
+                '${loser.iface} ${loser.ip}',
+          );
+
+      test('WiFi beats a VPN tunnel on the same device', () {
+        // Mullvad hands out 10.64.0.0/10 — private, and reachable from nobody
+        // else on the WiFi.
+        beats(
+          (iface: 'wlan0', ip: '192.168.1.42'),
+          (iface: 'tun0', ip: '10.64.0.1'),
+        );
+        beats(
+          (iface: 'Wi-Fi', ip: '192.168.1.42'),
+          (iface: 'Mullvad VPN Tunnel', ip: '10.64.0.1'),
+        );
+        beats(
+          (iface: 'en0', ip: '192.168.1.42'),
+          (iface: 'utun3', ip: '10.64.0.1'),
+        );
+        beats(
+          (iface: 'wlan0', ip: '192.168.1.42'),
+          (iface: 'wg0', ip: '10.64.0.1'),
+        );
+      });
+
+      test('WiFi beats mobile data', () {
+        beats(
+          (iface: 'wlan0', ip: '192.168.1.42'),
+          (iface: 'rmnet_data0', ip: '10.183.44.7'),
+        );
+        beats(
+          (iface: 'en0', ip: '192.168.1.42'),
+          (iface: 'pdp_ip0', ip: '10.183.44.7'),
+        );
+      });
+
+      test('WiFi wins even when the carrier address looks more homely', () {
+        // The interface has to outrank the range, or a carrier or VPN handing
+        // out a 192.168 address would take the URL.
+        beats(
+          (iface: 'wlan0', ip: '10.0.0.9'),
+          (iface: 'rmnet_data0', ip: '192.168.8.1'),
+        );
+        beats(
+          (iface: 'wlan0', ip: '10.0.0.9'),
+          (iface: 'docker0', ip: '192.168.99.1'),
+        );
+      });
+
+      test('real networks beat virtual adapters on desktop', () {
+        beats(
+          (iface: 'Wi-Fi', ip: '192.168.1.42'),
+          (iface: 'VMware Network Adapter VMnet1', ip: '192.168.220.1'),
+        );
+        beats(
+          (iface: 'Ethernet', ip: '192.168.1.42'),
+          (iface: 'vEthernet (Default Switch)', ip: '172.20.0.1'),
+        );
+        beats(
+          (iface: 'wlp3s0', ip: '192.168.1.42'),
+          (iface: 'br-1a2b3c', ip: '172.18.0.1'),
+        );
+      });
+
+      test('among equals the homeliest range wins', () {
+        beats(
+          (iface: 'wlan0', ip: '192.168.1.42'),
+          (iface: 'wlan1', ip: '10.0.0.9'),
+        );
+        beats(
+          (iface: 'wlan0', ip: '172.16.4.4'),
+          (iface: 'wlan1', ip: '10.0.0.9'),
+        );
+        // Carrier-grade NAT is not a LAN.
+        beats(
+          (iface: 'wlan0', ip: '10.0.0.9'),
+          (iface: 'wlan1', ip: '100.64.1.1'),
+        );
+      });
+
+      test('a hotspot the phone is itself hosting still counts as WiFi', () {
+        beats(
+          (iface: 'ap0', ip: '192.168.43.1'),
+          (iface: 'rmnet_data0', ip: '10.183.44.7'),
+        );
+      });
+    });
+
     test('private ranges are preferred over routable ones', () {
       expect(LocalServerService.isPrivateAddress('192.168.0.7'), isTrue);
       expect(LocalServerService.isPrivateAddress('10.1.2.3'), isTrue);

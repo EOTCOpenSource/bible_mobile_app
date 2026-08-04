@@ -10,12 +10,18 @@ import 'local_server_service.dart';
 class WebReaderState {
   const WebReaderState({
     this.url,
+    this.interfaceName,
     this.isBusy = false,
     this.error,
   });
 
   /// `http://192.168.1.42:7777` while running, null while stopped.
   final String? url;
+
+  /// The network interface the address came from — `wlan0`, `Wi-Fi`. Shown
+  /// beside the URL so a phone that picked its VPN or mobile-data address
+  /// says so instead of just looking wrong.
+  final String? interfaceName;
 
   /// A start or stop is in flight — the button is disabled meanwhile so a
   /// double tap cannot leave a server running with no way to stop it.
@@ -28,6 +34,7 @@ class WebReaderState {
 
   WebReaderState copyWith({
     String? url,
+    String? interfaceName,
     bool? isBusy,
     LocalServerError? error,
     bool clearUrl = false,
@@ -35,6 +42,8 @@ class WebReaderState {
   }) =>
       WebReaderState(
         url: clearUrl ? null : (url ?? this.url),
+        interfaceName:
+            clearUrl ? null : (interfaceName ?? this.interfaceName),
         isBusy: isBusy ?? this.isBusy,
         error: clearError ? null : (error ?? this.error),
       );
@@ -55,7 +64,10 @@ class WebReaderNotifier extends StateNotifier<WebReaderState> {
         _ref.read(appDatabaseProvider),
         _ref.read(bibleRepositoryProvider),
       );
-      state = WebReaderState(url: url);
+      state = WebReaderState(
+        url: url,
+        interfaceName: _server.localInterface,
+      );
     } on LocalServerException catch (e) {
       // A cancelled start is the lifecycle observer doing its job, not a
       // failure to report — the card just stays off.

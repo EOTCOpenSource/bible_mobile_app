@@ -38,10 +38,16 @@ class LocalServerService {
   int _generation = 0;
 
   String? _localIp;
+  String? _localInterface;
   int? _boundPort;
 
   /// The device's LAN address, null while the server is stopped.
   String? get localIp => _localIp;
+
+  /// The interface [localIp] was taken from — `wlan0`, `Wi-Fi`, `en0`. Shown
+  /// beside the address so that when the wrong network wins, the user can see
+  /// which one did.
+  String? get localInterface => _localInterface;
 
   /// The port actually bound, which is [defaultPort] unless it was taken.
   int? get port => _boundPort;
@@ -65,8 +71,8 @@ class LocalServerService {
     if (_server != null) return baseUrl!;
     final generation = _generation;
 
-    final ip = await _findLocalIp();
-    if (ip == null) {
+    final found = await _findLocalIp();
+    if (found == null) {
       throw const LocalServerException(LocalServerError.noNetwork);
     }
 
@@ -108,9 +114,10 @@ class LocalServerService {
     bound.autoCompress = false;
 
     _server = bound;
-    _localIp = ip;
+    _localIp = found.ip;
+    _localInterface = found.interfaceName;
     _boundPort = bound.port;
-    debugPrint('[WebReader] serving on $baseUrl');
+    debugPrint('[WebReader] serving on $baseUrl (${found.interfaceName})');
     return baseUrl!;
   }
 
@@ -120,6 +127,7 @@ class LocalServerService {
     final server = _server;
     _server = null;
     _localIp = null;
+    _localInterface = null;
     _boundPort = null;
     if (server == null) return;
     try {
@@ -134,13 +142,20 @@ class LocalServerService {
 
   // ── Address discovery ─────────────────────────────────────────────────────
 
-  /// The device's address on the local network.
+  /// The device's address on the local network, and the interface it is on.
   ///
   /// Read straight from `dart:io` rather than through a WiFi plugin: this needs
   /// no Android permission beyond the ones the app already has, works when the
   /// device is on Ethernet or a tethered hotspot rather than WiFi, and works on
   /// desktop, where a WiFi plugin has nothing to report.
-  static Future<String?> _findLocalIp() async {
+  ///
+  /// Every candidate is scored rather than taking the first private address:
+  /// "private" is not the same as "reachable from the laptop in the room". A
+  /// phone with mobile data on has a carrier address on `rmnet_data0`, and a
+  /// VPN client hands out one of its own — Mullvad's is 10.64.0.0/10 — and both
+  /// look exactly as private as the WiFi address while being reachable from
+  /// nowhere the user cares about.
+  static Future<({String ip, String interfaceName})?> _findLocalIp() async {
     try {
       final interfaces = await NetworkInterface.list(
         type: InternetAddressType.IPv4,
@@ -148,7 +163,7 @@ class LocalServerService {
         includeLinkLocal: false,
       );
 
-      String? fallback;
+      ({String ip, String interfaceName, int score})? best;
       for (final iface in interfaces) {
         for (final addr in iface.addresses) {
           if (addr.isLoopback) continue;
@@ -156,25 +171,96 @@ class LocalServerService {
           // 169.254.x.x means DHCP failed; the address exists but nothing else
           // on the network can be reached at it.
           if (ip.startsWith('169.254.')) continue;
-          if (_isPrivate(ip)) return ip;
-          fallback ??= ip;
+
+          final score = addressScore(iface.name, ip);
+          // Logged for every candidate, not only the winner: when the address
+          // on the card is not the one the user expected, this is what says
+          // which interfaces were on offer and why one of them won.
+          debugPrint('[WebReader] candidate ${iface.name} $ip (score $score)');
+          if (best == null || score > best.score) {
+            best = (ip: ip, interfaceName: iface.name, score: score);
+          }
         }
       }
-      // A non-private address is unusual but not wrong — some networks hand out
-      // routable addresses directly — so it beats reporting no network at all.
-      return fallback;
+      if (best == null) return null;
+      return (ip: best.ip, interfaceName: best.interfaceName);
     } on Object catch (e) {
       debugPrint('[WebReader] could not list interfaces: $e');
       return null;
     }
   }
 
+  /// How likely an address is to be the one a browser on the same WiFi can
+  /// reach. Higher wins; the interface matters more than the range.
+  @visibleForTesting
+  static int addressScore(String interfaceName, String ip) =>
+      _interfaceRank(interfaceName) * 10 + _rangeRank(ip);
+
+  static int _interfaceRank(String rawName) {
+    final name = rawName.toLowerCase();
+
+    bool startsWithAny(List<String> prefixes) =>
+        prefixes.any(name.startsWith);
+
+    // Cellular. A carrier address is private and useless here: it is reachable
+    // from inside the carrier's network, never from the laptop on the WiFi.
+    if (startsWithAny(const [
+      'rmnet', 'pdp_ip', 'ccmni', 'ccinet', 'seth_', 'clat', 'v4-rmnet',
+    ])) {
+      return 0;
+    }
+
+    // Tunnels and virtual adapters — VPN clients, containers, VM host-only
+    // networks. All hand out real private addresses on networks the browser is
+    // not on.
+    if (startsWithAny(const [
+          'tun', 'tap', 'utun', 'ppp', 'wg', 'nordlynx', 'ipsec', 'zt',
+          'docker', 'veth', 'br-', 'virbr', 'vboxnet', 'vmnet', 'vethernet',
+        ]) ||
+        name.contains('virtual') ||
+        name.contains('vpn') ||
+        name.contains('tailscale') ||
+        name.contains('hyper-v') ||
+        name.contains('loopback')) {
+      return 1;
+    }
+
+    // WiFi, including the phone's own hotspot — the case this feature is for.
+    if (startsWithAny(const ['wlan', 'wlp', 'wl', 'ap', 'airport']) ||
+        name.contains('wi-fi') ||
+        name.contains('wifi') ||
+        name.contains('wireless')) {
+      return 4;
+    }
+
+    // Wired. Still the same LAN as the WiFi in almost every home.
+    if (startsWithAny(const ['eth', 'en', 'em', 'eno', 'ens', 'enp'])) {
+      return 3;
+    }
+
+    return 2;
+  }
+
+  /// Prefers the ranges a home or office router actually hands out. 192.168/16
+  /// is overwhelmingly the common case; 10/8 is last because it is also where
+  /// carriers and VPNs live.
+  static int _rangeRank(String ip) {
+    if (ip.startsWith('192.168.')) return 3;
+    if (_is172Private(ip)) return 2;
+    if (ip.startsWith('10.')) return 1;
+    // Routable, or carrier-grade NAT (100.64/10).
+    return 0;
+  }
+
   /// RFC 1918 ranges, which is what a home or office router hands out.
   @visibleForTesting
   static bool isPrivateAddress(String ip) => _isPrivate(ip);
 
-  static bool _isPrivate(String ip) {
-    if (ip.startsWith('192.168.') || ip.startsWith('10.')) return true;
+  static bool _isPrivate(String ip) =>
+      ip.startsWith('192.168.') || ip.startsWith('10.') || _is172Private(ip);
+
+  /// 172.16.0.0 – 172.31.255.255.
+  static bool _is172Private(String ip) {
     if (!ip.startsWith('172.')) return false;
     final second = int.tryParse(ip.split('.').elementAtOrNull(1) ?? '');
     return second != null && second >= 16 && second <= 31;
