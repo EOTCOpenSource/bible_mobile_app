@@ -28,6 +28,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   int _tab = 0;
   bool _loading = true;
   bool _initialized = false;
+  int _historyLimit = 50;
+  bool _hasMoreHistory = true;
 
   List<AnnotationItem> _history = [];
   List<AnnotationItem> _highlights = [];
@@ -67,7 +69,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     final rawHistory = await ref
         .read(appDatabaseProvider)
-        .getReadingHistory(limit: 500);
+        .getReadingHistory(limit: _historyLimit);
 
     final results = await Future.wait([
       db.getAllBookmarks(),
@@ -131,6 +133,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     if (!mounted) return;
     setState(() {
+      _hasMoreHistory = rawHistory.length >= _historyLimit;
       _history = rawHistory
           .map((row) {
             final bookId = row['book_id'] as String;
@@ -327,10 +330,15 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                         items: _history,
                         onOpen: _openVerse,
                         onRefresh: _load,
-                        onClearHistory: () async {
+                        onLoadMore: () {
+                          setState(() => _historyLimit += 50);
+                          _load();
+                        },
+                        hasMore: _hasMoreHistory,
+                        onDeleteItem: (id) async {
                           await ref
                               .read(appDatabaseProvider)
-                              .clearReadingHistory();
+                              .deleteReadingHistoryItem(id);
                           _load();
                         },
                       ),
