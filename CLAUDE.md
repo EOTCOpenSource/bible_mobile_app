@@ -115,3 +115,13 @@ The Search and Bookmarks tabs in `HomeScreen` are `_StubTab` placeholders.
 ### Ethiopian calendar
 
 The `kenat` package is used for Ethiopian date handling and Geez numeral display. `AppSettings.useGeezNumbers` controls whether chapter/verse numbers render in Geez script throughout the reader.
+
+## Commit messages
+
+Never add a `Co-Authored-By: Claude ... <noreply@anthropic.com>` trailer or a
+"Generated with Claude Code" line to commits in this repo. The commit author is
+the only attribution this project wants. Human `Co-authored-by:` trailers are
+fine when someone actually co-wrote the change.
+
+The trailers already in the history stay as they are — rewriting them would
+force-push `main` and break every collaborator's clone. Leave history alone.
