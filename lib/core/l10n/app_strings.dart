@@ -154,6 +154,7 @@ abstract class AppStrings {
   // ── Saved / Collection ───────────────────────────────────────────────────
   String get savedEyebrow;
   String get savedTitle;
+  String get savedHistory;
   String get savedHighlights;
   String get savedBookmarks;
   String get savedNotes;
@@ -175,6 +176,9 @@ abstract class AppStrings {
   String get savedEmptyBookmarksHint;
   String get savedEmptyNotesTitle;
   String get savedEmptyNotesHint;
+  String get savedClearHistory;
+  String get savedClearHistoryTitle;
+  String get savedClearHistoryMessage;
   String get savedEdit;
   String get savedDelete;
   String get savedDeleteNoteTitle;
@@ -187,6 +191,11 @@ abstract class AppStrings {
   String get savedNoteDeleted;
   String get savedBookmarkDeleted;
   String get savedHighlightDeleted;
+  String get timeMorning;
+  String get timeAfternoon;
+  String get historyEmptyHint;
+  String get loadMore;
+  String get savedDeleteHistoryTitle;
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"
