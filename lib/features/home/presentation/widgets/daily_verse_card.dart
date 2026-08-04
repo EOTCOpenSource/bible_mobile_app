@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kenat/kenat.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/audio/play_verses.dart';
-import '../../../../core/constants/app_icons.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
@@ -21,6 +20,16 @@ class DailyVerseCard extends ConsumerStatefulWidget {
 
 class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
   Future<DailyVerseResult?>? _future;
+
+  // The card is a fixed size whatever the verse costs. Psalm 119 and a one-line
+  // proverb both land on the same footprint, so Home's layout below it never
+  // moves. Overflow is truncated on screen only — [playVersesAloud] is handed
+  // the untouched text and reads the verse to the end.
+  static const double _verseFontSize = 17;
+  static const double _verseLineHeight = 1.7;
+  static const int _verseMaxLines = 3;
+  static const double _verseBoxHeight =
+      _verseFontSize * _verseLineHeight * _verseMaxLines;
 
   @override
   void didChangeDependencies() {
@@ -41,6 +50,21 @@ class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
     final ch = useGeez ? toGeez(r.chapter) : '${r.chapter}';
     final v  = useGeez ? toGeez(r.verse)   : '${r.verse}';
     return '${r.bookNameAm} $ch:$v';
+  }
+
+  /// The small uppercase reference in the card's top-right, e.g. `JER 31:33`.
+  ///
+  /// Always Latin digits: it is the compact counterpart to the Amharic
+  /// reference along the bottom, and Geez numerals there would collide with
+  /// the abbreviated book name in the space available.
+  String _shortRef(DailyVerseResult r) {
+    final book = r.bookNameEn.trim();
+    // "1 Corinthians" → "1 COR", "Jeremiah" → "JER".
+    final parts = book.split(RegExp(r'\s+'));
+    final word = parts.last;
+    final abbr = word.length <= 3 ? word : word.substring(0, 3);
+    final prefix = parts.length > 1 ? '${parts.first} ' : '';
+    return '$prefix${abbr.toUpperCase()} ${r.chapter}:${r.verse}';
   }
 
   void _openInReader(BuildContext context, DailyVerseResult result) {
@@ -104,133 +128,154 @@ class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Container(
-            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: c.primary,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: c.primary.withValues(alpha: 0.35),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
+                  color: c.primary.withValues(alpha: 0.30),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: Column(
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                // Soft disc bleeding off the top-right corner.
+                Positioned(
+                  top: -70,
+                  right: -55,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+                  child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Tag row ────────────────────────────────────────────────
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: c.accent.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        s.dailyVerseTag,
-                        style: AppTypography.amharicCaption.copyWith(
-                          color: c.accent,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
+                    Text(
+                      s.dailyVerseTag,
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: c.accent,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        letterSpacing: 0.3,
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      AppIcons.ethiopianCross,
-                      style: TextStyle(
-                        color: c.accent.withValues(alpha: 0.55),
-                        fontSize: 20,
+                    if (result != null)
+                      Text(
+                        _shortRef(result),
+                        style: AppTypography.englishCaption.copyWith(
+                          color: c.accent.withValues(alpha: 0.45),
+                          fontSize: 10,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 // ── Verse text ─────────────────────────────────────────────
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: switch (snapshot.connectionState) {
-                    ConnectionState.waiting =>
-                      _LoadingLines(key: const ValueKey('loading')),
-                    _ when verseText.isEmpty => GestureDetector(
-                        key: const ValueKey('empty'),
-                        onTap: _retry,
-                        child: Row(
-                          children: [
-                            Icon(Icons.refresh_rounded,
-                                size: 18,
-                                color: c.textOnDark.withValues(alpha: 0.8)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                s.dailyVerseUnavailable,
-                                style: AppTypography.amharicBody.copyWith(
-                                  color: c.textOnDark.withValues(alpha: 0.85),
-                                  fontSize: 14,
+                SizedBox(
+                  height: _verseBoxHeight,
+                  width: double.infinity,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: switch (snapshot.connectionState) {
+                      ConnectionState.waiting =>
+                        _LoadingLines(key: const ValueKey('loading')),
+                      _ when verseText.isEmpty => GestureDetector(
+                          key: const ValueKey('empty'),
+                          onTap: _retry,
+                          child: Row(
+                            children: [
+                              Icon(Icons.refresh_rounded,
+                                  size: 18,
+                                  color: c.textOnDark.withValues(alpha: 0.8)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  s.dailyVerseUnavailable,
+                                  style: AppTypography.amharicBody.copyWith(
+                                    color: c.textOnDark.withValues(alpha: 0.85),
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                      // Tapping the text opens the reader, which is where the
+                      // rest of a truncated verse lives.
+                      _ => GestureDetector(
+                          key: const ValueKey('verse'),
+                          onTap: result != null
+                              ? () => _openInReader(context, result)
+                              : null,
+                          child: Text(
+                            verseText,
+                            maxLines: _verseMaxLines,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.amharicVerse.copyWith(
+                              color: c.textOnDark,
+                              height: _verseLineHeight,
+                              fontSize: _verseFontSize,
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    _ => Text(
-                        key: const ValueKey('verse'),
-                        verseText,
-                        style: AppTypography.amharicVerse.copyWith(
-                          color: c.textOnDark,
-                          height: 1.9,
-                          fontSize: 18,
-                        ),
-                      ),
-                  },
+                    },
+                  ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
                 // ── Reference link + actions ───────────────────────────────
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: result != null
-                          ? () => _openInReader(context, result)
-                          : null,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            reference,
-                            style: AppTypography.amharicLabel.copyWith(
-                              color: c.accent.withValues(alpha: 0.9),
-                              fontSize: 13,
-                              decoration: result != null
-                                  ? TextDecoration.underline
-                                  : null,
-                              decorationColor:
-                                  c.accent.withValues(alpha: 0.6),
-                            ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: result != null
+                            ? () => _openInReader(context, result)
+                            : null,
+                        child: Text(
+                          reference,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.amharicLabel.copyWith(
+                            color: c.accent,
+                            fontSize: 13,
                           ),
-                          if (result != null) ...[
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.open_in_new_rounded,
-                              size: 11,
-                              color: c.accent.withValues(alpha: 0.7),
-                            ),
-                          ],
-                        ],
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    _IconAction(icon: Icons.share_outlined),
-                    const SizedBox(width: 2),
-                    _IconAction(icon: Icons.bookmark_border_rounded),
-                    const SizedBox(width: 2),
+                    const SizedBox(width: 8),
+                    _IconAction(
+                      icon: Icons.share_outlined,
+                      onTap: result != null ? () {} : null,
+                    ),
+                    const SizedBox(width: 8),
+                    _IconAction(
+                      icon: Icons.bookmark_border_rounded,
+                      onTap: result != null ? () {} : null,
+                    ),
+                    const SizedBox(width: 8),
                     _VoiceAction(
                       onTap: result != null ? () => _toggleAudio(result) : null,
                       title: result != null ? _audioTitle(result) : null,
                     ),
                   ],
+                ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -246,14 +291,15 @@ class _LoadingLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // One bar per line the verse box holds, so nothing shifts when
+    // the real text arrives.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _line(0.9),
-        const SizedBox(height: 8),
-        _line(0.75),
-        const SizedBox(height: 8),
-        _line(0.6),
+        _line(0.95),
+        _line(0.85),
+        _line(0.55),
       ],
     );
   }
@@ -283,18 +329,21 @@ class _IconAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.12),
+      color: Colors.white.withValues(alpha: 0.10),
       shape: const CircleBorder(),
       child: InkWell(
         onTap: onTap ?? () {},
         customBorder: const CircleBorder(),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: SizedBox(
-            width: 18,
-            height: 18,
-            child: child ??
-                Icon(icon, size: 18, color: context.colors.textOnDark),
+        child: SizedBox(
+          width: 38,
+          height: 38,
+          child: Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: child ??
+                  Icon(icon, size: 18, color: context.colors.textOnDark),
+            ),
           ),
         ),
       ),

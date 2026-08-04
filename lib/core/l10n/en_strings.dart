@@ -11,6 +11,8 @@ class EnStrings extends AppStrings {
   @override
   String get navSearch => 'Search';
   @override
+  String get navPlans => 'Plans';
+  @override
   String get navSaved => 'Collection';
   @override
   String get navMe => 'Me';
@@ -28,6 +30,34 @@ class EnStrings extends AppStrings {
   String get streakReadTodayHint => 'Read a chapter today';
   @override
   String get streakReadTodayBtn => 'Read Now';
+
+  // ── Streak page ───────────────────────────────────────────────────────────
+  @override
+  String get streakPageTitle => 'Reading Streak';
+  @override
+  String get streakDayStreakLabel => 'day streak';
+  @override
+  String get streakStatLongest => 'Longest streak';
+  @override
+  String get streakStatTotalDays => 'Total days';
+  @override
+  String get streakStatChapters => 'Chapters';
+  @override
+  String streakMonthProgress(String read, String total) =>
+      '$read / $total days';
+  @override
+  String streakFreezeTitle(String count) => '$count rest days available';
+  @override
+  String get streakFreezeSubtitle =>
+      'A missed day is covered so your streak survives';
+  @override
+  String get streakFreezeEmptyTitle => 'No rest days yet';
+  @override
+  String get streakFreezeEmptySubtitle =>
+      'Every week of reading earns one rest day';
+  @override
+  String get streakTodayDone => 'Read today';
+
   // ── Daily verse ───────────────────────────────────────────────────────────
   @override
   String get dailyVerseTag => 'Daily Verse';
@@ -450,6 +480,8 @@ class EnStrings extends AppStrings {
   // ── Profile screen ────────────────────────────────────────────────────────
   @override
   String get profileTitle => 'Profile';
+  @override
+  String get profileSignedOut => 'You are signed out';
   @override
   String get profileMemberBadge => 'Member';
   @override

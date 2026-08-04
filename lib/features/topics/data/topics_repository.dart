@@ -23,33 +23,42 @@ class TopicsRepository {
     return _topicsCache!;
   }
 
-  /// Searches the Bible database for verses matching the topic's keywords.
+  /// One page of verses matching the topic's keywords.
   ///
-  /// Uses the existing FTS5 search with pagination support via [offset].
-  /// Results from all keywords are merged and deduplicated.
+  /// Each keyword is searched separately and the hits are concatenated in
+  /// keyword order, deduplicated by book/chapter/verse. That order is stable
+  /// across calls, which is what makes slicing a page out of it safe: page 2
+  /// re-derives the same prefix page 1 returned and takes what comes after.
+  ///
+  /// Pagination happens after the merge rather than inside the FTS query,
+  /// because dedup means N hits from the database do not correspond to N
+  /// results — only the merged list can be counted on.
   Future<List<TopicVerse>> searchTopicVerses(
     TopicEntry topic, {
     int offset = 0,
     int limit = pageSize,
   }) async {
+    // The merged list has to reach past [offset] before a page can be cut from
+    // it. Filling only [limit] leaves nothing beyond the first page, which is
+    // what used to end infinite scroll after one screen.
+    final target = offset + limit;
+
     final seen = <String>{};
-    final results = <TopicVerse>[];
+    final merged = <TopicVerse>[];
 
     for (final keyword in topic.keywords) {
-      if (results.length >= limit) break;
+      if (merged.length >= target) break;
 
-      final hits = await _bibleRepo.searchVerses(
-        keyword,
-        limit: limit - results.length + offset,
-        offset: 0,
-      );
+      // Also [target], not the remaining count: duplicates of earlier keywords
+      // do not add to the merge, so asking for only the shortfall can come
+      // back short and stall the paging.
+      final hits = await _bibleRepo.searchVerses(keyword, limit: target);
 
       for (final hit in hits) {
         final key = '${hit.bookEntry.id}:${hit.chapter}:${hit.verse}';
-        if (seen.contains(key)) continue;
-        seen.add(key);
+        if (!seen.add(key)) continue;
 
-        results.add(TopicVerse(
+        merged.add(TopicVerse(
           bookNameAm: hit.bookEntry.bookNameAm,
           bookNameEn: hit.bookEntry.bookNameEn,
           chapter: hit.chapter,
@@ -60,10 +69,8 @@ class TopicsRepository {
       }
     }
 
-    // Apply pagination on the merged, deduplicated results.
-    if (offset >= results.length) return [];
-    final end = (offset + limit).clamp(0, results.length);
-    return results.sublist(offset, end);
+    if (offset >= merged.length) return const [];
+    return merged.sublist(offset, target.clamp(0, merged.length));
   }
 
   /// Returns the total estimated count of verses for a topic.

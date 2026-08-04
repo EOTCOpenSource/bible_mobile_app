@@ -19,10 +19,13 @@ class AppBottomNav extends StatelessWidget {
   /// Otherwise uses [BuildContext] theme colors like the rest of the app.
   final bool matchReaderShellColors;
 
+  /// Search is deliberately absent: it belongs to a book, not to the whole
+  /// app, so it lives on the books tab and in the reader toolbar where a scope
+  /// already exists. The middle slot goes to reading plans instead.
   static const _icons = [
     (Icons.home_rounded, Icons.home_outlined),
     (Icons.menu_book_rounded, Icons.menu_book_outlined),
-    (Icons.search_rounded, Icons.search_rounded),
+    (Icons.event_note_rounded, Icons.event_note_outlined),
     (Icons.bookmark_rounded, Icons.bookmark_border_rounded),
     (Icons.person_rounded, Icons.person_outline_rounded),
   ];
@@ -30,7 +33,7 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
-    final labels = [s.navHome, s.navBooks, s.navSearch, s.navSaved, s.navMe];
+    final labels = [s.navHome, s.navBooks, s.navPlans, s.navSaved, s.navMe];
     final c = context.colors;
 
     final Color barBg;
