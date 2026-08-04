@@ -6,7 +6,7 @@ import '../../features/books/data/models/book_identity.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 8;
+  static const _version = 9;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -70,7 +70,49 @@ class AppDatabase {
         'ALTER TABLE app_settings ADD COLUMN has_seen_reader_hint INTEGER NOT NULL DEFAULT 0',
       );
     }
+    if (oldVersion < 9) {
+      await _createReadDayTable(db);
+      await _backfillReadDays(db);
+      // Existing streaks start with an empty balance rather than a retroactive
+      // grant: freezes are earned a week at a time from here on. Only databases
+      // whose `reading_streak` predates the column need the ALTER — anything
+      // older than v2 just had the table created above by
+      // [_createReadingTables], which already declares it.
+      if (oldVersion >= 2) {
+        await db.execute(
+          'ALTER TABLE reading_streak ADD COLUMN freeze_credits INTEGER NOT NULL DEFAULT 0',
+        );
+      }
+    }
   }
+
+  /// v8→v9: one row per calendar day the reader qualified on.
+  ///
+  /// The streak row only remembers the *current* run, so it cannot answer "which
+  /// days in Hamle did I read?" — which is what the streak calendar draws. This
+  /// table is the day-level log that question needs.
+  Future<void> _createReadDayTable(Database db) => db.execute('''
+    CREATE TABLE IF NOT EXISTS read_day (
+      day      TEXT    NOT NULL PRIMARY KEY,
+      chapters INTEGER NOT NULL DEFAULT 0,
+      first_at INTEGER NOT NULL
+    )
+  ''');
+
+  /// Seeds [read_day] from the timestamps already in `chapter_read`.
+  ///
+  /// Only ever an approximation of history: `chapter_read` keeps the *first*
+  /// read of each chapter, so a day spent re-reading chapters already finished
+  /// left no row behind and cannot be recovered. It undercounts the past rather
+  /// than inventing days; everything from v9 onward is logged exactly.
+  Future<void> _backfillReadDays(Database db) => db.execute('''
+    INSERT OR IGNORE INTO read_day (day, chapters, first_at)
+    SELECT date(first_read_at / 1000, 'unixepoch', 'localtime') AS day,
+           COUNT(*),
+           MIN(first_read_at)
+    FROM chapter_read
+    GROUP BY day
+  ''');
 
   /// v6→v7: `book_id` moves from the English book name ("Genesis") to the USFM
   /// id ("GEN"), matching the SQLite Bible editions.
@@ -205,7 +247,8 @@ class AppDatabase {
         current_streak_start  TEXT,
         longest_streak        INTEGER NOT NULL DEFAULT 0,
         longest_streak_start  TEXT,
-        longest_streak_end    TEXT
+        longest_streak_end    TEXT,
+        freeze_credits        INTEGER NOT NULL DEFAULT 0
       )
     ''');
     await db.insert('reading_streak', {
@@ -270,6 +313,7 @@ class AppDatabase {
       )
     ''');
     await _createReadingTables(db);
+    await _createReadDayTable(db);
     await _createPlanPositionTable(db);
     await _createSettingsTable(db);
   }
@@ -316,19 +360,22 @@ class AppDatabase {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<void> insertChapterReadIfAbsent({
+  /// Returns true when this chapter had not been read before.
+  Future<bool> insertChapterReadIfAbsent({
     required String bookId,
     required int chapter,
   }) async {
     final db = await database;
     final now = DateTime.now().millisecondsSinceEpoch;
-    await db.rawInsert(
+    final rowId = await db.rawInsert(
       '''
       INSERT OR IGNORE INTO chapter_read (book_id, chapter, first_read_at)
       VALUES (?, ?, ?)
       ''',
       [bookId, chapter, now],
     );
+    // 0 means the row already existed — this chapter had been read before.
+    return rowId != 0;
   }
 
   Future<int> countChaptersReadForBook(String bookId) async {
@@ -351,6 +398,50 @@ class AppDatabase {
     );
     final nums = rows.map((m) => m['chapter'] as int).toList()..sort();
     return nums;
+  }
+
+  // ── Read days (the streak calendar) ────────────────────────────────────────
+
+  /// Marks [dayIso] (`YYYY-MM-DD`, local) as a day the reader read on.
+  ///
+  /// The day is logged on every qualifying read so the calendar always agrees
+  /// with the streak, but `chapters` only advances when [newChapter] — a day
+  /// spent re-reading finished chapters is still a read day, worth zero
+  /// chapters, which is what keeps the total from inflating on every scroll.
+  Future<void> recordReadDay(String dayIso, {required bool newChapter}) async {
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await db.rawInsert(
+      '''
+      INSERT INTO read_day (day, chapters, first_at) VALUES (?, ?, ?)
+      ON CONFLICT(day) DO UPDATE SET chapters = chapters + ?
+      ''',
+      [dayIso, newChapter ? 1 : 0, now, newChapter ? 1 : 0],
+    );
+  }
+
+  /// Every logged day in `[fromIso, toIso]`, both ends inclusive.
+  Future<Set<String>> listReadDaysBetween(String fromIso, String toIso) async {
+    final db = await database;
+    final rows = await db.query(
+      'read_day',
+      columns: ['day'],
+      where: 'day >= ? AND day <= ?',
+      whereArgs: [fromIso, toIso],
+    );
+    return rows.map((r) => r['day'] as String).toSet();
+  }
+
+  Future<int> countReadDays() async {
+    final db = await database;
+    final r = await db.rawQuery('SELECT COUNT(*) AS c FROM read_day');
+    return (r.first['c'] as int?) ?? 0;
+  }
+
+  Future<int> countChaptersRead() async {
+    final db = await database;
+    final r = await db.rawQuery('SELECT COUNT(*) AS c FROM chapter_read');
+    return (r.first['c'] as int?) ?? 0;
   }
 
   Future<Map<String, Object?>> getReadingStreakRow() async {
@@ -386,6 +477,7 @@ class AppDatabase {
     required int longestStreak,
     String? longestStreakStart,
     String? longestStreakEnd,
+    required int freezeCredits,
   }) async {
     final db = await database;
     await db.update(
@@ -397,6 +489,7 @@ class AppDatabase {
         'longest_streak': longestStreak,
         'longest_streak_start': longestStreakStart,
         'longest_streak_end': longestStreakEnd,
+        'freeze_credits': freezeCredits,
       },
       where: 'id = ?',
       whereArgs: [1],

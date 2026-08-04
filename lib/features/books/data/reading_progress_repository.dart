@@ -23,7 +23,13 @@ class ReadingProgressRepository {
     String? todayIso,
   }) async {
     final today = todayIso ?? ReadingDate.todayIso();
-    await _db.insertChapterReadIfAbsent(bookId: bookId, chapter: chapter);
+    final isNewChapter =
+        await _db.insertChapterReadIfAbsent(bookId: bookId, chapter: chapter);
+
+    // Logged before the streak short-circuit below: the streak row only moves
+    // on the first qualifying read of the day, but the calendar needs the day
+    // marked whether or not this read was the one that moved it.
+    await _db.recordReadDay(today, newChapter: isNewChapter);
 
     final row = await _db.getReadingStreakRow();
     final prev = ReadingStreakState.fromRow(row);
@@ -43,6 +49,7 @@ class ReadingProgressRepository {
       longestStreak: s.longestStreak,
       longestStreakStart: s.longestStreakStart,
       longestStreakEnd: s.longestStreakEnd,
+      freezeCredits: s.freezeCredits,
     );
   }
 
@@ -69,4 +76,16 @@ class ReadingProgressRepository {
     final list = await _db.listReadChaptersForBook(bookId);
     return list.toSet();
   }
+
+  /// Read days inside `[from, to]`, both ends inclusive, as `YYYY-MM-DD`.
+  Future<Set<String>> readDaysBetween(DateTime from, DateTime to) =>
+      _db.listReadDaysBetween(
+        ReadingDate.toIsoDate(from),
+        ReadingDate.toIsoDate(to),
+      );
+
+  Future<ReadingTotals> getReadingTotals() async => ReadingTotals(
+        totalDays: await _db.countReadDays(),
+        totalChapters: await _db.countChaptersRead(),
+      );
 }

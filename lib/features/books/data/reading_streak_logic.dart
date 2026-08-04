@@ -1,5 +1,19 @@
+import 'reading_constants.dart';
 import 'reading_date.dart';
 import 'reading_models.dart';
+
+/// The freeze balance after finishing a day at [streakAfter].
+///
+/// A freeze lands on every [kFreezeEarnEveryDays]th consecutive day and the
+/// balance is capped at [kMaxFreezeCredits], so time away costs the same
+/// whether the streak before it was three weeks or three years.
+int _creditsAfterDay(int previousCredits, int streakAfter) {
+  final earned = streakAfter > 0 && streakAfter % kFreezeEarnEveryDays == 0
+      ? 1
+      : 0;
+  final total = previousCredits + earned;
+  return total > kMaxFreezeCredits ? kMaxFreezeCredits : total;
+}
 
 /// Result of applying streak rules after the first qualifying read of [todayIso].
 class ApplyStreakResult {
@@ -49,6 +63,7 @@ ApplyStreakResult _applyStreakAfterQualifyingDay({
         longestStreak: previous.longestStreak,
         longestStreakStart: previous.longestStreakStart,
         longestStreakEnd: previous.longestStreakEnd,
+        freezeCredits: _creditsAfterDay(previous.freezeCredits, 1),
       ),
     );
   }
@@ -62,21 +77,47 @@ ApplyStreakResult _applyStreakAfterQualifyingDay({
   }
 
   if (gapDays == 1) {
+    final streak = previous.currentStreak + 1;
     return ApplyStreakResult(
       changed: true,
       state: ReadingStreakState(
         lastQualifiedDate: todayIso,
-        currentStreak: previous.currentStreak + 1,
+        currentStreak: streak,
         currentStreakStart:
             previous.currentStreakStart ?? previous.lastQualifiedDate,
         longestStreak: previous.longestStreak,
         longestStreakStart: previous.longestStreakStart,
         longestStreakEnd: previous.longestStreakEnd,
+        freezeCredits: _creditsAfterDay(previous.freezeCredits, streak),
       ),
     );
   }
 
-  // gapDays > 1 — streak breaks
+  // The days between the last qualifying read and today, none of them read.
+  final missedDays = gapDays - 1;
+
+  // Banked freezes cover the gap: the streak survives but does not grow for the
+  // days that were bought — only today counts, so a frozen day is a day kept,
+  // never a day earned.
+  if (missedDays <= previous.freezeCredits) {
+    final streak = previous.currentStreak + 1;
+    return ApplyStreakResult(
+      changed: true,
+      state: ReadingStreakState(
+        lastQualifiedDate: todayIso,
+        currentStreak: streak,
+        currentStreakStart:
+            previous.currentStreakStart ?? previous.lastQualifiedDate,
+        longestStreak: previous.longestStreak,
+        longestStreakStart: previous.longestStreakStart,
+        longestStreakEnd: previous.longestStreakEnd,
+        freezeCredits:
+            _creditsAfterDay(previous.freezeCredits - missedDays, streak),
+      ),
+    );
+  }
+
+  // gapDays > 1 and no freeze to cover it — streak breaks
   var longest = previous.longestStreak;
   var longestStart = previous.longestStreakStart;
   var longestEnd = previous.longestStreakEnd;
@@ -96,6 +137,9 @@ ApplyStreakResult _applyStreakAfterQualifyingDay({
       longestStreak: longest,
       longestStreakStart: longestStart,
       longestStreakEnd: longestEnd,
+      // Freezes belong to the streak that earned them; the balance that could
+      // not save it does not roll over into the next one.
+      freezeCredits: 0,
     ),
   );
 }
