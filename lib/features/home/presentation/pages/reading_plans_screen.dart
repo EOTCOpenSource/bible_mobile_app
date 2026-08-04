@@ -16,16 +16,25 @@ class ReadingPlansScreen extends ConsumerWidget {
     final c = context.colors;
     final plansAsync = ref.watch(readingPlansProvider);
 
+    // This screen is both a bottom-nav tab and a pushed route ("view all").
+    // As a tab it is the root route, so an unconditional back button pops the
+    // last route on the stack and takes the app down with it.
+    final canPop = Navigator.of(context).canPop();
+
     return Scaffold(
       backgroundColor: c.parchment,
       appBar: AppBar(
         backgroundColor: c.parchment,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.textOnParchment, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
+        leading: canPop
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded,
+                    color: c.textOnParchment, size: 20),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: Text(
           s.readingPlansTitle,
           style: AppTypography.amharicSubheading.copyWith(color: c.textOnParchment),

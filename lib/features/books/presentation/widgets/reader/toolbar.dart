@@ -23,6 +23,7 @@ class ReaderToolbar extends StatelessWidget {
     this.chapterNumber,
     this.onChapterTap,
     this.onAudio,
+    this.onSearch,
   });
 
   final BookIndexEntry entry;
@@ -50,6 +51,10 @@ class ReaderToolbar extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onFontSettings;
   final VoidCallback? onAudio;
+
+  /// Opens search scoped to the book being read. Null disables the button
+  /// rather than leaving it tappable and inert, which is what it was.
+  final VoidCallback? onSearch;
 
   String get _label {
     final n    = chapterNumber ?? currentChapter + 1;
@@ -131,7 +136,7 @@ class ReaderToolbar extends StatelessWidget {
           // Search
           IconButton(
             icon: Icon(Icons.search_rounded, size: 20, color: mutedColor),
-            onPressed: () {},
+            onPressed: onSearch,
           ),
         ],
       ),

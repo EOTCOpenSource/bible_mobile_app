@@ -38,6 +38,7 @@ import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
+import '../../../search/presentation/pages/search_tab.dart';
 import '../../../share/verse_card_sheet.dart';
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -1019,6 +1020,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   border: mutedColor.withValues(alpha: 0.25),
                                 ),
                                 s: s,
+                                onSearch: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        SearchTab(initialBook: _entry),
+                                  ),
+                                ),
                                 onBack: () => Navigator.pop(context),
                                 onFontSettings: () =>
                                     _showFontSheet(context, settings),
