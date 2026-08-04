@@ -25,7 +25,10 @@ class ContinueReadingSection extends ConsumerWidget {
 
   /// Past this the strip stops being "where was I" and turns into a history —
   /// which is what the books tab is for.
-  static const int maxBooks = 10;
+  ///
+  /// The same constant the provider queries with, so the strip can never ask
+  /// for more books than were fetched.
+  static const int maxBooks = continueReadingBookLimit;
 
   /// Covers visible at rest. Enough that the strip reads as a shelf and its
   /// scrollability is obvious from the tile clipped at the edge.
