@@ -20,6 +20,7 @@ class ReaderToolbar extends StatelessWidget {
     required this.s,
     required this.onBack,
     required this.onFontSettings,
+    this.onSearchTap,
     this.chapterNumber,
     this.onChapterTap,
   });
@@ -35,6 +36,7 @@ class ReaderToolbar extends StatelessWidget {
   /// Opens the chapter picker. The label has always carried a dropdown chevron;
   /// until this existed it was wired to nothing.
   final VoidCallback? onChapterTap;
+  final VoidCallback? onSearchTap;
   final bool useGeez;
   final bool isAmharic;
   final Color bgColor;
@@ -124,7 +126,7 @@ class ReaderToolbar extends StatelessWidget {
           // Search
           IconButton(
             icon: Icon(Icons.search_rounded, size: 20, color: mutedColor),
-            onPressed: () {},
+            onPressed: onSearchTap,
           ),
         ],
       ),
