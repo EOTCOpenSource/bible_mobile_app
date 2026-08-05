@@ -41,6 +41,7 @@ import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 import '../../../share/verse_card_sheet.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -204,6 +205,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     if (_book == null && _loading) _loadBook();
   }
 
+  /// Manages the screen wake lock state based on user preferences.
+  /// Enables WakelockPlus when keepScreenOn is true and disables when false.
+  /// Wrapped in try/catch to safely handle unsupported desktop/web targets.
+  void _syncWakelock(bool keepScreenOn) {
+    try {
+      if (keepScreenOn) {
+        WakelockPlus.enable();
+      } else {
+        WakelockPlus.disable();
+      }
+    } on Object catch (_) {}
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
@@ -211,10 +225,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       _dwellTimer?.cancel();
       _recordHistory();
       _persistReadingPosition();
+      try {
+        WakelockPlus.disable();
+      } on Object catch (_) {}
     } else if (state == AppLifecycleState.resumed) {
       _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
       _persistReadingPosition();
       _scheduleDwellTimer();
+      final settings = Settings.of(context);
+      _syncWakelock(settings.keepScreenOn);
     }
   }
 
@@ -236,6 +255,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   @override
   void dispose() {
+    try {
+      WakelockPlus.disable();
+    } on Object catch (_) {}
     AudioService.instance.currentVerseIndexNotifier.removeListener(_onAudioVerseIndexChanged);
     AudioService.instance.stateNotifier.removeListener(_onAudioStateChanged);
     _dwellTimer?.cancel();
@@ -994,6 +1016,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final settings = Settings.of(context);
+    _syncWakelock(settings.keepScreenOn);
     final useGeez = settings.useGeezNumbers;
     final isAm = s is AmStrings;
     final isDark = settings.isDarkReader;
@@ -1189,6 +1212,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                               onVerseTap: _selectVerse,
                                               verseKeyFn: _verseKey,
                                               annotations: pageAnnotations,
+                                              lineHeight: settings.lineHeight,
+                                              marginScale: settings.marginScale,
+                                              textAlign: settings.textAlign,
                                               onNoteTap: (key, ann) =>
                                                   _showNoteView(key, ann),
                                               onApparatusTap: (verse) =>
@@ -1220,6 +1246,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                             annotations: pageAnnotations,
                                             continuousReading:
                                                 settings.continuousReading,
+                                            lineHeight: settings.lineHeight,
+                                            marginScale: settings.marginScale,
+                                            textAlign: settings.textAlign,
                                             onNoteTap: (key, ann) =>
                                                 _showNoteView(key, ann),
                                             onApparatusTap: (verse) =>
