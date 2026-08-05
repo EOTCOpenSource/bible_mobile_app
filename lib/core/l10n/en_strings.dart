@@ -214,6 +214,18 @@ class EnStrings extends AppStrings {
   String get readingSettingsReset => 'Reset';
   @override
   String get readingSettingsContinuous => 'Continuous reading';
+  @override
+  String get readingSettingsLineHeight => 'Line Spacing';
+  @override
+  String get readingSettingsMarginScale => 'Side Margins';
+  @override
+  String get readingSettingsTextAlign => 'Text Alignment';
+  @override
+  String get readingSettingsAlignStart => 'Left';
+  @override
+  String get readingSettingsAlignJustify => 'Justify';
+  @override
+  String get readingSettingsKeepScreenOn => 'Keep Screen On';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override

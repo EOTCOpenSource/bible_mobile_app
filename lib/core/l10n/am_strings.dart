@@ -210,6 +210,18 @@ class AmStrings extends AppStrings {
   String get readingSettingsReset => 'ዳግም ጀምር';
   @override
   String get readingSettingsContinuous => 'ተያያዥ ንባብ';
+  @override
+  String get readingSettingsLineHeight => 'የረድፍ ክፍተት';
+  @override
+  String get readingSettingsMarginScale => 'የጎን ህዳግ';
+  @override
+  String get readingSettingsTextAlign => 'የጽሑፍ አሰላለፍ';
+  @override
+  String get readingSettingsAlignStart => 'በስተግራ';
+  @override
+  String get readingSettingsAlignJustify => 'የተመጣጠነ';
+  @override
+  String get readingSettingsKeepScreenOn => 'ስክሪን እንዳይጠፋ';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
