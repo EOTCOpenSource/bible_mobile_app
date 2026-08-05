@@ -532,12 +532,38 @@ class _BookRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    isAmharic ? book.bookNameEn : book.bookNameAm,
-                    style: AppTypography.englishLabel.copyWith(
-                      color: c.textMuted,
-                      fontSize: 12,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final repo = BibleRepositoryProvider.of(context);
+                      final intro = repo.getIntroduction(
+                        book.bookNumber,
+                        locale: isAmharic ? 'am' : 'en',
+                      );
+                      final metaList = <String>[];
+                      if (intro != null) {
+                        if (intro.author.isNotEmpty) metaList.add(intro.author);
+                        if (intro.period.isNotEmpty) metaList.add(intro.period);
+                      }
+                      if (metaList.isNotEmpty) {
+                        return Text(
+                          metaList.join('  •  '),
+                          style: AppTypography.amharicCaption.copyWith(
+                            color: c.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      }
+                      return Text(
+                        isAmharic ? book.bookNameEn : book.bookNameAm,
+                        style: AppTypography.englishLabel.copyWith(
+                          color: c.textMuted,
+                          fontSize: 12,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
