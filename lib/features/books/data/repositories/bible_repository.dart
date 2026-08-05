@@ -10,6 +10,7 @@ import '../edition_database.dart';
 import '../models/book.dart';
 import '../models/book_identity.dart';
 import '../models/book_index_entry.dart';
+import '../models/book_introduction.dart';
 import '../models/edition.dart';
 
 class DailyVerseResult {
@@ -95,6 +96,8 @@ class BibleRepository extends ChangeNotifier {
   static const _prefsSecondaryEdition = 'parallel_edition_id';
   static const _dailyVersesAsset =
       'assets/bibledata/ethiopian_daily_verses.json';
+  static const _introductionsAsset =
+      'assets/bibledata/introductions.json';
 
   final BibleStorage storage;
   late final CatalogDatabase catalog;
@@ -113,6 +116,7 @@ class BibleRepository extends ChangeNotifier {
 
   Map<String, Map<String, dynamic>>? _dailyVerseIndex;
   List<Map<String, dynamic>>? _dailyVerseList;
+  Map<int, BookIntroduction>? _introductions;
 
   String get activeEditionId => _activeEditionId;
 
@@ -128,6 +132,7 @@ class BibleRepository extends ChangeNotifier {
   /// deleted, so an uninstall can never leave the app with no scripture.
   Future<void> init() async {
     await storage.ensureBundledInstalled();
+    await loadIntroductions();
 
     final prefs = await SharedPreferences.getInstance();
     final remembered = prefs.getString(_prefsActiveEdition);
@@ -149,6 +154,37 @@ class BibleRepository extends ChangeNotifier {
     } else if (parallel != null) {
       await prefs.remove(_prefsSecondaryEdition);
     }
+  }
+
+  /// Parses assets/bibledata/introductions.json once and caches the result.
+  Future<void> loadIntroductions() async {
+    if (_introductions != null) return;
+    try {
+      final raw = await rootBundle.loadString(_introductionsAsset);
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      final map = <int, BookIntroduction>{};
+      decoded.forEach((key, value) {
+        final bookNum = int.tryParse(key);
+        if (bookNum != null && value is Map<String, dynamic>) {
+          map[bookNum] = BookIntroduction.fromJson(value, bookNum);
+        }
+      });
+      _introductions = map;
+    } catch (e) {
+      debugPrint('Error loading introductions: $e');
+      _introductions = {};
+    }
+  }
+
+  /// Returns the cached [BookIntroduction] for [bookNumber], or null if missing.
+  /// If [locale] is provided, returns the introduction resolved for that locale.
+  BookIntroduction? getIntroduction(int bookNumber, {String? locale}) {
+    final intro = _introductions?[bookNumber];
+    if (intro == null) return null;
+    if (locale != null) {
+      return intro.forLocale(locale);
+    }
+    return intro;
   }
 
   Future<void> _openEdition(String id) async {
