@@ -116,6 +116,15 @@ abstract class AppStrings {
   String get booksFilterRevelation; // Revelation & Apocalyptic — books 73+
   String get booksChapterSuffix; // e.g. "ምዕ." / "chs."
 
+  // ── Book Introductions ──────────────────────────────────────────────────
+  String get aboutThisBook;
+  String get author;
+  String get period;
+  String get themes;
+  String get readMore;
+  String get showLess;
+  String get outline;
+
   // ── Chapter selector ──────────────────────────────────────────────────────
   String get chapSelectorLastRead; // "የቀደሙቦ ቦታ" / "Where you left off"
   String get chapSelectorContinueBtn; // "ቀጣ" / "Continue"
