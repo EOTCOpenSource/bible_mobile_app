@@ -173,6 +173,22 @@ class AmStrings extends AppStrings {
   @override
   String get booksChapterSuffix => 'ምዕ.';
 
+  // ── Book Introductions ──────────────────────────────────────────────────
+  @override
+  String get aboutThisBook => 'ስለዚህ መጽሐፍ';
+  @override
+  String get author => 'ደራሲ';
+  @override
+  String get period => 'ዘመን';
+  @override
+  String get themes => 'ርዕሶች';
+  @override
+  String get readMore => 'ተጨማሪ አንብብ';
+  @override
+  String get showLess => 'በትንሹ አሳይ';
+  @override
+  String get outline => 'አብነት';
+
   // ── Chapter selector ──────────────────────────────────────────────────────
   @override
   String get chapSelectorLastRead => 'ያቆሙበት ቦታ';

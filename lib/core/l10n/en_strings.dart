@@ -177,6 +177,22 @@ class EnStrings extends AppStrings {
   @override
   String get booksChapterSuffix => 'chs.';
 
+  // ── Book Introductions ──────────────────────────────────────────────────
+  @override
+  String get aboutThisBook => 'About this book';
+  @override
+  String get author => 'Author';
+  @override
+  String get period => 'Period';
+  @override
+  String get themes => 'Themes';
+  @override
+  String get readMore => 'Read more';
+  @override
+  String get showLess => 'Show less';
+  @override
+  String get outline => 'Outline';
+
   // ── Chapter selector ──────────────────────────────────────────────────────
   @override
   String get chapSelectorLastRead => 'Where you left off';
