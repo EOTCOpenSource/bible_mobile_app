@@ -196,6 +196,18 @@ abstract class AppStrings {
   String get historyEmptyHint;
   String get loadMore;
   String get savedDeleteHistoryTitle;
+  String get collections;
+  String get newCollection;
+  String get addToCollection;
+  String get tags;
+  String get addTags;
+  String get all;
+  String get noCollections;
+  String get addTagHint;
+  String get collectionNameHint;
+  String get collectionColorLabel;
+  String get collectionCreateAction;
+  String get savedOk;
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"

@@ -331,6 +331,30 @@ class EnStrings extends AppStrings {
   String get loadMore => 'Load more';
   @override
   String get savedDeleteHistoryTitle => 'Remove this from history?';
+  @override
+  String get collections => 'Collections';
+  @override
+  String get newCollection => 'New collection';
+  @override
+  String get addToCollection => 'Add to collection';
+  @override
+  String get tags => 'Tags';
+  @override
+  String get addTags => 'Add tags';
+  @override
+  String get all => 'All';
+  @override
+  String get noCollections => 'No collections yet';
+  @override
+  String get addTagHint => 'Add tag (press comma or Enter)...';
+  @override
+  String get collectionNameHint => 'Collection name';
+  @override
+  String get collectionColorLabel => 'Color';
+  @override
+  String get collectionCreateAction => 'Create';
+  @override
+  String get savedOk => 'OK';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

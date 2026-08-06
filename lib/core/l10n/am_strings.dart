@@ -327,6 +327,30 @@ class AmStrings extends AppStrings {
   String get loadMore => 'ተጨማሪ አሳይ';
   @override
   String get savedDeleteHistoryTitle => 'ይህን መዝገብ ከታሪክ ያጥፋ?';
+  @override
+  String get collections => 'ስብስቦች';
+  @override
+  String get newCollection => 'አዲስ ስብስብ';
+  @override
+  String get addToCollection => 'ወደ ስብስብ ጨምር';
+  @override
+  String get tags => 'መለያዎች';
+  @override
+  String get addTags => 'መለያ ጨምር';
+  @override
+  String get all => 'ሁሉም';
+  @override
+  String get noCollections => 'እስካሁን ስብስብ የለም';
+  @override
+  String get addTagHint => 'መለያ ያስገቡ (ኮማ ወይም Enter ይጫኑ)...';
+  @override
+  String get collectionNameHint => 'የስብስብ ስም';
+  @override
+  String get collectionColorLabel => 'ቀለም';
+  @override
+  String get collectionCreateAction => 'ፍጠር';
+  @override
+  String get savedOk => 'እሺ';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override
