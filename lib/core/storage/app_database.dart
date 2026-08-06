@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../annotations/annotation_models.dart';
@@ -7,7 +8,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 10;
+  static const _version = 11;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -90,6 +91,10 @@ class AppDatabase {
     // for databases that reached v9 without it.
     if (oldVersion < 10) {
       await _createReadingHistoryTable(db);
+    }
+    if (oldVersion < 11) {
+      await _createCollectionsTables(db);
+      await _addTagsColumnToAnnotations(db);
     }
   }
 
@@ -292,6 +297,40 @@ class AppDatabase {
     await _createReadingHistoryTable(db);
   }
 
+  Future<void> _createCollectionsTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS collections (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT    NOT NULL,
+        color       INTEGER,
+        icon        TEXT,
+        sort_order  INTEGER NOT NULL DEFAULT 0,
+        created_at  INTEGER NOT NULL,
+        remote_id   TEXT,
+        sync_status TEXT    NOT NULL DEFAULT 'pendingCreate'
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS collection_items (
+        collection_id INTEGER NOT NULL,
+        item_type     TEXT    NOT NULL,
+        item_id       INTEGER NOT NULL,
+        added_at      INTEGER NOT NULL,
+        PRIMARY KEY (collection_id, item_type, item_id)
+      )
+    ''');
+  }
+
+  Future<void> _addTagsColumnToAnnotations(Database db) async {
+    for (final table in ['bookmarks', 'highlights', 'notes']) {
+      try {
+        await db.execute('ALTER TABLE $table ADD COLUMN tags TEXT');
+      } catch (_) {
+        // Ignored if column already exists
+      }
+    }
+  }
+
   Future<void> _onCreate(Database db, int _) async {
     await db.execute('''
       CREATE TABLE bookmarks (
@@ -305,6 +344,7 @@ class AppDatabase {
         updated_at   INTEGER NOT NULL,
         sync_status  TEXT    NOT NULL DEFAULT 'pendingCreate',
         remote_id    TEXT,
+        tags         TEXT,
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
@@ -322,6 +362,7 @@ class AppDatabase {
         updated_at   INTEGER NOT NULL,
         sync_status  TEXT    NOT NULL DEFAULT 'pendingCreate',
         remote_id    TEXT,
+        tags         TEXT,
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
@@ -339,6 +380,7 @@ class AppDatabase {
         updated_at   INTEGER NOT NULL,
         sync_status  TEXT    NOT NULL DEFAULT 'pendingCreate',
         remote_id    TEXT,
+        tags         TEXT,
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
@@ -346,6 +388,7 @@ class AppDatabase {
     await _createReadDayTable(db);
     await _createPlanPositionTable(db);
     await _createSettingsTable(db);
+    await _createCollectionsTables(db);
   }
 
   Future<void> _createPlanPositionTable(Database db) => db.execute('''
@@ -1235,6 +1278,182 @@ class AppDatabase {
       },
       where: 'id = ?',
       whereArgs: [1],
+    );
+  }
+
+  // ── Collection & Tag Management (Issue #25) ──────────────────────────────────
+  // Note: Collections are local-only for now. sync_status and remote_id columns
+  // exist in the database schema to support future cloud sync API endpoints seamlessly.
+
+  Future<int> createCollection(
+    String name, {
+    Color? color,
+    String? icon,
+  }) async {
+    final db = await database;
+    final maxSortRes =
+        await db.rawQuery('SELECT MAX(sort_order) as m FROM collections');
+    final maxSort = (maxSortRes.first['m'] as int?) ?? -1;
+    final collection = Collection(
+      name: name,
+      color: color,
+      icon: icon,
+      sortOrder: maxSort + 1,
+      createdAt: DateTime.now(),
+    );
+    return db.insert('collections', collection.toMap());
+  }
+
+  Future<void> updateCollection(Collection collection) async {
+    final db = await database;
+    if (collection.id == null) return;
+    await db.update(
+      'collections',
+      collection.toMap(),
+      where: 'id = ?',
+      whereArgs: [collection.id],
+    );
+  }
+
+  Future<void> deleteCollection(int id) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'collection_items',
+        where: 'collection_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        'collections',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
+  }
+
+  Future<void> addItemToCollection(
+    int collectionId,
+    String itemType,
+    int itemId,
+  ) async {
+    final db = await database;
+    await db.insert(
+      'collection_items',
+      {
+        'collection_id': collectionId,
+        'item_type': itemType,
+        'item_id': itemId,
+        'added_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> removeItemFromCollection(
+    int collectionId,
+    String itemType,
+    int itemId,
+  ) async {
+    final db = await database;
+    await db.delete(
+      'collection_items',
+      where: 'collection_id = ? AND item_type = ? AND item_id = ?',
+      whereArgs: [collectionId, itemType, itemId],
+    );
+  }
+
+  Future<List<Collection>> listCollections() async {
+    final db = await database;
+    final res = await db.query(
+      'collections',
+      orderBy: 'sort_order ASC, created_at ASC',
+    );
+    return res.map((m) => Collection.fromMap(m)).toList();
+  }
+
+  Future<void> reorderCollections(List<Collection> collections) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      for (var i = 0; i < collections.length; i++) {
+        final c = collections[i];
+        if (c.id != null) {
+          await txn.update(
+            'collections',
+            {'sort_order': i},
+            where: 'id = ?',
+            whereArgs: [c.id],
+          );
+        }
+      }
+    });
+  }
+
+  Future<List<Map<String, Object?>>> listItemsInCollection(
+      int collectionId) async {
+    final db = await database;
+    return db.query(
+      'collection_items',
+      where: 'collection_id = ?',
+      whereArgs: [collectionId],
+    );
+  }
+
+  Future<List<String>> listDistinctTags() async {
+    final db = await database;
+    final tagSet = <String>{};
+
+    for (final table in ['bookmarks', 'highlights', 'notes']) {
+      final rows = await db.query(
+        table,
+        columns: ['tags'],
+        where: 'tags IS NOT NULL AND sync_status != ?',
+        whereArgs: [SyncStatus.pendingDelete.name],
+      );
+      for (final row in rows) {
+        final raw = row['tags'] as String?;
+        if (raw != null && raw.isNotEmpty) {
+          final normalized = normalizeTags(raw);
+          if (normalized != null) {
+            tagSet.addAll(normalized.split(','));
+          }
+        }
+      }
+    }
+
+    final sorted = tagSet.toList()..sort();
+    return sorted;
+  }
+
+  Future<void> updateTags(
+      String itemType, int itemId, String? tagsString) async {
+    final db = await database;
+    final table = switch (itemType) {
+      'bookmark' => 'bookmarks',
+      'highlight' => 'highlights',
+      'note' => 'notes',
+      _ => throw ArgumentError('Unknown itemType: $itemType'),
+    };
+
+    final normalized = normalizeTags(tagsString);
+
+    final rows = await db.query(table,
+        columns: ['sync_status'], where: 'id = ?', whereArgs: [itemId]);
+    if (rows.isEmpty) return;
+
+    final currentSync = rows.first['sync_status'] as String?;
+    final newSync = (currentSync == SyncStatus.synced.name)
+        ? SyncStatus.pendingUpdate.name
+        : (currentSync ?? SyncStatus.pendingCreate.name);
+
+    await db.update(
+      table,
+      {
+        'tags': normalized,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': newSync,
+      },
+      where: 'id = ?',
+      whereArgs: [itemId],
     );
   }
 
