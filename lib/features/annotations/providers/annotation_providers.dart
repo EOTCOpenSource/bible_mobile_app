@@ -180,3 +180,63 @@ final chapterAnnotationsProvider = StateNotifierProvider.family<
   (ref, key) =>
       ChapterAnnotationsNotifier(ref.watch(annotationDbProvider), ref, key),
 );
+
+// ── Collections & Tags Providers ────────────────────────────────────────────────
+
+final collectionsProvider = FutureProvider<List<Collection>>((ref) async {
+  final db = ref.watch(annotationDbProvider);
+  return db.listCollections();
+});
+
+final distinctTagsProvider = FutureProvider<List<String>>((ref) async {
+  final db = ref.watch(annotationDbProvider);
+  return db.listDistinctTags();
+});
+
+final selectedCollectionIdProvider = StateProvider<int?>((ref) => null);
+
+final selectedTagsProvider = StateProvider<Set<String>>((ref) => {});
+
+class CollectionsNotifier extends StateNotifier<AsyncValue<List<Collection>>> {
+  CollectionsNotifier(this._db) : super(const AsyncValue.loading()) {
+    refresh();
+  }
+
+  final AppDatabase _db;
+
+  Future<void> refresh() async {
+    try {
+      final list = await _db.listCollections();
+      if (mounted) state = AsyncValue.data(list);
+    } catch (e, s) {
+      if (mounted) state = AsyncValue.error(e, s);
+    }
+  }
+
+  Future<int> createCollection(String name, {Color? color, String? icon}) async {
+    final id = await _db.createCollection(name, color: color, icon: icon);
+    await refresh();
+    return id;
+  }
+
+  Future<void> updateCollection(Collection c) async {
+    await _db.updateCollection(c);
+    await refresh();
+  }
+
+  Future<void> deleteCollection(int id) async {
+    await _db.deleteCollection(id);
+    await refresh();
+  }
+
+  Future<void> reorderCollections(List<Collection> list) async {
+    await _db.reorderCollections(list);
+    await refresh();
+  }
+}
+
+final collectionsNotifierProvider = StateNotifierProvider<
+    CollectionsNotifier,
+    AsyncValue<List<Collection>>>((ref) {
+  return CollectionsNotifier(ref.watch(annotationDbProvider));
+});
