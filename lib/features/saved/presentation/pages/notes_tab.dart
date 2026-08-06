@@ -4,7 +4,6 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../annotations/providers/annotation_providers.dart';
-import '../../../books/presentation/pages/reader_screen.dart';
 import 'saved_common.dart';
 
 class NotesTab extends ConsumerStatefulWidget {
@@ -28,17 +27,25 @@ class _NotesTabState extends ConsumerState<NotesTab> {
   String? _bookFilter;
   int? _chapterFilter;
 
-  List<AnnotationItem> get _filtered => widget.items.where((item) {
-    if (_testamentFilter == 'OT' && !item.isOT) return false;
-    if (_testamentFilter == 'NT' && item.isOT) return false;
-    if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
-      return false;
-    }
-    if (_chapterFilter != null && item.chapter != _chapterFilter) {
-      return false;
-    }
-    return true;
-  }).toList();
+  List<AnnotationItem> get _filtered {
+    final selectedTags = ref.watch(selectedTagsProvider);
+    return widget.items.where((item) {
+      if (_testamentFilter == 'OT' && !item.isOT) return false;
+      if (_testamentFilter == 'NT' && item.isOT) return false;
+      if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
+        return false;
+      }
+      if (_chapterFilter != null && item.chapter != _chapterFilter) {
+        return false;
+      }
+      if (selectedTags.isNotEmpty) {
+        if (item.tags == null || item.tags!.isEmpty) return false;
+        final itemTagSet = item.tags!.split(',').toSet();
+        if (!selectedTags.every((t) => itemTagSet.contains(t))) return false;
+      }
+      return true;
+    }).toList();
+  }
 
   Set<String> get _availableBookIds => widget.items
       .where((item) {
@@ -128,77 +135,9 @@ class _NotesTabState extends ConsumerState<NotesTab> {
     );
   }
 
-  void _showNoteOptions(AnnotationItem item) {
-    final s = L10n.of(context);
-    final c = context.colors;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: c.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: c.borderSubtle,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.edit_rounded, color: c.textOnParchment),
-                title: Text(
-                  s.savedEdit,
-                  style: AppTypography.amharicLabel.copyWith(
-                    color: c.textOnParchment,
-                    fontSize: 16,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _editNote(item);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete_rounded, color: Colors.red),
-                title: Text(
-                  s.savedDelete,
-                  style: AppTypography.amharicLabel.copyWith(
-                    color: Colors.red,
-                    fontSize: 16,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _deleteNote(item);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  void _editNote(AnnotationItem item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ReaderScreen(
-          entry: item.bookEntry,
-          initialChapter: (item.chapter - 1).clamp(0, 999),
-          initialVerse: item.verseStart,
-        ),
-      ),
-    ).then((_) => widget.onRefresh());
-  }
+
+
 
   void _deleteNote(AnnotationItem item) async {
     final s = L10n.of(context);
@@ -273,6 +212,9 @@ class _NotesTabState extends ConsumerState<NotesTab> {
               .firstOrNull
               ?.bookEntry;
 
+    final distinctTagsAsync = ref.watch(distinctTagsProvider);
+    final selectedTags = ref.watch(selectedTagsProvider);
+
     return ColoredBox(
       color: context.colors.surfaceDim,
       child: Column(
@@ -334,6 +276,27 @@ class _NotesTabState extends ConsumerState<NotesTab> {
               ],
             ),
           ),
+          distinctTagsAsync.when(
+            data: (tags) => TagFilterRow(
+              availableTags: tags,
+              selectedTags: selectedTags,
+              onTagToggled: (tag) {
+                final current = ref.read(selectedTagsProvider);
+                if (current.contains(tag)) {
+                  ref.read(selectedTagsProvider.notifier).state =
+                      Set.from(current)..remove(tag);
+                } else {
+                  ref.read(selectedTagsProvider.notifier).state =
+                      Set.from(current)..add(tag);
+                }
+              },
+              onClearAll: () {
+                ref.read(selectedTagsProvider.notifier).state = {};
+              },
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (err, stack) => const SizedBox.shrink(),
+          ),
           Expanded(
             child: items.isEmpty
                 ? const AnnotationEmptyState(tab: 2)
@@ -347,7 +310,17 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                         item: items[i],
                         tab: 2,
                         onTap: () => widget.onOpen(items[i]),
-                        onLongPress: () => _showNoteOptions(items[i]),
+                        onLongPress: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => CollectionPickerSheet(
+                            itemType: 'note',
+                            itemId: items[i].id,
+                            initialTags: items[i].tags,
+                            onItemChanged: widget.onRefresh,
+                          ),
+                        ),
+                        onDelete: () => _deleteNote(items[i]),
                       ),
                     ),
                   ),
