@@ -29,21 +29,29 @@ class _HighlightsTabState extends ConsumerState<HighlightsTab> {
   String? _bookFilter;
   int? _chapterFilter;
 
-  List<AnnotationItem> get _filtered => widget.items.where((item) {
-    if (_colorFilter != null &&
-        item.highlightColor?.toARGB32() != _colorFilter!.toARGB32()) {
-      return false;
-    }
-    if (_testamentFilter == 'OT' && !item.isOT) return false;
-    if (_testamentFilter == 'NT' && item.isOT) return false;
-    if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
-      return false;
-    }
-    if (_chapterFilter != null && item.chapter != _chapterFilter) {
-      return false;
-    }
-    return true;
-  }).toList();
+  List<AnnotationItem> get _filtered {
+    final selectedTags = ref.watch(selectedTagsProvider);
+    return widget.items.where((item) {
+      if (_colorFilter != null &&
+          item.highlightColor?.toARGB32() != _colorFilter!.toARGB32()) {
+        return false;
+      }
+      if (_testamentFilter == 'OT' && !item.isOT) return false;
+      if (_testamentFilter == 'NT' && item.isOT) return false;
+      if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
+        return false;
+      }
+      if (_chapterFilter != null && item.chapter != _chapterFilter) {
+        return false;
+      }
+      if (selectedTags.isNotEmpty) {
+        if (item.tags == null || item.tags!.isEmpty) return false;
+        final itemTagSet = item.tags!.split(',').toSet();
+        if (!selectedTags.every((t) => itemTagSet.contains(t))) return false;
+      }
+      return true;
+    }).toList();
+  }
 
   Set<String> get _availableBookIds => widget.items
       .where((item) {
@@ -210,6 +218,9 @@ class _HighlightsTabState extends ConsumerState<HighlightsTab> {
               .firstOrNull
               ?.bookEntry;
 
+    final distinctTagsAsync = ref.watch(distinctTagsProvider);
+    final selectedTags = ref.watch(selectedTagsProvider);
+
     return ColoredBox(
       color: context.colors.surfaceDim,
       child: Column(
@@ -291,6 +302,27 @@ class _HighlightsTabState extends ConsumerState<HighlightsTab> {
               ],
             ),
           ),
+          distinctTagsAsync.when(
+            data: (tags) => TagFilterRow(
+              availableTags: tags,
+              selectedTags: selectedTags,
+              onTagToggled: (tag) {
+                final current = ref.read(selectedTagsProvider);
+                if (current.contains(tag)) {
+                  ref.read(selectedTagsProvider.notifier).state =
+                      Set.from(current)..remove(tag);
+                } else {
+                  ref.read(selectedTagsProvider.notifier).state =
+                      Set.from(current)..add(tag);
+                }
+              },
+              onClearAll: () {
+                ref.read(selectedTagsProvider.notifier).state = {};
+              },
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (err, stack) => const SizedBox.shrink(),
+          ),
           Expanded(
             child: items.isEmpty
                 ? const AnnotationEmptyState(tab: 0)
@@ -304,7 +336,17 @@ class _HighlightsTabState extends ConsumerState<HighlightsTab> {
                         item: items[i],
                         tab: 0,
                         onTap: () => widget.onOpen(items[i]),
-                        onLongPress: () => _deleteHighlight(items[i]),
+                        onLongPress: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => CollectionPickerSheet(
+                            itemType: 'highlight',
+                            itemId: items[i].id,
+                            initialTags: items[i].tags,
+                            onItemChanged: widget.onRefresh,
+                          ),
+                        ),
+                        onDelete: () => _deleteHighlight(items[i]),
                       ),
                     ),
                   ),
