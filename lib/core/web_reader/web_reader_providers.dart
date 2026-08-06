@@ -51,18 +51,35 @@ class WebReaderState {
 
 /// Starts and stops [LocalServerService], and holds the URL the card shows.
 class WebReaderNotifier extends StateNotifier<WebReaderState> {
-  WebReaderNotifier(this._ref, this._server) : super(const WebReaderState());
+  WebReaderNotifier(this._ref, this._server) : super(const WebReaderState()) {
+    // Stop tapped on the foreground-service notification. The socket lives
+    // here, not in the service, so the tap has to come back to Dart.
+    _server.foreground.onStopRequested(() async {
+      await _server.stop();
+      if (mounted) state = const WebReaderState();
+    });
+  }
 
   final Ref _ref;
   final LocalServerService _server;
 
-  Future<void> start() async {
+  /// Starts the server.
+  ///
+  /// [notificationTitle] and [stopLabel] are handed in already localized —
+  /// this notifier has no [BuildContext], and the Android service has no
+  /// access to the app's strings at all.
+  Future<void> start({
+    required String notificationTitle,
+    required String stopLabel,
+  }) async {
     if (state.isBusy || state.isRunning) return;
     state = state.copyWith(isBusy: true, clearError: true);
     try {
       final url = await _server.start(
         _ref.read(appDatabaseProvider),
         _ref.read(bibleRepositoryProvider),
+        foregroundTitle: notificationTitle,
+        foregroundStopLabel: stopLabel,
       );
       state = WebReaderState(
         url: url,
@@ -87,13 +104,16 @@ class WebReaderNotifier extends StateNotifier<WebReaderState> {
     state = const WebReaderState();
   }
 
-  /// Stops the server without touching [state.isBusy] guards — used by the
-  /// lifecycle observer, which has to win even mid-start.
+  /// Stops the server because the app itself is going away.
   ///
-  /// Backgrounding the app is not a request the UI can decline, so this does
-  /// not consult [state]: it stops the server and reports it stopped. It runs
-  /// even when nothing appears to be running, because that is exactly the case
-  /// where a start is still binding and needs to be cancelled.
+  /// Called only for [AppLifecycleState.detached] — the process is ending, so
+  /// the socket and the notification have to go with it. Merely backgrounding
+  /// the app deliberately does *not* come through here: reading on a laptop
+  /// while the phone sits face down on the desk is the whole point, and the
+  /// Android foreground service exists to keep that working.
+  ///
+  /// Does not consult [state]: a start still binding when the app is torn down
+  /// needs cancelling just as much as a running one.
   Future<void> stopForLifecycle() async {
     await _server.stop();
     if (mounted) state = const WebReaderState();

@@ -103,18 +103,17 @@ class _BibleMaterialAppState extends ConsumerState<_BibleMaterialApp>
     WidgetsBinding.instance.addObserver(this);
   }
 
-  /// Releases the Local Web Reader's port whenever the app leaves the
-  /// foreground.
+  /// Releases the Local Web Reader's port when the app is being torn down.
   ///
-  /// A server the user cannot see is a server they cannot turn off, so leaving
-  /// it running while backgrounded would keep the device reachable on the LAN
-  /// with nothing on screen to say so. Starting it again is always a deliberate
-  /// tap.
+  /// `detached` only. Backgrounding the app must *not* stop the server —
+  /// reading on a laptop while the phone sits face down is the entire point of
+  /// the feature, and an Android foreground service keeps the process alive and
+  /// network-reachable for exactly that. The server stays visible and stoppable
+  /// the whole time through that service's notification.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.detached) {
       unawaited(ref.read(webReaderProvider.notifier).stopForLifecycle());
     }
   }

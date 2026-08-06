@@ -927,6 +927,9 @@ class EnStrings extends AppStrings {
   String get webReaderRunningHint =>
       'Open this address in a browser on the same WiFi';
   @override
+  String get webReaderBackgroundHint =>
+      'Keeps serving when you leave the app. Stop it from the notification.';
+  @override
   String get webReaderCopy => 'Copy';
   @override
   String get webReaderCopied => 'Address copied';

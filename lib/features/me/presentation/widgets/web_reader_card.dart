@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/web_reader/foreground_service.dart';
 import '../../../../core/web_reader/local_server_service.dart';
 import '../../../../core/web_reader/web_reader_providers.dart';
 
@@ -74,7 +76,22 @@ class WebReaderCard extends ConsumerWidget {
                     ? null
                     : state.isRunning
                         ? notifier.stop
-                        : notifier.start,
+                        : () async {
+                            // Android 13+ hides the foreground service's
+                            // notification without this, which would leave the
+                            // user with a server running in the background and
+                            // no Stop button in the shade. The server starts
+                            // either way — the notification is how it is
+                            // controlled, not whether it works.
+                            if (WebReaderForegroundService.isSupported) {
+                              await NotificationService.instance
+                                  .requestPermissions();
+                            }
+                            await notifier.start(
+                              notificationTitle: s.webReaderTitle,
+                              stopLabel: s.webReaderStop,
+                            );
+                          },
               ),
             ],
           ),
@@ -87,6 +104,27 @@ class WebReaderCard extends ConsumerWidget {
             _AddressRow(url: state.url!, interfaceName: state.interfaceName),
             const SizedBox(height: 14),
             _QrThumb(url: state.url!),
+            // Says out loud that leaving the app will not stop it — the one
+            // thing a user cannot discover by looking at this card.
+            if (WebReaderForegroundService.isSupported) ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline_rounded,
+                      size: 15, color: c.textCaption),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      s.webReaderBackgroundHint,
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: c.textCaption,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ],
       ),

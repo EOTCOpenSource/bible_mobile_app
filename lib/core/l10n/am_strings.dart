@@ -915,6 +915,9 @@ class AmStrings extends AppStrings {
   @override
   String get webReaderRunningHint => 'በዚሁ WiFi ላይ ካለ አሳሽ ይህን አድራሻ ክፈት';
   @override
+  String get webReaderBackgroundHint =>
+      'መተግበሪያውን ብትዘጋም ማገልገሉን ይቀጥላል። ከማሳወቂያው ላይ ማቆም ትችላለህ።';
+  @override
   String get webReaderCopy => 'ቅዳ';
   @override
   String get webReaderCopied => 'አድራሻው ተቀድቷል';

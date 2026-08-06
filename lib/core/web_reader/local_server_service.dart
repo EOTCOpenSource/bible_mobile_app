@@ -8,6 +8,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import '../../features/books/data/repositories/bible_repository.dart';
 import '../storage/app_database.dart';
 import 'api_router.dart';
+import 'foreground_service.dart';
 
 /// Runs the Local Web Reader's HTTP server on the device.
 ///
@@ -29,6 +30,14 @@ class LocalServerService {
   /// Ports are tried in order from [defaultPort]; another app holding 7777
   /// should degrade to a different URL, not to a dead button.
   static const _portAttempts = 8;
+
+  /// Keeps the process alive and reachable once the app is backgrounded.
+  /// Injectable so tests can drive the server without a platform channel.
+  final WebReaderForegroundService foreground;
+
+  LocalServerService({
+    this.foreground = const WebReaderForegroundService(),
+  });
 
   HttpServer? _server;
 
@@ -67,7 +76,12 @@ class LocalServerService {
   /// (WiFi off, or on a network that gave out none) or when every candidate
   /// port is taken — both are conditions the card reports to the user rather
   /// than states worth crashing over.
-  Future<String> start(AppDatabase db, BibleRepository bible) async {
+  Future<String> start(
+    AppDatabase db,
+    BibleRepository bible, {
+    String foregroundTitle = 'Local Web Reader',
+    String foregroundStopLabel = 'Stop',
+  }) async {
     if (_server != null) return baseUrl!;
     final generation = _generation;
 
@@ -118,6 +132,14 @@ class LocalServerService {
     _localInterface = found.interfaceName;
     _boundPort = bound.port;
     debugPrint('[WebReader] serving on $baseUrl (${found.interfaceName})');
+
+    // Only now: a notification saying the Bible is being served, raised before
+    // the socket was listening, would be false for as long as binding took.
+    await foreground.start(
+      title: foregroundTitle,
+      url: baseUrl!,
+      stopLabel: foregroundStopLabel,
+    );
     return baseUrl!;
   }
 
@@ -129,6 +151,9 @@ class LocalServerService {
     _localIp = null;
     _localInterface = null;
     _boundPort = null;
+    // Unconditional: a cancelled start may have raised the notification even
+    // though no server was ever assigned.
+    await foreground.stop();
     if (server == null) return;
     try {
       // `force` so a browser holding a keep-alive connection open cannot keep

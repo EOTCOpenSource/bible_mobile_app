@@ -546,6 +546,9 @@ abstract class AppStrings {
   String get webReaderStop;
   String get webReaderStarting;
   String get webReaderRunningHint;
+
+  /// Reassures the user that leaving the app will not stop the server.
+  String get webReaderBackgroundHint;
   String get webReaderCopy;
   String get webReaderCopied;
   String get webReaderScanHint;

@@ -8,6 +8,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:bibleflutter/core/storage/app_database.dart';
 import 'package:bibleflutter/core/web_reader/api_router.dart';
+import 'package:bibleflutter/core/web_reader/foreground_service.dart';
 import 'package:bibleflutter/core/web_reader/local_server_service.dart';
 import 'package:bibleflutter/core/web_reader/web_fonts.dart';
 import 'package:bibleflutter/features/books/data/bible_storage.dart';
@@ -555,6 +556,48 @@ void main() {
       });
     });
 
+    // The server has to outlive the app going to the background, which on
+    // Android means a foreground service raised and dropped alongside it.
+    group('background service', () {
+      test('is raised once the socket is listening, and dropped on stop',
+          () async {
+        final fake = _FakeForegroundService();
+        final service = LocalServerService(foreground: fake);
+        try {
+          await service.start(
+            db,
+            bible,
+            foregroundTitle: 'የአካባቢ ድር አንባቢ',
+            foregroundStopLabel: 'አቁም',
+          );
+        } on LocalServerException catch (e) {
+          markTestSkipped('no local network: ${e.reason.name}');
+          return;
+        }
+        addTearDown(service.stop);
+
+        expect(fake.starts, hasLength(1));
+        expect(fake.starts.single.title, 'የአካባቢ ድር አንባቢ');
+        expect(fake.starts.single.stopLabel, 'አቁም');
+        // The notification shows the address the user has to type, so it must
+        // be the bound one, not a guess made before binding.
+        expect(fake.starts.single.url, service.baseUrl);
+
+        await service.stop();
+        expect(fake.stops, greaterThan(0));
+      });
+
+      test('is dropped even when the start was cancelled mid-bind', () async {
+        final fake = _FakeForegroundService();
+        final service = LocalServerService(foreground: fake);
+        // No server was ever assigned, but a stop must still clear anything a
+        // half-finished start left in the shade.
+        await service.stop();
+        expect(fake.stops, 1);
+        expect(fake.starts, isEmpty);
+      });
+    });
+
     test('private ranges are preferred over routable ones', () {
       expect(LocalServerService.isPrivateAddress('192.168.0.7'), isTrue);
       expect(LocalServerService.isPrivateAddress('10.1.2.3'), isTrue);
@@ -566,4 +609,27 @@ void main() {
       expect(LocalServerService.isPrivateAddress('8.8.8.8'), isFalse);
     });
   });
+}
+
+/// Records what the platform channel would have been asked to do.
+///
+/// The real one is a no-op off Android, so without this the background
+/// behaviour would be untestable on any machine tests actually run on.
+class _FakeForegroundService extends WebReaderForegroundService {
+  final starts = <({String title, String url, String stopLabel})>[];
+  var stops = 0;
+
+  @override
+  Future<void> start({
+    required String title,
+    required String url,
+    required String stopLabel,
+  }) async =>
+      starts.add((title: title, url: url, stopLabel: stopLabel));
+
+  @override
+  Future<void> stop() async => stops++;
+
+  @override
+  void onStopRequested(Future<void> Function() handler) {}
 }
