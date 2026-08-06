@@ -351,6 +351,11 @@ class AmStrings extends AppStrings {
   String get collectionCreateAction => 'ፍጠር';
   @override
   String get savedOk => 'እሺ';
+  @override
+  String get collectionDeleteTitle => 'ስብስብ ሰርዝ';
+  @override
+  String get collectionDeleteMessage =>
+      'ይህ ስብስብ ይሰረዛል። በውስጡ ያሉት ማስታወሻዎች፣ ማድመቂያዎችና ዕልባቶች አይሰረዙም።';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

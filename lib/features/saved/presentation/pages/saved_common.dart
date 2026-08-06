@@ -6,6 +6,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_dialog.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../books/data/models/book_index_entry.dart';
 
@@ -829,133 +830,152 @@ class _CollectionPickerSheetState extends ConsumerState<CollectionPickerSheet> {
     final c = context.colors;
     final collectionsAsync = ref.watch(collectionsNotifierProvider);
 
-    return Padding(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    return AppSheet(
+      icon: Icons.folder_special_rounded,
+      title: s.addToCollection,
+      caption: 'COLLECTIONS',
+      onClose: () => Navigator.pop(context),
+      actions: AppDialogActions(
+        confirmLabel: s.savedOk,
+        onConfirm: () => Navigator.pop(context),
+        fullWidth: true,
+      ),
+      children: [
+        if (_loading)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: CircularProgressIndicator(color: c.primary),
+            ),
+          )
+        else
+          collectionsAsync.when(
+            data: (collections) {
+              if (collections.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: AppDialogBody(s.noCollections),
+                );
+              }
+              return ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 220),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  itemCount: collections.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 6),
+                  itemBuilder: (ctx, idx) {
+                    final col = collections[idx];
+                    final isLinked = _linkedCollectionIds.contains(col.id);
+                    return _CollectionRow(
+                      collection: col,
+                      selected: isLinked,
+                      onTap: col.id == null
+                          ? null
+                          : () => _toggleCollection(col.id!, isLinked),
+                    );
+                  },
+                ),
+              );
+            },
+            loading: () => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CircularProgressIndicator(color: c.primary),
+              ),
+            ),
+            error: (err, _) => AppDialogCallout(
+              text: '$err',
+              icon: Icons.error_outline,
+            ),
+          ),
+        const SizedBox(height: 4),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => showCreateCollectionDialog(context, ref),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              visualDensity: VisualDensity.compact,
+            ),
+            icon: Icon(Icons.add_rounded, size: 18, color: c.primary),
+            label: Text(
+              s.newCollection,
+              style: AppTypography.amharicLabel.copyWith(
+                color: c.primary,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: c.textMuted.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+      ],
+    );
+  }
+}
+
+/// One selectable collection in [CollectionPickerSheet].
+///
+/// A tinted card rather than a [CheckboxListTile] — the checkbox's own colours
+/// and padding fight the modal design, and the collection's colour is the
+/// clearest way to identify it.
+class _CollectionRow extends StatelessWidget {
+  const _CollectionRow({
+    required this.collection,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Collection collection;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final tint = collection.color ?? c.primary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? tint.withValues(alpha: 0.10) : Colors.transparent,
+          borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+          border: Border.all(
+            color: selected
+                ? tint.withValues(alpha: 0.35)
+                : c.borderSubtle,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(getCollectionIconData(collection.icon), size: 18, color: tint),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                collection.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.amharicBody.copyWith(
+                  fontSize: 14,
+                  color: c.textOnParchment,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ),
-            Row(
-              children: [
-                Icon(Icons.folder_special_rounded, color: c.primary, size: 22),
-                const SizedBox(width: 8),
-                Text(
-                  s.addToCollection,
-                  style: AppTypography.amharicLabel.copyWith(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: c.textOnParchment,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (_loading)
-              const Center(
-                  child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator()))
-            else
-              collectionsAsync.when(
-                data: (collections) {
-                  return Column(
-                    children: [
-                      if (collections.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(s.noCollections,
-                              style: AppTypography.amharicCaption
-                                  .copyWith(color: c.textMuted)),
-                        )
-                      else
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 180),
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: collections.length,
-                            itemBuilder: (ctx, idx) {
-                              final col = collections[idx];
-                              final isLinked =
-                                  _linkedCollectionIds.contains(col.id);
-                              return CheckboxListTile(
-                                value: isLinked,
-                                onChanged: col.id == null
-                                    ? null
-                                    : (_) => _toggleCollection(
-                                        col.id!, isLinked),
-                                title: Text(col.name,
-                                    style: AppTypography.amharicBody
-                                        .copyWith(fontSize: 14)),
-                                secondary: Icon(
-                                  getCollectionIconData(col.icon),
-                                  color: col.color ?? c.primary,
-                                ),
-                                activeColor: c.primary,
-                                visualDensity: VisualDensity.compact,
-                              );
-                            },
-                          ),
-                        ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () =>
-                              showCreateCollectionDialog(context, ref),
-                          icon: const Icon(Icons.add_rounded, size: 18),
-                          label: Text(s.newCollection),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                loading: () => const CircularProgressIndicator(),
-                error: (err, _) => Text('Error: $err'),
-              ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: c.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: Text(s.savedOk),
-              ),
+            Icon(
+              selected
+                  ? Icons.check_circle_rounded
+                  : Icons.circle_outlined,
+              size: 20,
+              color: selected ? tint : c.textCaption,
             ),
           ],
         ),
       ),
-    ),
-  );
+    );
   }
 }
 
@@ -973,68 +993,74 @@ Future<void> showCreateCollectionDialog(
     builder: (dlgCtx) {
       return StatefulBuilder(
         builder: (ctx, setDlgState) {
-          return AlertDialog(
-            title: Text(s.newCollection),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: ctrl,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: s.collectionNameHint,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+          return AppDialog(
+            icon: Icons.create_new_folder_outlined,
+            title: s.newCollection,
+            caption: 'COLLECTION',
+            actions: AppDialogActions(
+              cancelLabel: s.savedCancel,
+              onCancel: () => Navigator.pop(dlgCtx),
+              confirmLabel: s.collectionCreateAction,
+              onConfirm: () async {
+                final name = ctrl.text.trim();
+                if (name.isEmpty) return;
+                await ref
+                    .read(collectionsNotifierProvider.notifier)
+                    .createCollection(name, color: selectedColor);
+                if (dlgCtx.mounted) Navigator.pop(dlgCtx);
+              },
+            ),
+            children: [
+              TextField(
+                controller: ctrl,
+                autofocus: true,
+                style: AppTypography.amharicBody.copyWith(
+                  fontSize: 15,
+                  color: c.textOnParchment,
+                ),
+                cursorColor: c.primary,
+                decoration: InputDecoration(
+                  hintText: s.collectionNameHint,
+                  hintStyle: AppTypography.amharicBody.copyWith(
+                    fontSize: 15,
+                    color: c.textCaption,
+                  ),
+                  filled: true,
+                  fillColor: c.surfaceDim,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+                    borderSide: BorderSide(color: c.borderSubtle),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+                    borderSide: BorderSide(color: c.primary, width: 1.5),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(s.collectionColorLabel, style: AppTypography.amharicCaption),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (final color in highlightPalette)
-                      GestureDetector(
-                        onTap: () => setDlgState(() => selectedColor = color),
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: color,
-                            border: Border.all(
-                              color: selectedColor == color
-                                  ? Colors.black
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dlgCtx),
-                child: Text(s.savedCancel),
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  final name = ctrl.text.trim();
-                  if (name.isNotEmpty) {
-                    await ref
-                        .read(collectionsNotifierProvider.notifier)
-                        .createCollection(
-                          name,
-                          color: selectedColor,
-                        );
-                    if (context.mounted) Navigator.pop(dlgCtx);
-                  }
-                },
-                child: Text(s.collectionCreateAction),
+              const SizedBox(height: 18),
+              Text(
+                s.collectionColorLabel,
+                style: AppTypography.amharicCaption.copyWith(
+                  color: c.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  for (final color in highlightPalette)
+                    _ColorSwatch(
+                      color: color,
+                      selected: selectedColor == color,
+                      onTap: () => setDlgState(() => selectedColor = color),
+                    ),
+                ],
               ),
             ],
           );
@@ -1042,6 +1068,53 @@ Future<void> showCreateCollectionDialog(
       );
     },
   );
+}
+
+/// A colour choice in [showCreateCollectionDialog].
+///
+/// The selection reads as a ring around the swatch rather than a border drawn
+/// on it, so the colour itself stays true at every size.
+class _ColorSwatch extends StatelessWidget {
+  const _ColorSwatch({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? color : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+            child: selected
+                ? Icon(Icons.check_rounded, size: 15, color: c.textOnDark)
+                : null,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 IconData getCollectionIconData(String? iconStr) {

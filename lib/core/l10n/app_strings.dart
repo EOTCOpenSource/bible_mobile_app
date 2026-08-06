@@ -208,6 +208,8 @@ abstract class AppStrings {
   String get collectionColorLabel;
   String get collectionCreateAction;
   String get savedOk;
+  String get collectionDeleteTitle;
+  String get collectionDeleteMessage; // reassures that annotations survive
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"

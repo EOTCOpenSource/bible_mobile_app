@@ -8,6 +8,7 @@ import '../../../../core/sync/sync_repository.dart';
 import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_dialog.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
 import 'bookmarks_tab.dart';
@@ -647,60 +648,75 @@ Future<void> _showCollectionOptions(
   VoidCallback onChanged,
 ) async {
   final s = L10n.of(context);
+  final c = context.colors;
+  final error = Theme.of(context).colorScheme.error;
+
   showModalBottomSheet(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (ctx) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.delete_rounded, color: Colors.red),
-              title: Text(
-                '${s.savedDelete} ${col.name}',
-                style: AppTypography.amharicLabel.copyWith(color: Colors.red),
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => AppSheet(
+      icon: getCollectionIconData(col.icon),
+      title: col.name,
+      caption: 'COLLECTION',
+      onClose: () => Navigator.pop(ctx),
+      children: [
+        InkWell(
+          onTap: () async {
+            Navigator.pop(ctx);
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (dCtx) => AppDialog(
+                icon: Icons.delete_outline_rounded,
+                title: s.collectionDeleteTitle,
+                caption: col.name.toUpperCase(),
+                actions: AppDialogActions(
+                  cancelLabel: s.savedCancel,
+                  onCancel: () => Navigator.pop(dCtx, false),
+                  confirmLabel: s.savedDelete,
+                  onConfirm: () => Navigator.pop(dCtx, true),
+                  destructive: true,
+                ),
+                children: [AppDialogBody(s.collectionDeleteMessage)],
               ),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (dCtx) => AlertDialog(
-                    title: Text(col.name),
-                    content: const Text(
-                        'Delete this collection? Annotations will not be deleted.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dCtx, false),
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red),
-                        onPressed: () => Navigator.pop(dCtx, true),
-                        child: const Text('Delete',
-                            style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmed == true && col.id != null) {
-                  if (ref.read(selectedCollectionIdProvider) == col.id) {
-                    ref.read(selectedCollectionIdProvider.notifier).state = null;
-                  }
-                  await ref
-                      .read(collectionsNotifierProvider.notifier)
-                      .deleteCollection(col.id!);
-                  onChanged();
-                }
-              },
+            );
+            if (confirmed == true && col.id != null) {
+              if (ref.read(selectedCollectionIdProvider) == col.id) {
+                ref.read(selectedCollectionIdProvider.notifier).state = null;
+              }
+              await ref
+                  .read(collectionsNotifierProvider.notifier)
+                  .deleteCollection(col.id!);
+              onChanged();
+            }
+          },
+          borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: error.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+              border: Border.all(color: error.withValues(alpha: 0.25)),
             ),
-          ],
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline_rounded, size: 18, color: error),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    s.collectionDeleteTitle,
+                    style: AppTypography.amharicLabel.copyWith(
+                      color: error,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, size: 18, color: c.textCaption),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     ),
   );
 }

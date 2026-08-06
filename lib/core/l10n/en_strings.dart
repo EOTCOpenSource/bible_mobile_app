@@ -355,6 +355,12 @@ class EnStrings extends AppStrings {
   String get collectionCreateAction => 'Create';
   @override
   String get savedOk => 'OK';
+  @override
+  String get collectionDeleteTitle => 'Delete collection';
+  @override
+  String get collectionDeleteMessage =>
+      'This collection will be removed. The notes, highlights and bookmarks '
+      'inside it are not deleted.';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

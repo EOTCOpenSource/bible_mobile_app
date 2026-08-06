@@ -12,6 +12,7 @@ import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_dialog.dart';
 import '../../../auth/presentation/pages/login_screen.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../../core/audio/tts_providers.dart';
@@ -822,133 +823,23 @@ class _MarkdownExportDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
-    final c = context.colors;
 
-    return AlertDialog(
-      backgroundColor: c.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: c.borderSubtle),
+    return AppDialog(
+      icon: Icons.description_outlined,
+      title: s.backupExportMarkdown,
+      caption: 'MARKDOWN',
+      actions: AppDialogActions(
+        cancelLabel: s.backupCancel,
+        onCancel: () => Navigator.pop(context, false),
+        confirmLabel: s.backupConfirmExport,
+        onConfirm: () => Navigator.pop(context, true),
       ),
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      actionsPadding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      title: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: c.primary.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.description_outlined, size: 20, color: c.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  s.backupExportMarkdown,
-                  style: AppTypography.amharicLabel.copyWith(
-                    color: c.textOnParchment,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    height: 1.25,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'MARKDOWN',
-                  style: AppTypography.englishLabel.copyWith(
-                    color: c.textCaption,
-                    fontSize: 10,
-                    letterSpacing: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            s.backupMarkdownBody,
-            style: AppTypography.amharicBody.copyWith(
-              color: c.textMuted,
-              fontSize: 14,
-              height: 1.55,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // The caveat, given its own weight — this is what the user is
-          // actually being asked to accept.
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: c.accent.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: c.accent.withValues(alpha: 0.25)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline, size: 17, color: c.accentDeep),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    s.backupMarkdownDisclaimer,
-                    style: AppTypography.amharicBody.copyWith(
-                      color: c.accentDeep,
-                      fontSize: 13,
-                      height: 1.45,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          ),
-          child: Text(
-            s.backupCancel,
-            style: AppTypography.amharicLabel.copyWith(
-              color: c.textMuted,
-              fontSize: 14,
-            ),
-          ),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: FilledButton.styleFrom(
-            backgroundColor: c.primary,
-            foregroundColor: c.textOnDark,
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(
-            s.backupConfirmExport,
-            style: AppTypography.amharicLabel.copyWith(
-              color: c.textOnDark,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+      children: [
+        AppDialogBody(s.backupMarkdownBody),
+        const SizedBox(height: 16),
+        // The caveat, given its own weight — this is what the user is
+        // actually being asked to accept.
+        AppDialogCallout(text: s.backupMarkdownDisclaimer),
       ],
     );
   }
