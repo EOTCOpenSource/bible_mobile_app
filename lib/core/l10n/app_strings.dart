@@ -137,6 +137,12 @@ abstract class AppStrings {
   String get readingSettingsPreview;
   String get readingSettingsReset;
   String get readingSettingsContinuous;
+  String get readingSettingsLineHeight;
+  String get readingSettingsMarginScale;
+  String get readingSettingsTextAlign;
+  String get readingSettingsAlignStart;
+  String get readingSettingsAlignJustify;
+  String get readingSettingsKeepScreenOn;
 
   // ── Search ───────────────────────────────────────────────────────────────
   String get searchHint;

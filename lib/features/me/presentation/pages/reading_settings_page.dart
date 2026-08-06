@@ -49,6 +49,10 @@ class ReadingSettingsPage extends StatelessWidget {
                 bodyFontIndex: 0,
                 titleFontIndex: 0,
                 fontSize: 17.0,
+                lineHeight: 1.6,
+                marginScale: 1.0,
+                textAlign: 0,
+                keepScreenOn: false,
               ),
             ),
             child: Text(
@@ -67,6 +71,9 @@ class ReadingSettingsPage extends StatelessWidget {
             bodyFont: bodyFont,
             titleFont: titleFont,
             fontSize: settings.fontSize,
+            lineHeight: settings.lineHeight,
+            marginScale: settings.marginScale,
+            textAlign: settings.textAlign,
             textColor: textColor,
             mutedColor: mutedColor,
             accentColor: accentColor,
@@ -104,6 +111,22 @@ class ReadingSettingsPage extends StatelessWidget {
               settings.copyWith(continuousReading: v),
             ),
           ),
+          const SizedBox(height: 12),
+
+          // ── Keep screen on toggle ─────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: KeepScreenOnToggle(
+              keepScreenOn: settings.keepScreenOn,
+              label: s.readingSettingsKeepScreenOn,
+              accentColor: accentColor,
+              textColor: textColor,
+              onChanged: (v) => Settings.update(
+                context,
+                settings.copyWith(keepScreenOn: v),
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
 
           // ── Font size slider ──────────────────────────────────────────────
@@ -121,6 +144,66 @@ class ReadingSettingsPage extends StatelessWidget {
             onChanged: (v) => Settings.update(
               context,
               settings.copyWith(fontSize: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Line height slider ───────────────────────────────────────────
+          SectionLabel(
+            label: s.readingSettingsLineHeight,
+            textColor: textColor,
+            mutedColor: mutedColor,
+          ),
+          const SizedBox(height: 8),
+          LineHeightSlider(
+            lineHeight: settings.lineHeight,
+            accentColor: accentColor,
+            mutedColor: mutedColor,
+            textColor: textColor,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(lineHeight: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Margin scale slider ──────────────────────────────────────────
+          SectionLabel(
+            label: s.readingSettingsMarginScale,
+            textColor: textColor,
+            mutedColor: mutedColor,
+          ),
+          const SizedBox(height: 8),
+          MarginScaleSlider(
+            marginScale: settings.marginScale,
+            accentColor: accentColor,
+            mutedColor: mutedColor,
+            textColor: textColor,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(marginScale: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Text alignment selector ──────────────────────────────────────
+          SectionLabel(
+            label: s.readingSettingsTextAlign,
+            textColor: textColor,
+            mutedColor: mutedColor,
+          ),
+          const SizedBox(height: 10),
+          TextAlignSelector(
+            textAlign: settings.textAlign,
+            accentColor: accentColor,
+            mutedColor: mutedColor,
+            textColor: textColor,
+            surfaceColor: surfaceColor,
+            startLabel: s.readingSettingsAlignStart,
+            justifyLabel: s.readingSettingsAlignJustify,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(textAlign: v),
             ),
           ),
           const SizedBox(height: 24),
@@ -176,6 +259,9 @@ class _PreviewCard extends StatelessWidget {
     required this.bodyFont,
     required this.titleFont,
     required this.fontSize,
+    required this.lineHeight,
+    required this.marginScale,
+    required this.textAlign,
     required this.textColor,
     required this.mutedColor,
     required this.accentColor,
@@ -186,6 +272,9 @@ class _PreviewCard extends StatelessWidget {
   final String bodyFont;
   final String titleFont;
   final double fontSize;
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
   final Color textColor;
   final Color mutedColor;
   final Color accentColor;
@@ -194,8 +283,11 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectivePadding = (20.0 * marginScale).clamp(10.0, 40.0);
+    final effectiveAlign = textAlign == 1 ? TextAlign.justify : TextAlign.start;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(effectivePadding),
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(18),
@@ -238,12 +330,13 @@ class _PreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           RichText(
+            textAlign: effectiveAlign,
             text: TextSpan(
               style: TextStyle(
                 fontFamily: bodyFont,
                 fontSize: fontSize,
                 color: textColor,
-                height: 2.0,
+                height: lineHeight,
               ),
               children: [
                 TextSpan(

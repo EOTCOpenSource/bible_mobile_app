@@ -45,6 +45,10 @@ void main() async {
           : null,
       hasSeenOnboarding: saved['has_seen_onboarding'] == 1,
       hasSeenReaderHint: saved['has_seen_reader_hint'] == 1,
+      lineHeight: (saved['line_height'] as num?)?.toDouble() ?? 1.6,
+      marginScale: (saved['margin_scale'] as num?)?.toDouble() ?? 1.0,
+      textAlign: (saved['text_align'] as int?) ?? 0,
+      keepScreenOn: saved['keep_screen_on'] == 1,
     );
   }
 

@@ -7,7 +7,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 10;
+  static const _version = 11;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -91,6 +91,25 @@ class AppDatabase {
     if (oldVersion < 10) {
       await _createReadingHistoryTable(db);
     }
+    if (oldVersion >= 6 && oldVersion < 11) {
+      await _migrateSettingsTypography(db);
+    }
+  }
+
+  /// v10→v11: adds typography (line_height, margin_scale, text_align) and keep_screen_on columns to app_settings.
+  Future<void> _migrateSettingsTypography(Database db) async {
+    await db.execute(
+      'ALTER TABLE app_settings ADD COLUMN line_height REAL NOT NULL DEFAULT 1.6',
+    );
+    await db.execute(
+      'ALTER TABLE app_settings ADD COLUMN margin_scale REAL NOT NULL DEFAULT 1.0',
+    );
+    await db.execute(
+      'ALTER TABLE app_settings ADD COLUMN text_align INTEGER NOT NULL DEFAULT 0',
+    );
+    await db.execute(
+      'ALTER TABLE app_settings ADD COLUMN keep_screen_on INTEGER NOT NULL DEFAULT 0',
+    );
   }
 
   /// One row per stretch of reading, newest first.
@@ -1190,7 +1209,11 @@ class AppDatabase {
       reading_time_hour INTEGER,
       reading_time_minute INTEGER,
       has_seen_onboarding INTEGER NOT NULL DEFAULT 0,
-      has_seen_reader_hint INTEGER NOT NULL DEFAULT 0
+      has_seen_reader_hint INTEGER NOT NULL DEFAULT 0,
+      line_height REAL NOT NULL DEFAULT 1.6,
+      margin_scale REAL NOT NULL DEFAULT 1.0,
+      text_align INTEGER NOT NULL DEFAULT 0,
+      keep_screen_on INTEGER NOT NULL DEFAULT 0
     )
   ''');
     await db.insert('app_settings', {
@@ -1219,6 +1242,10 @@ class AppDatabase {
     int? readingTimeMinute,
     bool hasSeenOnboarding = false,
     bool hasSeenReaderHint = false,
+    double lineHeight = 1.6,
+    double marginScale = 1.0,
+    int textAlign = 0,
+    bool keepScreenOn = false,
   }) async {
     final db = await database;
     await db.update(
@@ -1232,6 +1259,10 @@ class AppDatabase {
         'reading_time_minute': readingTimeMinute,
         'has_seen_onboarding': hasSeenOnboarding ? 1 : 0,
         'has_seen_reader_hint': hasSeenReaderHint ? 1 : 0,
+        'line_height': lineHeight,
+        'margin_scale': marginScale,
+        'text_align': textAlign,
+        'keep_screen_on': keepScreenOn ? 1 : 0,
       },
       where: 'id = ?',
       whereArgs: [1],

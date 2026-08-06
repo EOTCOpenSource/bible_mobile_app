@@ -5,6 +5,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/book_index_entry.dart';
+import 'reader_style_resolver.dart';
 
 // ── Chapter page (PageView item) ──────────────────────────────────────────────
 
@@ -29,6 +30,9 @@ class ReaderChapterPage extends StatelessWidget {
     this.spotlightVerseNum,
     this.spotlightKey,
     this.continuousReading = false,
+    this.lineHeight = 1.6,
+    this.marginScale = 1.0,
+    this.textAlign = 0,
     this.onNoteTap,
     this.onApparatusTap,
   });
@@ -51,6 +55,9 @@ class ReaderChapterPage extends StatelessWidget {
   final GlobalKey? spotlightKey;
   final ChapterAnnotations annotations;
   final bool continuousReading;
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
 
   /// Opens the footnote / cross-reference sheet for a verse.
@@ -80,6 +87,7 @@ class ReaderChapterPage extends StatelessWidget {
             textColor:   textColor,
             mutedColor:  mutedColor,
             titleFontFamily: titleFontFamily,
+            marginScale: marginScale,
           );
         }
         final secIdx = i - 1;
@@ -101,6 +109,9 @@ class ReaderChapterPage extends StatelessWidget {
           spotlightVerseNum: spotlightVerseNum,
           spotlightKey:     spotlightKey,
           continuousReading: continuousReading,
+          lineHeight:       lineHeight,
+          marginScale:      marginScale,
+          textAlign:        textAlign,
           onNoteTap:        onNoteTap,
           onApparatusTap:   onApparatusTap,
         );
@@ -122,6 +133,7 @@ class ChapterHeader extends StatelessWidget {
     required this.textColor,
     required this.mutedColor,
     required this.titleFontFamily,
+    this.marginScale = 1.0,
   });
 
   final BookIndexEntry entry;
@@ -132,6 +144,7 @@ class ChapterHeader extends StatelessWidget {
   final Color textColor;
   final Color mutedColor;
   final String titleFontFamily;
+  final double marginScale;
 
   String get _firstSectionTitle {
     for (final sec in chapter.sections) {
@@ -150,7 +163,11 @@ class ChapterHeader extends StatelessWidget {
     final sectionTitle = _firstSectionTitle;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+      padding: ReaderStyleResolver.computeBodyPadding(
+        marginScale: marginScale,
+        top: 24,
+        bottom: 8,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -267,6 +284,9 @@ class SectionView extends StatelessWidget {
     this.spotlightVerseNum,
     this.spotlightKey,
     this.continuousReading = false,
+    this.lineHeight = 1.6,
+    this.marginScale = 1.0,
+    this.textAlign = 0,
     this.onNoteTap,
     this.onApparatusTap,
   });
@@ -288,6 +308,9 @@ class SectionView extends StatelessWidget {
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
   final bool continuousReading;
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
@@ -326,6 +349,8 @@ class SectionView extends StatelessWidget {
               annotations:      annotations,
               spotlightVerseNum: spotlightVerseNum,
               spotlightKey:     spotlightKey,
+              lineHeight:       lineHeight,
+              textAlign:        textAlign,
               onNoteTap:        onNoteTap,
             ),
           ]
@@ -347,6 +372,8 @@ class SectionView extends StatelessWidget {
                   isDark: isDark,
                   useGeez: useGeez,
                   annotations: annotations,
+                  lineHeight: lineHeight,
+                  textAlign: textAlign,
                   onVerseTap: onVerseTap,
                   onNoteTap: onNoteTap,
                   onApparatusTap: onApparatusTap,
@@ -354,7 +381,7 @@ class SectionView extends StatelessWidget {
             .toList();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: ReaderStyleResolver.computeBodyPadding(marginScale: marginScale),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -435,6 +462,8 @@ class VerseView extends StatelessWidget {
     required this.onVerseTap,
     this.isSpotlight = false,
     this.spotlightKey,
+    this.lineHeight = 1.6,
+    this.textAlign = 0,
     this.onNoteTap,
     this.onApparatusTap,
   });
@@ -452,6 +481,8 @@ class VerseView extends StatelessWidget {
   final ValueChanged<String> onVerseTap;
   final bool isSpotlight;
   final GlobalKey? spotlightKey;
+  final double lineHeight;
+  final int textAlign;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
@@ -479,12 +510,15 @@ class VerseView extends StatelessWidget {
         color: accentColor,
       ),
     );
-    final bodyStyle = TextStyle(
+    final bodyStyle = ReaderStyleResolver.computeBodyStyle(
       fontFamily: fontFamily,
       fontSize: fontSize,
-      height: 1.85,
-      color: textColor,
-      fontWeight: FontWeight.w400,
+      lineHeight: lineHeight,
+      textColor: textColor,
+    );
+    final effectiveTextAlign = ReaderStyleResolver.computeTextAlign(
+      textAlign: textAlign,
+      screenWidth: MediaQuery.sizeOf(context).width,
     );
     // A superscript marker rather than the footnote text itself: Genesis 1:1
     // carries fourteen cross references and would bury the verse it belongs to.
@@ -512,6 +546,7 @@ class VerseView extends StatelessWidget {
     // or the other, never both.
     final Widget verseBody = verse.lines.isEmpty
         ? RichText(
+            textAlign: effectiveTextAlign,
             text: TextSpan(children: [
               numberSpan,
               TextSpan(text: verse.text, style: bodyStyle),
@@ -527,6 +562,7 @@ class VerseView extends StatelessWidget {
                     left: verse.lines[li].indent * (fontSize * 0.9),
                   ),
                   child: RichText(
+                    textAlign: effectiveTextAlign,
                     text: TextSpan(children: [
                       if (li == 0) numberSpan,
                       TextSpan(text: verse.lines[li].text, style: bodyStyle),
@@ -604,6 +640,8 @@ class _ContinuousSection extends StatefulWidget {
     required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
+    this.lineHeight = 1.6,
+    this.textAlign = 0,
     this.onNoteTap,
   });
 
@@ -622,6 +660,8 @@ class _ContinuousSection extends StatefulWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
+  final double lineHeight;
+  final int textAlign;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
 
   @override
@@ -668,6 +708,10 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
   @override
   Widget build(BuildContext context) {
     final spans = <InlineSpan>[];
+    final effectiveTextAlign = ReaderStyleResolver.computeTextAlign(
+      textAlign: widget.textAlign,
+      screenWidth: MediaQuery.sizeOf(context).width,
+    );
 
     for (final verse in widget.section.verses) {
       final key = widget.verseKeyFn(
@@ -725,13 +769,12 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
       spans.add(TextSpan(
         text: verse.text,
         recognizer: rec,
-        style: TextStyle(
+        style: ReaderStyleResolver.computeBodyStyle(
           fontFamily: widget.fontFamily,
           fontSize: widget.fontSize,
-          height: 1.85,
-          color: widget.textColor,
-          backgroundColor: bgColor,
-        ),
+          lineHeight: widget.lineHeight,
+          textColor: widget.textColor,
+        ).copyWith(backgroundColor: bgColor),
       ));
 
       // Note indicator — tappable inline icon
@@ -757,6 +800,7 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
 
     return RichText(
       key: _sectionHasSpotlight ? widget.spotlightKey : null,
+      textAlign: effectiveTextAlign,
       text: TextSpan(children: spans),
     );
   }

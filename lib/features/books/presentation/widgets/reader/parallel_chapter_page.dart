@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/book_index_entry.dart';
 import 'chapter_page.dart';
+import 'reader_style_resolver.dart';
 
 /// Width at which the two translations sit side by side rather than stacked.
 ///
@@ -50,6 +51,9 @@ class ParallelChapterPage extends StatelessWidget {
     required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
+    this.lineHeight = 1.6,
+    this.marginScale = 1.0,
+    this.textAlign = 0,
     this.onNoteTap,
     this.onApparatusTap,
   });
@@ -77,6 +81,9 @@ class ParallelChapterPage extends StatelessWidget {
   final bool useGeez;
   final bool isAmharic;
   final AppStrings s;
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
 
   final bool Function(int chNum, int secIdx, int verseNum) isSelectedFn;
   final ValueChanged<String> onVerseTap;
@@ -148,6 +155,7 @@ class ParallelChapterPage extends StatelessWidget {
                 textColor: textColor,
                 mutedColor: mutedColor,
                 titleFontFamily: titleFontFamily,
+                marginScale: marginScale,
               ),
               if (secondaryBookMissing)
                 _MissingNotice(
@@ -190,6 +198,9 @@ class ParallelChapterPage extends StatelessWidget {
           annotations: annotations,
           spotlightVerseNum: spotlightVerseNum,
           spotlightKey: spotlightKey,
+          lineHeight: lineHeight,
+          marginScale: marginScale,
+          textAlign: textAlign,
           onNoteTap: onNoteTap,
           onApparatusTap: onApparatusTap,
         );
@@ -228,6 +239,9 @@ class _ParallelSection extends StatelessWidget {
     required this.annotations,
     this.spotlightVerseNum,
     this.spotlightKey,
+    this.lineHeight = 1.6,
+    this.marginScale = 1.0,
+    this.textAlign = 0,
     this.onNoteTap,
     this.onApparatusTap,
   });
@@ -252,6 +266,9 @@ class _ParallelSection extends StatelessWidget {
   final ChapterAnnotations annotations;
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
@@ -312,7 +329,7 @@ class _ParallelSection extends StatelessWidget {
         .where((h) => h.text.trim().isNotEmpty);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: ReaderStyleResolver.computeBodyPadding(marginScale: marginScale),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -381,6 +398,8 @@ class _ParallelSection extends StatelessWidget {
               isDark: isDark,
               useGeez: useGeez,
               annotations: annotations,
+              lineHeight: lineHeight,
+              textAlign: textAlign,
               onVerseTap: onVerseTap,
               onNoteTap: onNoteTap,
               onApparatusTap: onApparatusTap,
@@ -413,6 +432,8 @@ class _VersePair extends StatelessWidget {
     required this.useGeez,
     required this.annotations,
     required this.onVerseTap,
+    this.lineHeight = 1.6,
+    this.textAlign = 0,
     this.onNoteTap,
     this.onApparatusTap,
   });
@@ -434,6 +455,8 @@ class _VersePair extends StatelessWidget {
   final bool useGeez;
   final ChapterAnnotations annotations;
   final ValueChanged<String> onVerseTap;
+  final double lineHeight;
+  final int textAlign;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
   final void Function(Verse verse)? onApparatusTap;
 
@@ -453,6 +476,8 @@ class _VersePair extends StatelessWidget {
       isDark: isDark,
       useGeez: useGeez,
       annotations: annotations,
+      lineHeight: lineHeight,
+      textAlign: textAlign,
       onVerseTap: onVerseTap,
       onNoteTap: onNoteTap,
       onApparatusTap: onApparatusTap,
@@ -461,11 +486,22 @@ class _VersePair extends StatelessWidget {
 
   /// The parallel text: same verse, no annotation chrome, a shade quieter so
   /// the eye can tell at a glance which column it is reading.
-  Widget _secondaryCell() {
+  Widget _secondaryCell(BuildContext context) {
     final verse = secondary;
     if (verse == null) return const SizedBox.shrink();
 
     final numStr = verse.displayNumber(useGeez: useGeez);
+    final effectiveTextAlign = ReaderStyleResolver.computeTextAlign(
+      textAlign: textAlign,
+      screenWidth: MediaQuery.sizeOf(context).width,
+    );
+    final bodyStyle = ReaderStyleResolver.computeBodyStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize * 0.94,
+      lineHeight: lineHeight,
+      textColor: textColor.withValues(alpha: 0.82),
+    );
+
     return GestureDetector(
       onTap: () => onVerseTap(verseKey),
       behavior: HitTestBehavior.opaque,
@@ -491,6 +527,7 @@ class _VersePair extends StatelessWidget {
                 ),
         ),
         child: RichText(
+          textAlign: effectiveTextAlign,
           text: TextSpan(children: [
             TextSpan(
               text: numStr.isEmpty ? '' : '$numStr ',
@@ -503,12 +540,7 @@ class _VersePair extends StatelessWidget {
             ),
             TextSpan(
               text: verse.text,
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: fontSize * 0.94,
-                height: 1.8,
-                color: textColor.withValues(alpha: 0.82),
-              ),
+              style: bodyStyle,
             ),
           ]),
         ),
@@ -528,7 +560,7 @@ class _VersePair extends StatelessWidget {
           children: [
             Expanded(child: _primaryCell()),
             const SizedBox(width: 14),
-            Expanded(child: _secondaryCell()),
+            Expanded(child: _secondaryCell(context)),
           ],
         ),
       );
@@ -538,7 +570,7 @@ class _VersePair extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_primaryCell(), _secondaryCell()],
+        children: [_primaryCell(), _secondaryCell(context)],
       ),
     );
   }

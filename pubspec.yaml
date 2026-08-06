@@ -56,6 +56,7 @@ dependencies:
   path_provider: ^2.1.2
   just_audio: ^0.10.6
   file_picker: ^8.0.0
+  wakelock_plus: ^1.2.8
 
   # Bible editions ship as SQLite databases (80-weahadu). sqlite3_flutter_libs
   # is required, not optional: verse_fts uses the `trigram` tokenizer, which
