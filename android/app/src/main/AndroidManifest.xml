@@ -5,6 +5,23 @@
     <!-- Required for scheduling exact alarms and restoring on boot -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Local Web Reader: bind a socket on the LAN and read the interface list
+         to find the address to advertise. ACCESS_FINE_LOCATION is deliberately
+         not here — the address comes from NetworkInterface, not from the WiFi
+         manager, so nothing about the user's location is involved. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- The server has to keep answering once the app leaves the screen, which
+         only a foreground service can guarantee: a plain backgrounded process
+         gets frozen or killed, and loses network access in Doze. The user
+         starts it deliberately and can see it in the shade the whole time. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- Android 13+ only shows the service's notification with this granted.
+         The service itself runs either way; without it the user simply has no
+         Stop button in the shade. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="bibleflutter"
         android:name="${applicationName}"
@@ -48,6 +65,14 @@
                     android:pathPrefix="/openinapp/"/>
             </intent-filter>
         </activity>
+
+        <!-- Local Web Reader: keeps the process alive and network-reachable
+             while the app is backgrounded. Not exported — only this app ever
+             starts it. -->
+        <service
+            android:name=".WebReaderService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <!-- flutter_local_notifications: fires scheduled notifications that were
              already triggered but the app was not running at fire time. -->

@@ -214,6 +214,18 @@ class EnStrings extends AppStrings {
   String get readingSettingsReset => 'Reset';
   @override
   String get readingSettingsContinuous => 'Continuous reading';
+  @override
+  String get readingSettingsLineHeight => 'Line Spacing';
+  @override
+  String get readingSettingsMarginScale => 'Side Margins';
+  @override
+  String get readingSettingsTextAlign => 'Text Alignment';
+  @override
+  String get readingSettingsAlignStart => 'Left';
+  @override
+  String get readingSettingsAlignJustify => 'Justify';
+  @override
+  String get readingSettingsKeepScreenOn => 'Keep Screen On';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
@@ -939,4 +951,39 @@ class EnStrings extends AppStrings {
   String get backupExportSuccess => 'Backup exported successfully';
   @override
   String get backupNoFilePicked => 'No backup file selected';
+
+  // ── Local Web Reader ──────────────────────────────────────────────────────
+  @override
+  String get sectionDevice => 'Device';
+  @override
+  String get webReaderTitle => 'Local Web Reader';
+  @override
+  String get webReaderHint => 'Read on your computer';
+  @override
+  String get webReaderStart => 'Start';
+  @override
+  String get webReaderStop => 'Stop';
+  @override
+  String get webReaderStarting => 'Starting…';
+  @override
+  String get webReaderRunningHint =>
+      'Open this address in a browser on the same WiFi';
+  @override
+  String get webReaderBackgroundHint =>
+      'Keeps serving when you leave the app. Stop it from the notification.';
+  @override
+  String get webReaderCopy => 'Copy';
+  @override
+  String get webReaderCopied => 'Address copied';
+  @override
+  String get webReaderScanHint => 'Tap to enlarge';
+  @override
+  String get webReaderQrTitle => 'Scan with a camera';
+  @override
+  String get webReaderClose => 'Close';
+  @override
+  String get webReaderNoNetwork =>
+      'Not connected to WiFi — join a network first.';
+  @override
+  String get webReaderNoPort => 'The port is in use by another app.';
 }

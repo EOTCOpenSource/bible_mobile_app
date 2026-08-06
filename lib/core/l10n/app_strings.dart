@@ -137,6 +137,12 @@ abstract class AppStrings {
   String get readingSettingsPreview;
   String get readingSettingsReset;
   String get readingSettingsContinuous;
+  String get readingSettingsLineHeight;
+  String get readingSettingsMarginScale;
+  String get readingSettingsTextAlign;
+  String get readingSettingsAlignStart;
+  String get readingSettingsAlignJustify;
+  String get readingSettingsKeepScreenOn;
 
   // ── Search ───────────────────────────────────────────────────────────────
   String get searchHint;
@@ -551,4 +557,27 @@ abstract class AppStrings {
   String get backupImportFailed;
   String get backupExportSuccess;
   String get backupNoFilePicked;
+
+  // ── Local Web Reader ──────────────────────────────────────────────────────
+  String get sectionDevice;
+  String get webReaderTitle;
+  String get webReaderHint;
+  String get webReaderStart;
+  String get webReaderStop;
+  String get webReaderStarting;
+  String get webReaderRunningHint;
+
+  /// Reassures the user that leaving the app will not stop the server.
+  String get webReaderBackgroundHint;
+  String get webReaderCopy;
+  String get webReaderCopied;
+  String get webReaderScanHint;
+  String get webReaderQrTitle;
+  String get webReaderClose;
+
+  /// Shown when the device has no LAN address to serve on.
+  String get webReaderNoNetwork;
+
+  /// Shown when every candidate port was already taken.
+  String get webReaderNoPort;
 }
