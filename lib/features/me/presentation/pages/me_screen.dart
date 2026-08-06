@@ -20,6 +20,7 @@ import '../../../books/presentation/pages/editions_page.dart';
 import '../../../books/providers/edition_providers.dart';
 import '../../../backup/data/backup_models.dart';
 import '../../../backup/providers/backup_providers.dart';
+import '../widgets/web_reader_card.dart';
 import 'reading_settings_page.dart';
 import 'voice_settings_page.dart';
 
@@ -318,6 +319,16 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   onTap: _isBackupBusy ? null : () => _handleImportJson(context),
                 ),
               ],
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+          // ── Device ───────────────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: _SettingsSection(
+              amLabel: s.sectionDevice,
+              enLabel: 'DEVICE',
+              rows: const [WebReaderCard()],
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 16)),

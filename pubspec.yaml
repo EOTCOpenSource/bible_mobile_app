@@ -65,6 +65,14 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.42
   crypto: ^3.0.3
 
+  # Local Web Reader: an HTTP server the app runs on the device so a browser on
+  # the same WiFi can read scripture and edit annotations. Both are pure Dart —
+  # the LAN address comes from `dart:io`'s NetworkInterface, so no native
+  # plugin and no extra Android permission are needed to find it.
+  shelf: ^1.4.0
+  shelf_router: ^1.1.0
+  qr_flutter: ^4.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -96,6 +104,8 @@ flutter:
     - assets/topics/
     - assets/topics/images/
     - assets/eotc.jpg
+    # The browser-side reader the Local Web Reader serves at `/`.
+    - assets/web_reader/index.html
 
   fonts:
     - family: Shiromeda
