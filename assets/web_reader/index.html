@@ -272,15 +272,8 @@
             overflow-y: auto;
         }
 
-        #chapters-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
-            gap: 2px;
-            padding: 4px 8px 20px;
-            align-content: start;
-        }
-
-        #books-list li {
+        #books-list li,
+        #chapters-list li {
             margin: 2px 10px;
             padding: 10px 16px;
             border-radius: 9px;
@@ -291,16 +284,18 @@
             transition: all .18s ease;
         }
 
+        /* One chapter per row, scrolled — not packed into a grid. A column of
+           numbers is the shape a reader scans down. */
         #chapters-list li {
-            padding: 9px 4px;
-            border-radius: 9px;
             font-family: var(--font-latn);
-            font-size: 14px;
             font-weight: 600;
             text-align: center;
-            color: var(--text);
-            cursor: pointer;
-            transition: all .18s ease;
+        }
+
+        /* Ge'ez numerals need the Ethiopic face; the Latin one has no glyphs
+           for them and the browser would substitute something unrelated. */
+        #chapters-list li.geez {
+            font-family: var(--font-ethi);
         }
 
         #books-list li:hover,
@@ -1282,13 +1277,19 @@
             list.innerHTML = '';
             if (!S.book) return;
             const count = S.book.chapterCount || 0;
+            let active = null;
             for (let i = 1; i <= count; i++) {
                 const li = document.createElement('li');
                 li.textContent = S.geez ? toGeez(i) : String(i);
-                if (i === S.chapterNum) li.classList.add('active-item');
+                if (S.geez) li.classList.add('geez');
+                if (i === S.chapterNum) { li.classList.add('active-item'); active = li; }
                 li.onclick = () => openChapter(i);
                 list.appendChild(li);
             }
+            // Psalms is 151 rows. Landing on chapter 119 with the list scrolled
+            // to the top would leave the reader hunting for where they are.
+            // 'nearest' so an already-visible chapter does not jump.
+            if (active) active.scrollIntoView({ block: 'nearest' });
         }
 
         // ── loading ──────────────────────────────────────────────────────────
