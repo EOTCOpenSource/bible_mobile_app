@@ -23,6 +23,7 @@ void main() {
     tmpDir = await Directory.systemTemp.createTemp('widget_intro_test');
     repo = BibleRepository(storage: BibleStorage(rootOverride: tmpDir));
     await repo.init();
+    await repo.loadIntroductions();
   });
 
   tearDown(() async {
