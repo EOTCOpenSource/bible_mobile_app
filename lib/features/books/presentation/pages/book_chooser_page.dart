@@ -73,6 +73,7 @@ class _BookChooserPageState extends State<BookChooserPage>
   Future<void> _loadBooks() async {
     final repo = _repo;
     if (repo == null) return;
+    await repo.loadIntroductions();
     final books = await repo.loadIndex();
     if (mounted) setState(() { _books = books; _loading = false; });
   }
@@ -536,32 +537,24 @@ class _BookRow extends StatelessWidget {
                     builder: (context) {
                       final repo = BibleRepositoryProvider.of(context);
                       final intro = repo.getIntroduction(
-                        book.bookNumber,
+                        book.id,
                         locale: isAmharic ? 'am' : 'en',
                       );
-                      final metaList = <String>[];
+                      final otherName = isAmharic ? book.bookNameEn : book.bookNameAm;
+                      final subParts = <String>[];
+                      if (otherName.isNotEmpty) subParts.add(otherName);
                       if (intro != null) {
-                        if (intro.author.isNotEmpty) metaList.add(intro.author);
-                        if (intro.period.isNotEmpty) metaList.add(intro.period);
-                      }
-                      if (metaList.isNotEmpty) {
-                        return Text(
-                          metaList.join('  •  '),
-                          style: AppTypography.amharicCaption.copyWith(
-                            color: c.primary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        );
+                        if (intro.author.isNotEmpty) subParts.add(intro.author);
+                        if (intro.period.isNotEmpty) subParts.add(intro.period);
                       }
                       return Text(
-                        isAmharic ? book.bookNameEn : book.bookNameAm,
+                        subParts.join('  •  '),
                         style: AppTypography.englishLabel.copyWith(
                           color: c.textMuted,
                           fontSize: 12,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       );
                     },
                   ),

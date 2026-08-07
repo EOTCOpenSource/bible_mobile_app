@@ -1448,38 +1448,6 @@
       }
     ]
   },
-  "42": {
-    "authorAm": "መርዶክዮስ",
-    "authorEn": "Mordecai",
-    "periodAm": "~160 ዓ.ዓ.",
-    "periodEn": "~160 BC",
-    "summaryAm": "ተረፈ አስቴር (የአስቴር ጭማሪ) በመጽሐፈ አስቴር ውስጥ ያልተካተቱትን የመርዶክዮስን ራእይ፣ የንጉሡን ደብዳቤዎች፣ እና አስቴርና መርዶክዮስ ወደ እግዚአብሔር ያቀረቡትን ታላቅ የጸሎትና የእምነት ቃላት የሚጨምር ቅዱስ መጽሐፍ ነው።",
-    "summaryEn": "Additions to Esther provides the explicit prayers of Esther and Mordecai, Mordecai's prophetic dream, and royal decrees, underscoring God's active protection of Israel.",
-    "themesAm": [
-      "ጸሎት",
-      "የመላእክት ራእይ",
-      "የእግዚአብሔር ጥበቃ"
-    ],
-    "themesEn": [
-      "Prayer",
-      "Prophetic Dreams",
-      "Divine Deliverance"
-    ],
-    "outline": [
-      {
-        "titleAm": "የመርዶክዮስ ራእይና ጸሎት",
-        "titleEn": "Mordecai's Dream & Prayer",
-        "fromChapter": 1,
-        "toChapter": 3
-      },
-      {
-        "titleAm": "የአስቴር ጸሎትና የሕዝቡ መዳን",
-        "titleEn": "Esther's Prayer & Victory",
-        "fromChapter": 4,
-        "toChapter": 6
-      }
-    ]
-  },
   "43": {
     "authorAm": "ንጉሥ ሰሎሞን",
     "authorEn": "Solomon",
