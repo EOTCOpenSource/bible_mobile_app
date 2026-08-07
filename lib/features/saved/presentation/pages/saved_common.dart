@@ -779,200 +779,681 @@ class CollectionPickerSheet extends ConsumerStatefulWidget {
       _CollectionPickerSheetState();
 }
 
-class _CollectionPickerSheetState extends ConsumerState<CollectionPickerSheet> {
+class _CollectionPickerSheetState
+    extends ConsumerState<CollectionPickerSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+
   Set<int> _linkedCollectionIds = {};
+  Map<int, Collection> _collectionsMap = {};
+  Map<int, int> _itemCountsMap = {};
+  String _searchQuery = '';
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadLinkedCollections();
+    _loadData();
+    _searchController.addListener(_onSearchChanged);
   }
 
-  Future<void> _loadLinkedCollections() async {
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text;
+    });
+  }
+
+  Future<void> _loadData() async {
     final db = ref.read(annotationDbProvider);
     final collections = await db.listCollections();
     final linked = <int>{};
+    final counts = <int, int>{};
+
     for (final c in collections) {
       if (c.id == null) continue;
       final items = await db.listItemsInCollection(c.id!);
+      counts[c.id!] = items.length;
       if (items.any((m) =>
           m['item_type'] == widget.itemType && m['item_id'] == widget.itemId)) {
         linked.add(c.id!);
       }
     }
+
     if (mounted) {
       setState(() {
+        _collectionsMap = {
+          for (final c in collections) if (c.id != null) c.id!: c
+        };
         _linkedCollectionIds = linked;
+        _itemCountsMap = counts;
         _loading = false;
       });
     }
   }
 
-  Future<void> _toggleCollection(int collectionId, bool isLinked) async {
+  Future<void> _toggleCollection(Collection col) async {
+    if (col.id == null) return;
+    final colId = col.id!;
+    final isLinked = _linkedCollectionIds.contains(colId);
     final db = ref.read(annotationDbProvider);
+
+    setState(() {
+      if (isLinked) {
+        _linkedCollectionIds.remove(colId);
+        _itemCountsMap[colId] = (_itemCountsMap[colId] ?? 1) - 1;
+      } else {
+        _linkedCollectionIds.add(colId);
+        _itemCountsMap[colId] = (_itemCountsMap[colId] ?? 0) + 1;
+      }
+    });
+
     if (isLinked) {
       await db.removeItemFromCollection(
-          collectionId, widget.itemType, widget.itemId);
-      setState(() => _linkedCollectionIds.remove(collectionId));
+        colId,
+        widget.itemType,
+        widget.itemId,
+      );
     } else {
       await db.addItemToCollection(
-          collectionId, widget.itemType, widget.itemId);
-      setState(() => _linkedCollectionIds.add(collectionId));
+        colId,
+        widget.itemType,
+        widget.itemId,
+      );
     }
+
     ref.invalidate(collectionsProvider);
+    ref.invalidate(collectionsNotifierProvider);
     widget.onItemChanged();
+  }
+
+  Future<void> _createNewCollection(String name) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) return;
+
+    final db = ref.read(annotationDbProvider);
+    final colId = await ref
+        .read(collectionsNotifierProvider.notifier)
+        .createCollection(trimmedName);
+
+    if (colId > 0) {
+      final newCol = Collection(
+        id: colId,
+        name: trimmedName,
+        createdAt: DateTime.now(),
+      );
+
+      await db.addItemToCollection(
+        colId,
+        widget.itemType,
+        widget.itemId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _collectionsMap[colId] = newCol;
+          _linkedCollectionIds.add(colId);
+          _itemCountsMap[colId] = 1;
+          _searchController.clear();
+          _searchQuery = '';
+        });
+      }
+
+      ref.invalidate(collectionsProvider);
+      widget.onItemChanged();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = L10n.of(context);
     final c = context.colors;
+    final s = L10n.of(context);
     final collectionsAsync = ref.watch(collectionsNotifierProvider);
 
-    return AppSheet(
-      icon: Icons.folder_special_rounded,
-      title: s.addToCollection,
-      caption: 'COLLECTIONS',
-      onClose: () => Navigator.pop(context),
-      actions: AppDialogActions(
-        confirmLabel: s.savedOk,
-        onConfirm: () => Navigator.pop(context),
-        fullWidth: true,
-      ),
-      children: [
-        if (_loading)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: CircularProgressIndicator(color: c.primary),
-            ),
-          )
-        else
-          collectionsAsync.when(
-            data: (collections) {
-              if (collections.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: AppDialogBody(s.noCollections),
-                );
-              }
-              return ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 220),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  itemCount: collections.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 6),
-                  itemBuilder: (ctx, idx) {
-                    final col = collections[idx];
-                    final isLinked = _linkedCollectionIds.contains(col.id);
-                    return _CollectionRow(
-                      collection: col,
-                      selected: isLinked,
-                      onTap: col.id == null
-                          ? null
-                          : () => _toggleCollection(col.id!, isLinked),
-                    );
-                  },
+    final collections = collectionsAsync.maybeWhen(
+      data: (list) => list,
+      orElse: () => _collectionsMap.values.toList(),
+    );
+
+    for (final col in collections) {
+      if (col.id != null) {
+        _collectionsMap[col.id!] = col;
+      }
+    }
+
+    final query = _searchQuery.trim().toLowerCase();
+    final filteredCollections = collections.where((col) {
+      if (query.isEmpty) return true;
+      return col.name.toLowerCase().contains(query);
+    }).toList();
+
+    final exactMatchExists = collections.any(
+      (col) => col.name.trim().toLowerCase() == query,
+    );
+
+    final selectedCollections = _linkedCollectionIds
+        .map((id) => _collectionsMap[id])
+        .whereType<Collection>()
+        .toList();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.65,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return AnimatedPadding(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
                 ),
-              );
-            },
-            loading: () => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: CircularProgressIndicator(color: c.primary),
-              ),
+              ],
             ),
-            error: (err, _) => AppDialogCallout(
-              text: '$err',
-              icon: Icons.error_outline,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Drag Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 12, bottom: 12),
+                    decoration: BoxDecoration(
+                      color: c.textMuted.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+
+                // 2. Title & Subtitle Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: c.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.folder_special_rounded,
+                          color: c.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              s.addToCollection,
+                              style: AppTypography.amharicLabel.copyWith(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: c.textOnParchment,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Organize this item into one or more collections.',
+                              style: AppTypography.amharicCaption.copyWith(
+                                fontSize: 12,
+                                color: c.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close_rounded, color: c.textMuted),
+                        onPressed: () => Navigator.pop(context),
+                        tooltip: s.savedCancel,
+                        constraints: const BoxConstraints(
+                          minWidth: 48,
+                          minHeight: 48,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+
+                // Main Content List
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    children: [
+                      // 4. Search Field (Primary Action)
+                      TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (val) {
+                          if (val.trim().isNotEmpty && !exactMatchExists) {
+                            _createNewCollection(val);
+                          }
+                        },
+                        style: AppTypography.amharicBody.copyWith(
+                          color: c.textOnParchment,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search or create collection...',
+                          hintStyle: AppTypography.amharicCaption.copyWith(
+                            color: c.textMuted,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: c.textMuted,
+                            size: 20,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon:
+                                      const Icon(Icons.clear_rounded, size: 18),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: c.surfaceDim,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: c.borderSubtle),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: c.borderSubtle),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: c.primary,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // 5. Selected Collections Chips directly below Search Field
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: selectedCollections.isNotEmpty
+                            ? Padding(
+                                key: const ValueKey('chips_key'),
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    for (final col in selectedCollections)
+                                      InputChip(
+                                        avatar: Icon(
+                                          getCollectionIconData(col.icon),
+                                          size: 16,
+                                          color: col.color ?? c.primary,
+                                        ),
+                                        label: Text(
+                                          col.name,
+                                          style: AppTypography.amharicLabel
+                                              .copyWith(
+                                            fontSize: 13,
+                                            color: c.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        deleteIcon: const Icon(
+                                          Icons.close_rounded,
+                                          size: 16,
+                                        ),
+                                        deleteIconColor: c.primary,
+                                        onDeleted: () => _toggleCollection(col),
+                                        backgroundColor:
+                                            c.primary.withValues(alpha: 0.10),
+                                        side: BorderSide(
+                                          color:
+                                              c.primary.withValues(alpha: 0.3),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(
+                                key: ValueKey('empty_chips')),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 6. Inline "+ Create 'Collection Name'" option if typing & no exact match
+                      if (query.isNotEmpty && !exactMatchExists) ...[
+                        InkWell(
+                          onTap: () => _createNewCollection(_searchQuery),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: c.primary.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: c.primary.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  color: c.primary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: AppTypography.amharicBody.copyWith(
+                                        fontSize: 14,
+                                        color: c.textOnParchment,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: 'Create '),
+                                        TextSpan(
+                                          text: '"${_searchQuery.trim()}"',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: c.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 18,
+                                  color: c.primary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // 7. Collection List
+                      if (_loading)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: CircularProgressIndicator(color: c.primary),
+                          ),
+                        )
+                      else if (filteredCollections.isNotEmpty) ...[
+                        Text(
+                          query.isEmpty
+                              ? 'Recent Collections'
+                              : 'All Collections',
+                          style: AppTypography.amharicCaption.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: c.textMuted,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        for (final col in filteredCollections)
+                          if (col.id != null)
+                            _CollectionListTile(
+                              collection: col,
+                              noteCount: _itemCountsMap[col.id] ?? 0,
+                              isSelected:
+                                  _linkedCollectionIds.contains(col.id!),
+                              onTap: () => _toggleCollection(col),
+                            ),
+                      ] else if (collections.isEmpty && query.isEmpty) ...[
+                        // Empty State (0 collections in database)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 36),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.folder_open_outlined,
+                                  size: 48,
+                                  color: c.textMuted.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  '📂 No collections yet',
+                                  style: AppTypography.amharicLabel.copyWith(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: c.textOnParchment,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Start typing to create your first collection.',
+                                  textAlign: TextAlign.center,
+                                  style: AppTypography.amharicCaption.copyWith(
+                                    fontSize: 13,
+                                    color: c.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else if (filteredCollections.isEmpty &&
+                          query.isNotEmpty) ...[
+                        // Empty Search State
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'No collections found',
+                                  style: AppTypography.amharicCaption.copyWith(
+                                    color: c.textMuted,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                // 8. Bottom Done / Confirm Action Button
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    border: Border(
+                      top: BorderSide(
+                        color: c.borderSubtle.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: c.primary,
+                        foregroundColor: c.textOnDark,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        s.savedOk,
+                        style: AppTypography.amharicLabel.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: c.textOnDark,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        const SizedBox(height: 4),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: () => showCreateCollectionDialog(context, ref),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              visualDensity: VisualDensity.compact,
-            ),
-            icon: Icon(Icons.add_rounded, size: 18, color: c.primary),
-            label: Text(
-              s.newCollection,
-              style: AppTypography.amharicLabel.copyWith(
-                color: c.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
-/// One selectable collection in [CollectionPickerSheet].
-///
-/// A tinted card rather than a [CheckboxListTile] — the checkbox's own colours
-/// and padding fight the modal design, and the collection's colour is the
-/// clearest way to identify it.
-class _CollectionRow extends StatelessWidget {
-  const _CollectionRow({
+class _CollectionListTile extends StatelessWidget {
+  const _CollectionListTile({
     required this.collection,
-    required this.selected,
+    required this.noteCount,
+    required this.isSelected,
     required this.onTap,
   });
 
   final Collection collection;
-  final bool selected;
-  final VoidCallback? onTap;
+  final int noteCount;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final tint = collection.color ?? c.primary;
+    final accentColor = collection.color ?? c.primary;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+    return Semantics(
+      label: '${collection.name}, ${isSelected ? "selected" : "not selected"}',
+      button: true,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? tint.withValues(alpha: 0.10) : Colors.transparent,
-          borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
-          border: Border.all(
-            color: selected
-                ? tint.withValues(alpha: 0.35)
-                : c.borderSubtle,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(getCollectionIconData(collection.icon), size: 18, color: tint),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                collection.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.amharicBody.copyWith(
-                  fontSize: 14,
-                  color: c.textOnParchment,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        margin: const EdgeInsets.only(bottom: 6),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              constraints: const BoxConstraints(minHeight: 52),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? c.primary.withValues(alpha: 0.08)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? c.primary.withValues(alpha: 0.3)
+                      : Colors.transparent,
                 ),
               ),
+              child: Row(
+                children: [
+                  Icon(
+                    getCollectionIconData(collection.icon),
+                    color: accentColor,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          collection.name,
+                          style: AppTypography.amharicBody.copyWith(
+                            fontSize: 15,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: c.textOnParchment,
+                          ),
+                        ),
+                        if (noteCount > 0) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '$noteCount Notes',
+                            style: AppTypography.amharicCaption.copyWith(
+                              fontSize: 11,
+                              color: c.textMuted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            key: const ValueKey('selected_check'),
+                            size: 22,
+                            color: c.primary,
+                          )
+                        : Icon(
+                            Icons.circle_outlined,
+                            key: const ValueKey('unselected_circle'),
+                            size: 22,
+                            color: c.textMuted.withValues(alpha: 0.5),
+                          ),
+                  ),
+                ],
+              ),
             ),
-            Icon(
-              selected
-                  ? Icons.check_circle_rounded
-                  : Icons.circle_outlined,
-              size: 20,
-              color: selected ? tint : c.textCaption,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1124,4 +1605,5 @@ IconData getCollectionIconData(String? iconStr) {
   // ignore: non_const_argument_for_const_parameter
   return IconData(codePoint, fontFamily: 'MaterialIcons');
 }
+
 
