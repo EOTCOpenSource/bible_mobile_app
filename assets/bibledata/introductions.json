@@ -1620,45 +1620,7 @@
       }
     ]
   },
-  "47": {
-    "authorAm": "ዳንኤል",
-    "authorEn": "Daniel",
-    "periodAm": "~160 ዓ.ዓ.",
-    "periodEn": "~160 BC",
-    "summaryAm": "ተረፈ ዳንኤል የሦስቱ ደቂቅ (አናንያ፣ አዛርያ፣ ሚሳኤል) በእሳት እቶን ውስጥ ያቀረቡትን ውዳሴ (የሠለስቱ ደቂቅ ማኅሌት)፣ የሶስናን ንጽሕናና ድል፣ እንዲሁም የቤልና የዘንዶውን አምልኮ ማፍረስ ያካተተ ቅዱስ መጽሐፍ ነው።",
-    "summaryEn": "Rest of Daniel includes the Prayer of Azariah, Song of the Three Holy Children in the Furnace, the story of Susanna's vindication, and Bel and the Dragon.",
-    "themesAm": [
-      "ምስጋና በእሳት ውስጥ",
-      "ንጽሕና",
-      "የጣዖት ውድቀት"
-    ],
-    "themesEn": [
-      "Praise in the Furnace",
-      "Purity of Susanna",
-      "Destruction of Idols"
-    ],
-    "outline": [
-      {
-        "titleAm": "የሠለስቱ ደቂቅ ማኅሌት",
-        "titleEn": "Song of the Three Children",
-        "fromChapter": 1,
-        "toChapter": 1
-      },
-      {
-        "titleAm": "የሶስና ታሪክና የዳንኤል ፍርድ",
-        "titleEn": "History of Susanna",
-        "fromChapter": 2,
-        "toChapter": 2
-      },
-      {
-        "titleAm": "ቤልና ዘንዶው",
-        "titleEn": "Bel and the Dragon",
-        "fromChapter": 3,
-        "toChapter": 3
-      }
-    ]
-  },
-  "48": {
+  "49": {
     "authorAm": "መቃብያን",
     "authorEn": "Maccabees",
     "periodAm": "~100 ዓ.ዓ.",
@@ -1690,7 +1652,7 @@
       }
     ]
   },
-  "49": {
+  "50": {
     "authorAm": "መቃብያን",
     "authorEn": "Maccabees",
     "periodAm": "~120 ዓ.ዓ.",
@@ -1724,7 +1686,41 @@
       }
     ]
   },
-  "50": {
+  "51": {
+    "authorAm": "ዕዝራ ሱቱኤል",
+    "authorEn": "Ezra Sutuel (4 Ezra)",
+    "periodAm": "~100 ዓ.ም.",
+    "periodEn": "~100 AD",
+    "summaryAm": "መጽሐፈ ዕዝራ ሱቱኤል ዕዝራ በኢየሩሳሌም ውድቀት አዝኖ ያቀረበውን 7 ታላላቅ ራእዮችና ከመልአኩ ቅዱስ ኡርኤል ጋር ያደረገውን ጥልቅ መለኮታዊ ክርክር ያቀፈ ነው። የኃጢአት መኖርና የእግዚአብሔር ፍትሕ ምስጢር የተገለጠበት መጽሐፍ ነው።",
+    "summaryEn": "Ezra Sutuel (4 Ezra) contains seven profound apocalyptic visions of Ezra wrestling with the problem of evil and suffering after Jerusalem's destruction, guided by Archangel Uriel.",
+    "themesAm": [
+      "የኡርኤል መገለጥ",
+      "የዓለም ፍጻሜ",
+      "የእግዚአብሔር ፍትሕ",
+      "ራእይ"
+    ],
+    "themesEn": [
+      "Archangel Uriel",
+      "Problem of Suffering",
+      "Apocalyptic Visions",
+      "End of Age"
+    ],
+    "outline": [
+      {
+        "titleAm": "ከመልአኩ ኡርኤል ጋር የተደረገ ክርክር",
+        "titleEn": "Dialogues with Archangel Uriel",
+        "fromChapter": 1,
+        "toChapter": 8
+      },
+      {
+        "titleAm": "የንስርና የመሲሑ ራእይ",
+        "titleEn": "Visions of Eagle & Messiah",
+        "fromChapter": 9,
+        "toChapter": 14
+      }
+    ]
+  },
+  "53": {
     "authorAm": "መቃብያን",
     "authorEn": "Maccabees",
     "periodAm": "~100 ዓ.ዓ.",
@@ -1756,47 +1752,59 @@
       }
     ]
   },
-  "51": {
-    "authorAm": "ሄኖክ (ዓቢይ ነቢይ)",
-    "authorEn": "Enoch the Seventh from Adam",
-    "periodAm": "~300–100 ዓ.ዓ.",
-    "periodEn": "~300–100 BC",
-    "summaryAm": "መጽሐፈ ሄኖክ በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ብቻ ሙሉ ሆኖ የተጠበቀ ታላቅ ቀዳሚ መጽሐፍ ነው። ሄኖክ ከእግዚአብሔር ጋር እንደ ሄደ፣ ስለ መላእክት አወቃቀር፣ ስለ ሰማያት ምስጢር፣ ስለ ኃጢአተኞች ፍርድና ስለ 'ወልደ ዕጓለ እመሕያው' (የሰው ልጅ - መሲሑ) ታላቅ ራእይ ያየበት መጽሐፍ ነው።",
-    "summaryEn": "The Book of Enoch, fully preserved only in the Ge'ez canon of the Ethiopian Orthodox Tewahedo Church, is a profound pseudepigraphal apocalypse detailing Enoch's heavenly journeys, angelic hierarchies, cosmic order, judgment of Watchers, and majestic visions of the Messiah ('Son of Man').",
+  "54": {
+    "authorAm": "ዕዝራ",
+    "authorEn": "Ezra",
+    "periodAm": "~150 ዓ.ዓ.",
+    "periodEn": "~150 BC",
+    "summaryAm": "መጽሐፈ ዕዝራ ካልዕ (3 ዕዝራ) ከንጉሥ ኢዮስያስ ዘመን ጀምሮ አይሁድ ከምርኮ ተመልሰው ቤተ መቅደስን እስከ አነጹበት ድረስ ያለውን ታሪክ የሚያቀርብ ቅዱስ መጽሐፍ ነው።",
+    "summaryEn": "Ezra Kalie (3 Ezra / 1 Esdras) narrates the history of the Temple from Josiah's Passover to the restoration under Zerubbabel and Ezra.",
     "themesAm": [
-      "የሰማያት ምስጢር",
-      "ወልደ ዕጓለ እመሕያው",
-      "የመላእክት አወቃቀር",
-      "ፍርድ"
+      "የሕንፃ መታደስ",
+      "ታማኝነት",
+      "ምርኮ መልስ"
     ],
     "themesEn": [
-      "Heavenly Secrets",
-      "Son of Man Messiah",
-      "Angelic Hierarchies",
-      "Final Judgment"
+      "Temple Restoration",
+      "Zerubbabel Contest",
+      "Return from Exile"
     ],
     "outline": [
       {
-        "titleAm": "የመላእክት (ትጉሃን) ውድቀትና የሄኖክ ራእይ",
-        "titleEn": "Book of Watchers & Enoch's Journeys",
+        "titleAm": "የኢዮስያስ ፋሲካና የቤተ መቅደስ መደሰት",
+        "titleEn": "Josiah's Passover & Restoration",
         "fromChapter": 1,
-        "toChapter": 36
-      },
-      {
-        "titleAm": "የምሳሌዎች መጽሐፍና የወልደ ዕጓለ እመሕያው ራእይ",
-        "titleEn": "Book of Similitudes & Son of Man",
-        "fromChapter": 37,
-        "toChapter": 71
-      },
-      {
-        "titleAm": "የሰማያት ብርሃናት ሥርዓትና የሳምንታት ትንቢት",
-        "titleEn": "Astronomical Book & Apocalypse of Weeks",
-        "fromChapter": 72,
-        "toChapter": 108
+        "toChapter": 9
       }
     ]
   },
-  "52": {
+  "55": {
+    "authorAm": "ዮሴፍ",
+    "authorEn": "Joseph",
+    "periodAm": "~350 ዓ.ም.",
+    "periodEn": "~350 ዓ.ም.",
+    "summaryAm": "የአይሁድ ታሪክና የሁለተኛው ቤተ መቅደስ ታሪክ መጽሐፍ ነው።",
+    "summaryEn": "Historical record of the Second Temple period and Jewish struggles.",
+    "themesAm": [
+      "ታሪክ",
+      "ቤተ መቅደስ",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "History",
+      "Temple",
+      "Perseverance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ዮሴፍ ወልደ ኮርዮን (ዛሬ)",
+        "titleEn": "Book of Josippon Extra",
+        "fromChapter": 1,
+        "toChapter": 8
+      }
+    ]
+  },
+  "57": {
     "authorAm": "ሙሴ (ከመላአከ ገጽ ተቀብሎ)",
     "authorEn": "Moses (via Angel of Presence)",
     "periodAm": "~150 ዓ.ዓ.",
@@ -1836,119 +1844,47 @@
       }
     ]
   },
-  "53": {
-    "authorAm": "ዕዝራ ሱቱኤል",
-    "authorEn": "Ezra Sutuel (4 Ezra)",
-    "periodAm": "~100 ዓ.ም.",
-    "periodEn": "~100 AD",
-    "summaryAm": "መጽሐፈ ዕዝራ ሱቱኤል ዕዝራ በኢየሩሳሌም ውድቀት አዝኖ ያቀረበውን 7 ታላላቅ ራእዮችና ከመልአኩ ቅዱስ ኡርኤል ጋር ያደረገውን ጥልቅ መለኮታዊ ክርክር ያቀፈ ነው። የኃጢአት መኖርና የእግዚአብሔር ፍትሕ ምስጢር የተገለጠበት መጽሐፍ ነው።",
-    "summaryEn": "Ezra Sutuel (4 Ezra) contains seven profound apocalyptic visions of Ezra wrestling with the problem of evil and suffering after Jerusalem's destruction, guided by Archangel Uriel.",
+  "58": {
+    "authorAm": "ሄኖክ (ዓቢይ ነቢይ)",
+    "authorEn": "Enoch the Seventh from Adam",
+    "periodAm": "~300–100 ዓ.ዓ.",
+    "periodEn": "~300–100 BC",
+    "summaryAm": "መጽሐፈ ሄኖክ በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ብቻ ሙሉ ሆኖ የተጠበቀ ታላቅ ቀዳሚ መጽሐፍ ነው። ሄኖክ ከእግዚአብሔር ጋር እንደ ሄደ፣ ስለ መላእክት አወቃቀር፣ ስለ ሰማያት ምስጢር፣ ስለ ኃጢአተኞች ፍርድና ስለ 'ወልደ ዕጓለ እመሕያው' (የሰው ልጅ - መሲሑ) ታላቅ ራእይ ያየበት መጽሐፍ ነው።",
+    "summaryEn": "The Book of Enoch, fully preserved only in the Ge'ez canon of the Ethiopian Orthodox Tewahedo Church, is a profound pseudepigraphal apocalypse detailing Enoch's heavenly journeys, angelic hierarchies, cosmic order, judgment of Watchers, and majestic visions of the Messiah ('Son of Man').",
     "themesAm": [
-      "የኡርኤል መገለጥ",
-      "የዓለም ፍጻሜ",
-      "የእግዚአብሔር ፍትሕ",
-      "ራእይ"
+      "የሰማያት ምስጢር",
+      "ወልደ ዕጓለ እመሕያው",
+      "የመላእክት አወቃቀር",
+      "ፍርድ"
     ],
     "themesEn": [
-      "Archangel Uriel",
-      "Problem of Suffering",
-      "Apocalyptic Visions",
-      "End of Age"
+      "Heavenly Secrets",
+      "Son of Man Messiah",
+      "Angelic Hierarchies",
+      "Final Judgment"
     ],
     "outline": [
       {
-        "titleAm": "ከመልአኩ ኡርኤል ጋር የተደረገ ክርክር",
-        "titleEn": "Dialogues with Archangel Uriel",
+        "titleAm": "የመላእክት (ትጉሃን) ውድቀትና የሄኖክ ራእይ",
+        "titleEn": "Book of Watchers & Enoch's Journeys",
         "fromChapter": 1,
-        "toChapter": 8
+        "toChapter": 36
       },
       {
-        "titleAm": "የንስርና የመሲሑ ራእይ",
-        "titleEn": "Visions of Eagle & Messiah",
-        "fromChapter": 9,
-        "toChapter": 14
-      }
-    ]
-  },
-  "54": {
-    "authorAm": "ዕዝራ",
-    "authorEn": "Ezra",
-    "periodAm": "~150 ዓ.ዓ.",
-    "periodEn": "~150 BC",
-    "summaryAm": "መጽሐፈ ዕዝራ ካልዕ (3 ዕዝራ) ከንጉሥ ኢዮስያስ ዘመን ጀምሮ አይሁድ ከምርኮ ተመልሰው ቤተ መቅደስን እስከ አነጹበት ድረስ ያለውን ታሪክ የሚያቀርብ ቅዱስ መጽሐፍ ነው።",
-    "summaryEn": "Ezra Kalie (3 Ezra / 1 Esdras) narrates the history of the Temple from Josiah's Passover to the restoration under Zerubbabel and Ezra.",
-    "themesAm": [
-      "የሕንፃ መታደስ",
-      "ታማኝነት",
-      "ምርኮ መልስ"
-    ],
-    "themesEn": [
-      "Temple Restoration",
-      "Zerubbabel Contest",
-      "Return from Exile"
-    ],
-    "outline": [
+        "titleAm": "የምሳሌዎች መጽሐፍና የወልደ ዕጓለ እመሕያው ራእይ",
+        "titleEn": "Book of Similitudes & Son of Man",
+        "fromChapter": 37,
+        "toChapter": 71
+      },
       {
-        "titleAm": "የኢዮስያስ ፋሲካና የቤተ መቅደስ መደሰት",
-        "titleEn": "Josiah's Passover & Restoration",
-        "fromChapter": 1,
-        "toChapter": 9
+        "titleAm": "የሰማያት ብርሃናት ሥርዓትና የሳምንታት ትንቢት",
+        "titleEn": "Astronomical Book & Apocalypse of Weeks",
+        "fromChapter": 72,
+        "toChapter": 108
       }
     ]
   },
-  "55": {
-    "authorAm": "ዮሴፍ ወልደ ኮርዮን",
-    "authorEn": "Joseph ben Gorion",
-    "periodAm": "~350 ዓ.ም.",
-    "periodEn": "~350 AD",
-    "summaryAm": "መጽሐፈ ዮሴፍ ወልደ ኮርዮን የሁለተኛው ቤተ መቅደስ ዘመንን፣ የሐስሞናውያንን ንግሥና፣ የሄሮድስን ዘመንና በ70 ዓ.ም. የኢየሩሳሌምን መጥፋት በሰፊው የሚያስተምር የታሪክ መጽሐፍ ነው።",
-    "summaryEn": "Josippon (Book of Joseph ben Gorion) provides a detailed chronicle of Jewish history during the Second Temple period up to the Siege and Destruction of Jerusalem in 70 AD.",
-    "themesAm": [
-      "የኢየሩሳሌም ታሪክ",
-      "የቤተ መቅደስ ውድቀት",
-      "ጽናት"
-    ],
-    "themesEn": [
-      "Second Temple History",
-      "Destruction of Jerusalem",
-      "Jewish Resistance"
-    ],
-    "outline": [
-      {
-        "titleAm": "የሐስሞናውያን ታሪክና የኢየሩሳሌም ውድቀት",
-        "titleEn": "Hasmonean Era & Fall of Jerusalem",
-        "fromChapter": 1,
-        "toChapter": 8
-      }
-    ]
-  },
-  "56": {
-    "authorAm": "ንጉሥ ምናሴ",
-    "authorEn": "King Manasseh",
-    "periodAm": "~600 ዓ.ዓ.",
-    "periodEn": "~600 BC",
-    "summaryAm": "ጸሎተ ምናሴ ክፉ የነበረው የይሁዳ ንጉሥ ምናሴ በባቢሎን በሰንሰለት ተታስሮ ሳለ ወደ እግዚአብሔር ያቀረበው እጅግ ልብ የሚነካ የንስሐ ጸሎት ነው። እግዚአብሔር እውነተኛ ንስሐን እንደሚቀበል ትልቅ ማሳያ ነው።",
-    "summaryEn": "The Prayer of Manasseh is a poignant penitential prayer offered by King Manasseh of Judah while imprisoned in Babylon, serving as a timeless model of genuine repentance and divine forgiveness.",
-    "themesAm": [
-      "ንስሐ",
-      "ምሕረት",
-      "የእግዚአብሔር ይቅርታ"
-    ],
-    "themesEn": [
-      "Deep Repentance",
-      "Divine Mercy",
-      "Forgiveness"
-    ],
-    "outline": [
-      {
-        "titleAm": "የምናሴ የንስሐ ጸሎት",
-        "titleEn": "Penitential Prayer of Manasseh",
-        "fromChapter": 1,
-        "toChapter": 1
-      }
-    ]
-  },
-  "61": {
+  "59": {
     "authorAm": "ማቴዎስ (ሐዋርያ)",
     "authorEn": "Matthew the Apostle",
     "periodAm": "~60 ዓ.ም.",
@@ -1994,7 +1930,7 @@
       }
     ]
   },
-  "62": {
+  "60": {
     "authorAm": "መርቆሬዎስ ማርቆስ (ሐዋርያ)",
     "authorEn": "Mark the Evangelist",
     "periodAm": "~55–65 ዓ.ም.",
@@ -2028,7 +1964,7 @@
       }
     ]
   },
-  "63": {
+  "61": {
     "authorAm": "ሉቃስ (ባለ መድኃኒት)",
     "authorEn": "Luke the Physician",
     "periodAm": "~60–62 ዓ.ም.",
@@ -2068,7 +2004,7 @@
       }
     ]
   },
-  "64": {
+  "62": {
     "authorAm": "ዮሐንስ (ወንጌላዊ/ታኦሎጎስ)",
     "authorEn": "John the Theologian",
     "periodAm": "~90 ዓ.ም.",
@@ -2108,7 +2044,7 @@
       }
     ]
   },
-  "65": {
+  "63": {
     "authorAm": "ሉቃስ",
     "authorEn": "Luke",
     "periodAm": "~62–64 ዓ.ም.",
@@ -2148,7 +2084,7 @@
       }
     ]
   },
-  "66": {
+  "64": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~57 ዓ.ም.",
@@ -2174,7 +2110,7 @@
       }
     ]
   },
-  "67": {
+  "65": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~55 ዓ.ም.",
@@ -2202,7 +2138,7 @@
       }
     ]
   },
-  "68": {
+  "66": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~56 ዓ.ም.",
@@ -2228,7 +2164,7 @@
       }
     ]
   },
-  "69": {
+  "67": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~48–50 ዓ.ም.",
@@ -2254,7 +2190,7 @@
       }
     ]
   },
-  "70": {
+  "68": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~60–62 ዓ.ም.",
@@ -2280,7 +2216,7 @@
       }
     ]
   },
-  "71": {
+  "69": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~61 ዓ.ም.",
@@ -2306,7 +2242,7 @@
       }
     ]
   },
-  "72": {
+  "70": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~61 ዓ.ም.",
@@ -2332,7 +2268,7 @@
       }
     ]
   },
-  "73": {
+  "71": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~51 ዓ.ም.",
@@ -2358,7 +2294,7 @@
       }
     ]
   },
-  "74": {
+  "72": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~51–52 ዓ.ም.",
@@ -2384,7 +2320,7 @@
       }
     ]
   },
-  "75": {
+  "73": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~63–64 ዓ.ም.",
@@ -2410,7 +2346,7 @@
       }
     ]
   },
-  "76": {
+  "74": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~66–67 ዓ.ም.",
@@ -2436,7 +2372,7 @@
       }
     ]
   },
-  "77": {
+  "75": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~63–64 ዓ.ም.",
@@ -2462,7 +2398,7 @@
       }
     ]
   },
-  "78": {
+  "76": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~61 ዓ.ም.",
@@ -2488,7 +2424,7 @@
       }
     ]
   },
-  "79": {
+  "77": {
     "authorAm": "ጳውሎስ",
     "authorEn": "Paul",
     "periodAm": "~67–69 ዓ.ም.",
@@ -2514,7 +2450,7 @@
       }
     ]
   },
-  "80": {
+  "78": {
     "authorAm": "ያዕቆብ (የጌታ ወንድም)",
     "authorEn": "James the Brother of the Lord",
     "periodAm": "~45–48 ዓ.ም.",
@@ -2540,7 +2476,7 @@
       }
     ]
   },
-  "81": {
+  "79": {
     "authorAm": "ጴጥሮስ (ሐዋርያ)",
     "authorEn": "Peter the Apostle",
     "periodAm": "~62–64 ዓ.ም.",
@@ -2566,7 +2502,7 @@
       }
     ]
   },
-  "82": {
+  "80": {
     "authorAm": "ጴጥሮስ (ሐዋርያ)",
     "authorEn": "Peter the Apostle",
     "periodAm": "~65–68 ዓ.ም.",
@@ -2592,7 +2528,7 @@
       }
     ]
   },
-  "83": {
+  "81": {
     "authorAm": "ዮሐንስ (ወንጌላዊ)",
     "authorEn": "John the Apostle",
     "periodAm": "~90 ዓ.ም.",
@@ -2618,7 +2554,7 @@
       }
     ]
   },
-  "84": {
+  "82": {
     "authorAm": "ዮሐንስ (ወንጌላዊ)",
     "authorEn": "John the Apostle",
     "periodAm": "~90 ዓ.ም.",
@@ -2644,7 +2580,7 @@
       }
     ]
   },
-  "85": {
+  "83": {
     "authorAm": "ዮሐንስ (ወንጌላዊ)",
     "authorEn": "John the Apostle",
     "periodAm": "~90 ዓ.ም.",
@@ -2670,7 +2606,7 @@
       }
     ]
   },
-  "86": {
+  "84": {
     "authorAm": "ይሁዳ (የያዕቆብ ወንድም)",
     "authorEn": "Jude Brother of James",
     "periodAm": "~65–80 ዓ.ም.",
@@ -2696,7 +2632,7 @@
       }
     ]
   },
-  "87": {
+  "85": {
     "authorAm": "ዮሐንስ (ታኦሎጎስ)",
     "authorEn": "John the Theologian",
     "periodAm": "~95 ዓ.ም.",
@@ -2724,7 +2660,33 @@
       }
     ]
   },
-  "88": {
+  "86": {
+    "authorAm": "ጌታችን ኢየሱስ ክርስቶስ",
+    "authorEn": "Jesus Christ",
+    "periodAm": "~300 ዓ.ም.",
+    "periodEn": "~300 ዓ.ም.",
+    "summaryAm": "ጌታችን ከትንሣኤ በኋላ ለሐዋርያት ያስተማራቸውን ምስጢራትና የቤተ ክርስቲያን ሥርዓት የያዘ መጽሐፍ ነው።",
+    "summaryEn": "Post-Resurrection teachings of Christ to His Apostles regarding church hierarchy and holy mysteries.",
+    "themesAm": [
+      "የትንሣኤ ትምህርት",
+      "ምስጢራተ ቤተ ክርስቲያን",
+      "ሥርዓት"
+    ],
+    "themesEn": [
+      "Post-Resurrection Teaching",
+      "Sacraments",
+      "Liturgy"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ኪዳን",
+        "titleEn": "Book of Book of Covenant (Clement)",
+        "fromChapter": 1,
+        "toChapter": 2
+      }
+    ]
+  },
+  "87": {
     "authorAm": "ሐዋርያት",
     "authorEn": "The Apostles",
     "periodAm": "~300 ዓ.ም.",
@@ -2750,29 +2712,55 @@
       }
     ]
   },
-  "89": {
-    "authorAm": "ጌታችን ኢየሱስ ክርስቶስ",
-    "authorEn": "Jesus Christ",
-    "periodAm": "~300 ዓ.ም.",
-    "periodEn": "~300 ዓ.ም.",
-    "summaryAm": "ጌታችን ከትንሣኤ በኋላ ለሐዋርያት ያስተማራቸውን ምስጢራትና የቤተ ክርስቲያን ሥርዓት የያዘ መጽሐፍ ነው።",
-    "summaryEn": "Post-Resurrection teachings of Christ to His Apostles regarding church hierarchy and holy mysteries.",
+  "88": {
+    "authorAm": "ዮሴፍ ወልደ ኮርዮን",
+    "authorEn": "Joseph ben Gorion",
+    "periodAm": "~350 ዓ.ም.",
+    "periodEn": "~350 AD",
+    "summaryAm": "መጽሐፈ ዮሴፍ ወልደ ኮርዮን የሁለተኛው ቤተ መቅደስ ዘመንን፣ የሐስሞናውያንን ንግሥና፣ የሄሮድስን ዘመንና በ70 ዓ.ም. የኢየሩሳሌምን መጥፋት በሰፊው የሚያስተምር የታሪክ መጽሐፍ ነው።",
+    "summaryEn": "Josippon (Book of Joseph ben Gorion) provides a detailed chronicle of Jewish history during the Second Temple period up to the Siege and Destruction of Jerusalem in 70 AD.",
     "themesAm": [
-      "የትንሣኤ ትምህርት",
-      "ምስጢራተ ቤተ ክርስቲያን",
-      "ሥርዓት"
+      "የኢየሩሳሌም ታሪክ",
+      "የቤተ መቅደስ ውድቀት",
+      "ጽናት"
     ],
     "themesEn": [
-      "Post-Resurrection Teaching",
-      "Sacraments",
-      "Liturgy"
+      "Second Temple History",
+      "Destruction of Jerusalem",
+      "Jewish Resistance"
     ],
     "outline": [
       {
-        "titleAm": "መጽሐፈ መጽሐፈ ኪዳን",
-        "titleEn": "Book of Book of Covenant (Clement)",
+        "titleAm": "የሐስሞናውያን ታሪክና የኢየሩሳሌም ውድቀት",
+        "titleEn": "Hasmonean Era & Fall of Jerusalem",
         "fromChapter": 1,
-        "toChapter": 2
+        "toChapter": 8
+      }
+    ]
+  },
+  "89": {
+    "authorAm": "ሐዋርያት",
+    "authorEn": "The Apostles",
+    "periodAm": "~250 ዓ.ም.",
+    "periodEn": "~250 ዓ.ም.",
+    "summaryAm": "የሐዋርያት የትምህርትና የሥነ ምግባር መመሪያ፣ የኤጲስ ቆጶሳትና የምእመናን ተግባር መጽሐፍ ነው።",
+    "summaryEn": "Apostolic teaching manual covering pastoral care, charity, fasting, and liturgical discipline.",
+    "themesAm": [
+      "የሐዋርያት ትምህርት",
+      "ምፅዋትና ጾም",
+      "ሥነ ምግባር"
+    ],
+    "themesEn": [
+      "Apostolic Teaching",
+      "Charity & Fasting",
+      "Pastoral Care"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ዲድስቅልያ",
+        "titleEn": "Book of Didascalia",
+        "fromChapter": 1,
+        "toChapter": 43
       }
     ]
   },
