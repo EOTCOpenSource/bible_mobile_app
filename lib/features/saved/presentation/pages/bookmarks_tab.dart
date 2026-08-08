@@ -306,6 +306,16 @@ class _BookmarksTabState extends ConsumerState<BookmarksTab> {
                         item: items[i],
                         tab: 1,
                         onTap: () => widget.onOpen(items[i]),
+                        onAddToCollection: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => CollectionPickerSheet(
+                            itemType: 'bookmark',
+                            itemId: items[i].id,
+                            initialTags: items[i].tags,
+                            onItemChanged: widget.onRefresh,
+                          ),
+                        ),
                         onLongPress: () => showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
