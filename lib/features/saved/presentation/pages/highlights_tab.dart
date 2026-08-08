@@ -336,6 +336,16 @@ class _HighlightsTabState extends ConsumerState<HighlightsTab> {
                         item: items[i],
                         tab: 0,
                         onTap: () => widget.onOpen(items[i]),
+                        onAddToCollection: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => CollectionPickerSheet(
+                            itemType: 'highlight',
+                            itemId: items[i].id,
+                            initialTags: items[i].tags,
+                            onItemChanged: widget.onRefresh,
+                          ),
+                        ),
                         onLongPress: () => showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
