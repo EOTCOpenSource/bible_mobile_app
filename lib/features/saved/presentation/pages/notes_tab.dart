@@ -310,6 +310,16 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                         item: items[i],
                         tab: 2,
                         onTap: () => widget.onOpen(items[i]),
+                        onAddToCollection: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => CollectionPickerSheet(
+                            itemType: 'note',
+                            itemId: items[i].id,
+                            initialTags: items[i].tags,
+                            onItemChanged: widget.onRefresh,
+                          ),
+                        ),
                         onLongPress: () => showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
