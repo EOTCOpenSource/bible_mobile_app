@@ -346,6 +346,22 @@ class AmStrings extends AppStrings {
   @override
   String get addToCollection => 'ወደ ስብስብ ጨምር';
   @override
+  String get collectionSubtitle =>
+      'ይህንን ንጥል በአንድ ወይም ከዚያ በላይ በሆኑ ስብስቦች ውስጥ ያደራጁ።';
+  @override
+  String get collectionSearchHint => 'ስብስብ ይፈልጉ ወይም ይፍጠሩ...';
+  @override
+  String createNamedCollection(String name) => '"$name" ፍጠር';
+  @override
+  String get recentCollections => 'የቅርብ ጊዜ ስብስቦች';
+  @override
+  String get allCollections => 'ሁሉም ስብስቦች';
+  @override
+  String get noCollectionsEmptyHint =>
+      'የመጀመሪያዎን ስብስብ ለመፍጠር መተየብ ይጀምሩ።';
+  @override
+  String get noCollectionsFound => 'ምንም ስብስቦች አልተገኙም';
+  @override
   String get tags => 'መለያዎች';
   @override
   String get addTags => 'መለያ ጨምር';

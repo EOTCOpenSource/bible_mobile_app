@@ -350,6 +350,22 @@ class EnStrings extends AppStrings {
   @override
   String get addToCollection => 'Add to collection';
   @override
+  String get collectionSubtitle =>
+      'Organize this item into one or more collections.';
+  @override
+  String get collectionSearchHint => 'Search or create collection...';
+  @override
+  String createNamedCollection(String name) => 'Create "$name"';
+  @override
+  String get recentCollections => 'Recent Collections';
+  @override
+  String get allCollections => 'All Collections';
+  @override
+  String get noCollectionsEmptyHint =>
+      'Start typing to create your first collection.';
+  @override
+  String get noCollectionsFound => 'No collections found';
+  @override
   String get tags => 'Tags';
   @override
   String get addTags => 'Add tags';

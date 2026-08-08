@@ -205,6 +205,13 @@ abstract class AppStrings {
   String get collections;
   String get newCollection;
   String get addToCollection;
+  String get collectionSubtitle;
+  String get collectionSearchHint;
+  String createNamedCollection(String name);
+  String get recentCollections;
+  String get allCollections;
+  String get noCollectionsEmptyHint;
+  String get noCollectionsFound;
   String get tags;
   String get addTags;
   String get all;
