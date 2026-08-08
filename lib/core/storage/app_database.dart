@@ -1260,6 +1260,8 @@ class AppDatabase {
       reading_time_minute INTEGER,
       has_seen_onboarding INTEGER NOT NULL DEFAULT 0,
       has_seen_reader_hint INTEGER NOT NULL DEFAULT 0,
+      collection_hint_views INTEGER NOT NULL DEFAULT 0,
+      has_dismissed_collection_hint INTEGER NOT NULL DEFAULT 0,
       line_height REAL NOT NULL DEFAULT 1.6,
       margin_scale REAL NOT NULL DEFAULT 1.0,
       text_align INTEGER NOT NULL DEFAULT 0,
@@ -1292,12 +1294,23 @@ class AppDatabase {
     int? readingTimeMinute,
     bool hasSeenOnboarding = false,
     bool hasSeenReaderHint = false,
+    int collectionHintViews = 0,
+    bool hasDismissedCollectionHint = false,
     double lineHeight = 1.6,
     double marginScale = 1.0,
     int textAlign = 0,
     bool keepScreenOn = false,
   }) async {
     final db = await database;
+    try {
+      await db.execute(
+          'ALTER TABLE app_settings ADD COLUMN collection_hint_views INTEGER NOT NULL DEFAULT 0');
+    } catch (_) {}
+    try {
+      await db.execute(
+          'ALTER TABLE app_settings ADD COLUMN has_dismissed_collection_hint INTEGER NOT NULL DEFAULT 0');
+    } catch (_) {}
+
     await db.update(
       'app_settings',
       {
@@ -1309,6 +1322,8 @@ class AppDatabase {
         'reading_time_minute': readingTimeMinute,
         'has_seen_onboarding': hasSeenOnboarding ? 1 : 0,
         'has_seen_reader_hint': hasSeenReaderHint ? 1 : 0,
+        'collection_hint_views': collectionHintViews,
+        'has_dismissed_collection_hint': hasDismissedCollectionHint ? 1 : 0,
         'line_height': lineHeight,
         'margin_scale': marginScale,
         'text_align': textAlign,
