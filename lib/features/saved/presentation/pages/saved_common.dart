@@ -58,6 +58,7 @@ class AnnotationCard extends StatelessWidget {
     required this.tab,
     required this.onTap,
     this.onLongPress,
+    this.onAddToCollection,
     this.trailingText,
     this.onDelete,
   });
@@ -66,6 +67,7 @@ class AnnotationCard extends StatelessWidget {
   final int tab;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final VoidCallback? onAddToCollection;
   final String? trailingText;
   final VoidCallback? onDelete;
 
@@ -159,8 +161,23 @@ class AnnotationCard extends StatelessWidget {
                                 color: c.textCaption,
                               ),
                             ),
+                            if (onAddToCollection != null) ...[
+                              const SizedBox(width: 4),
+                              IconButton(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                icon: Icon(
+                                  Icons.folder_open_outlined,
+                                  size: 18,
+                                  color: c.primary,
+                                ),
+                                tooltip: s.addToCollection,
+                                onPressed: onAddToCollection,
+                              ),
+                            ],
                             if (onDelete != null) ...[
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 4),
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: onDelete,
@@ -1016,7 +1033,7 @@ class _CollectionPickerSheetState
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Organize this item into one or more collections.',
+                              s.collectionSubtitle,
                               style: AppTypography.amharicCaption.copyWith(
                                 fontSize: 12,
                                 color: c.textMuted,
@@ -1048,11 +1065,45 @@ class _CollectionPickerSheetState
                     controller: scrollController,
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                     children: [
-                      // 4. Search Field (Primary Action)
+                      // Prominent "+ New collection" button
+                      InkWell(
+                        onTap: () async {
+                          await showCreateCollectionDialog(context, ref);
+                          _loadData();
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: c.primary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: c.primary.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_circle_outline_rounded, color: c.primary, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                '+ ${s.newCollection}',
+                                style: AppTypography.amharicLabel.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: c.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // 4. Search Field
                       TextField(
                         controller: _searchController,
                         focusNode: _searchFocusNode,
-                        autofocus: true,
+                        autofocus: false,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (val) {
                           if (val.trim().isNotEmpty && !exactMatchExists) {
@@ -1064,7 +1115,7 @@ class _CollectionPickerSheetState
                           fontSize: 14,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search or create collection...',
+                          hintText: s.collectionSearchHint,
                           hintStyle: AppTypography.amharicCaption.copyWith(
                             color: c.textMuted,
                           ),
@@ -1188,22 +1239,12 @@ class _CollectionPickerSheetState
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: AppTypography.amharicBody.copyWith(
-                                        fontSize: 14,
-                                        color: c.textOnParchment,
-                                      ),
-                                      children: [
-                                        const TextSpan(text: 'Create '),
-                                        TextSpan(
-                                          text: '"${_searchQuery.trim()}"',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: c.primary,
-                                          ),
-                                        ),
-                                      ],
+                                  child: Text(
+                                    s.createNamedCollection(_searchQuery.trim()),
+                                    style: AppTypography.amharicBody.copyWith(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: c.primary,
                                     ),
                                   ),
                                 ),
@@ -1230,8 +1271,8 @@ class _CollectionPickerSheetState
                       else if (filteredCollections.isNotEmpty) ...[
                         Text(
                           query.isEmpty
-                              ? 'Recent Collections'
-                              : 'All Collections',
+                              ? s.recentCollections
+                              : s.allCollections,
                           style: AppTypography.amharicCaption.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -1265,7 +1306,7 @@ class _CollectionPickerSheetState
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  '📂 No collections yet',
+                                  s.noCollections,
                                   style: AppTypography.amharicLabel.copyWith(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -1274,7 +1315,7 @@ class _CollectionPickerSheetState
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Start typing to create your first collection.',
+                                  s.noCollectionsEmptyHint,
                                   textAlign: TextAlign.center,
                                   style: AppTypography.amharicCaption.copyWith(
                                     fontSize: 13,
@@ -1295,7 +1336,7 @@ class _CollectionPickerSheetState
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'No collections found',
+                                  s.noCollectionsFound,
                                   style: AppTypography.amharicCaption.copyWith(
                                     color: c.textMuted,
                                     fontSize: 14,
@@ -1310,7 +1351,7 @@ class _CollectionPickerSheetState
                   ),
                 ),
 
-                // 8. Bottom Done / Confirm Action Button
+                // 8. Bottom Save and Cancel Action Buttons
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                   decoration: BoxDecoration(
@@ -1322,28 +1363,56 @@ class _CollectionPickerSheetState
                       ),
                     ),
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: c.primary,
-                        foregroundColor: c.textOnDark,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: c.borderSubtle),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(
+                              s.savedCancel,
+                              style: AppTypography.amharicLabel.copyWith(
+                                fontSize: 15,
+                                color: c.textMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        s.savedOk,
-                        style: AppTypography.amharicLabel.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: c.textOnDark,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: c.primary,
+                              foregroundColor: c.textOnDark,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(
+                              s.savedOk,
+                              style: AppTypography.amharicLabel.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: c.textOnDark,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -1438,13 +1507,13 @@ class _CollectionListTile extends StatelessWidget {
                     duration: const Duration(milliseconds: 200),
                     child: isSelected
                         ? Icon(
-                            Icons.check_circle_rounded,
+                            Icons.check_box_rounded,
                             key: const ValueKey('selected_check'),
                             size: 22,
                             color: c.primary,
                           )
                         : Icon(
-                            Icons.circle_outlined,
+                            Icons.check_box_outline_blank_rounded,
                             key: const ValueKey('unselected_circle'),
                             size: 22,
                             color: c.textMuted.withValues(alpha: 0.5),
