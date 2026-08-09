@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../annotations/annotation_models.dart';
@@ -881,8 +880,12 @@ class AppDatabase {
         if (existing.isEmpty) {
           await txn.insert('bookmarks', b.toMap());
         } else if (conflictPolicy == BackupConflictPolicy.replace) {
-          final existingId = existing.first['id'] as int;
+          final existingRow = existing.first;
+          final existingId = existingRow['id'] as int;
           final map = b.toMap()..['id'] = existingId;
+          if (b.tags == null && existingRow['tags'] != null) {
+            map['tags'] = existingRow['tags'];
+          }
           await txn.update('bookmarks', map, where: 'id = ?', whereArgs: [existingId]);
         }
       }
@@ -898,8 +901,12 @@ class AppDatabase {
         if (existing.isEmpty) {
           await txn.insert('highlights', h.toMap());
         } else if (conflictPolicy == BackupConflictPolicy.replace) {
-          final existingId = existing.first['id'] as int;
+          final existingRow = existing.first;
+          final existingId = existingRow['id'] as int;
           final map = h.toMap()..['id'] = existingId;
+          if (h.tags == null && existingRow['tags'] != null) {
+            map['tags'] = existingRow['tags'];
+          }
           await txn.update('highlights', map, where: 'id = ?', whereArgs: [existingId]);
         }
       }
@@ -919,18 +926,25 @@ class AppDatabase {
           final existingId = existingRow['id'] as int;
           if (conflictPolicy == BackupConflictPolicy.replace) {
             final map = n.toMap()..['id'] = existingId;
+            if (n.tags == null && existingRow['tags'] != null) {
+              map['tags'] = existingRow['tags'];
+            }
             await txn.update('notes', map, where: 'id = ?', whereArgs: [existingId]);
           } else if (conflictPolicy == BackupConflictPolicy.merge) {
             final existingContent = existingRow['content'] as String? ?? '';
             if (existingContent.trim() != n.content.trim()) {
               final mergedContent = '$existingContent\n\n${n.content}';
+              final updates = <String, dynamic>{
+                'content': mergedContent,
+                'updated_at': DateTime.now().millisecondsSinceEpoch,
+                'sync_status': SyncStatus.pendingUpdate.name,
+              };
+              if (n.tags != null) {
+                updates['tags'] = n.tags;
+              }
               await txn.update(
                 'notes',
-                {
-                  'content': mergedContent,
-                  'updated_at': DateTime.now().millisecondsSinceEpoch,
-                  'sync_status': SyncStatus.pendingUpdate.name,
-                },
+                updates,
                 where: 'id = ?',
                 whereArgs: [existingId],
               );
@@ -1340,21 +1354,22 @@ class AppDatabase {
 
   Future<int> createCollection(
     String name, {
-    Color? color,
+    int? color,
     String? icon,
   }) async {
     final db = await database;
     final maxSortRes =
         await db.rawQuery('SELECT MAX(sort_order) as m FROM collections');
     final maxSort = (maxSortRes.first['m'] as int?) ?? -1;
-    final collection = Collection(
-      name: name,
-      color: color,
-      icon: icon,
-      sortOrder: maxSort + 1,
-      createdAt: DateTime.now(),
-    );
-    return db.insert('collections', collection.toMap());
+    final map = <String, dynamic>{
+      'name': name,
+      'color': color,
+      'icon': icon,
+      'sort_order': maxSort + 1,
+      'created_at': DateTime.now().millisecondsSinceEpoch,
+      'sync_status': SyncStatus.pendingCreate.name,
+    };
+    return db.insert('collections', map);
   }
 
   Future<void> updateCollection(Collection collection) async {
