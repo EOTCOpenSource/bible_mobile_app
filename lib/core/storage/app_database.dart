@@ -7,7 +7,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 11;
+  static const _version = 12;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -94,6 +94,18 @@ class AppDatabase {
     if (oldVersion >= 6 && oldVersion < 11) {
       await _migrateSettingsTypography(db);
     }
+    if (oldVersion >= 6 && oldVersion < 12) {
+      await _migrateSettingsCrossRefMarkers(db);
+    }
+  }
+
+  /// v11→v12: adds show_cross_ref_markers column to app_settings.
+  Future<void> _migrateSettingsCrossRefMarkers(Database db) async {
+    try {
+      await db.execute(
+        'ALTER TABLE app_settings ADD COLUMN show_cross_ref_markers INTEGER NOT NULL DEFAULT 0',
+      );
+    } catch (_) {}
   }
 
   /// v10→v11: adds typography (line_height, margin_scale, text_align) and keep_screen_on columns to app_settings.
@@ -1213,7 +1225,8 @@ class AppDatabase {
       line_height REAL NOT NULL DEFAULT 1.6,
       margin_scale REAL NOT NULL DEFAULT 1.0,
       text_align INTEGER NOT NULL DEFAULT 0,
-      keep_screen_on INTEGER NOT NULL DEFAULT 0
+      keep_screen_on INTEGER NOT NULL DEFAULT 0,
+      show_cross_ref_markers INTEGER NOT NULL DEFAULT 0
     )
   ''');
     await db.insert('app_settings', {
@@ -1246,6 +1259,7 @@ class AppDatabase {
     double marginScale = 1.0,
     int textAlign = 0,
     bool keepScreenOn = false,
+    bool showCrossRefMarkers = false,
   }) async {
     final db = await database;
     await db.update(
@@ -1263,6 +1277,7 @@ class AppDatabase {
         'margin_scale': marginScale,
         'text_align': textAlign,
         'keep_screen_on': keepScreenOn ? 1 : 0,
+        'show_cross_ref_markers': showCrossRefMarkers ? 1 : 0,
       },
       where: 'id = ?',
       whereArgs: [1],
