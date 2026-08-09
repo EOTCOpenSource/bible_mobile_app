@@ -1322,3 +1322,4 @@ class _LogoutSection extends ConsumerWidget {
     );
   }
 }
+
