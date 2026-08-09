@@ -25,6 +25,7 @@ class AppSettings {
     this.marginScale = 1.0,
     this.textAlign = 0,
     this.keepScreenOn = false,
+    this.showCrossRefMarkers = false,
   });
 
   final bool useGeezNumbers;
@@ -76,6 +77,9 @@ class AppSettings {
   final int textAlign;
   final bool keepScreenOn;
 
+  /// Whether inline cross-reference markers are displayed in the reader text.
+  final bool showCrossRefMarkers;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
@@ -99,6 +103,7 @@ class AppSettings {
     double? marginScale,
     int? textAlign,
     bool? keepScreenOn,
+    bool? showCrossRefMarkers,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -127,6 +132,7 @@ class AppSettings {
         marginScale: (marginScale ?? this.marginScale).clamp(0.6, 1.6),
         textAlign: textAlign ?? this.textAlign,
         keepScreenOn: keepScreenOn ?? this.keepScreenOn,
+        showCrossRefMarkers: showCrossRefMarkers ?? this.showCrossRefMarkers,
       );
 
   Map<String, dynamic> toMap() => {
@@ -150,6 +156,7 @@ class AppSettings {
         'marginScale': marginScale,
         'textAlign': textAlign,
         'keepScreenOn': keepScreenOn,
+        'showCrossRefMarkers': showCrossRefMarkers,
       };
 
   factory AppSettings.fromMap(Map<String, dynamic> map) => AppSettings(
@@ -175,6 +182,7 @@ class AppSettings {
         marginScale: ((map['marginScale'] as num?)?.toDouble() ?? 1.0).clamp(0.6, 1.6),
         textAlign: map['textAlign'] as int? ?? 0,
         keepScreenOn: map['keepScreenOn'] as bool? ?? false,
+        showCrossRefMarkers: map['showCrossRefMarkers'] as bool? ?? false,
       );
 
   @override
@@ -201,7 +209,8 @@ class AppSettings {
       other.lineHeight == lineHeight &&
       other.marginScale == marginScale &&
       other.textAlign == textAlign &&
-      other.keepScreenOn == keepScreenOn;
+      other.keepScreenOn == keepScreenOn &&
+      other.showCrossRefMarkers == showCrossRefMarkers;
 
   @override
   int get hashCode => Object.hashAll([
@@ -227,6 +236,7 @@ class AppSettings {
         marginScale,
         textAlign,
         keepScreenOn,
+        showCrossRefMarkers,
       ]);
 }
 
@@ -265,6 +275,7 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
       marginScale: updated.marginScale,
       textAlign: updated.textAlign,
       keepScreenOn: updated.keepScreenOn,
+      showCrossRefMarkers: updated.showCrossRefMarkers,
     );
   }
 
