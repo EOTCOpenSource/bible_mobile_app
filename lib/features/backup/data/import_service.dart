@@ -92,6 +92,7 @@ class ImportService {
         updatedAt: DateTime.fromMillisecondsSinceEpoch(b.createdAt),
         syncStatus: SyncStatus.pendingCreate,
         remoteId: null,
+        tags: b.tags,
       );
     }).toList();
 
@@ -115,6 +116,7 @@ class ImportService {
         updatedAt: DateTime.fromMillisecondsSinceEpoch(h.createdAt),
         syncStatus: SyncStatus.pendingCreate,
         remoteId: null,
+        tags: h.tags,
       );
     }).toList();
 
@@ -133,6 +135,7 @@ class ImportService {
         updatedAt: DateTime.fromMillisecondsSinceEpoch(n.updatedAt),
         syncStatus: SyncStatus.pendingCreate,
         remoteId: null,
+        tags: n.tags,
       );
     }).toList();
 
@@ -142,5 +145,48 @@ class ImportService {
       notes: notes,
       conflictPolicy: conflictPolicy,
     );
+
+    if (payload.collections != null && payload.collections!.isNotEmpty) {
+      final existingCollections = await _db.listCollections();
+      final colNameMap = {for (final c in existingCollections) c.name: c.id!};
+
+      final allB = await _db.getAllBookmarks();
+      final allH = await _db.getAllHighlights();
+      final allN = await _db.getAllNotes();
+
+      final bMap = {for (final b in allB) '${b.bookId}:${b.chapter}:${b.verseStart}': b.id!};
+      final hMap = {for (final h in allH) '${h.bookId}:${h.chapter}:${h.verseStart}': h.id!};
+      final nMap = {for (final n in allN) '${n.bookId}:${n.chapter}:${n.verseStart}': n.id!};
+
+      for (final col in payload.collections!) {
+        int colId;
+        if (colNameMap.containsKey(col.name)) {
+          colId = colNameMap[col.name]!;
+        } else {
+          colId = await _db.createCollection(
+            col.name,
+            color: col.color,
+            icon: col.icon,
+          );
+          colNameMap[col.name] = colId;
+        }
+
+        for (final item in col.items) {
+          final usfm = usfmFromAnyBookId(item.bookId);
+          final key = '$usfm:${item.chapter}:${item.verse}';
+          int? targetId;
+          if (item.itemType == 'bookmark') {
+            targetId = bMap[key];
+          } else if (item.itemType == 'highlight') {
+            targetId = hMap[key];
+          } else if (item.itemType == 'note') {
+            targetId = nMap[key];
+          }
+          if (targetId != null) {
+            await _db.addItemToCollection(colId, item.itemType, targetId);
+          }
+        }
+      }
+    }
   }
 }
