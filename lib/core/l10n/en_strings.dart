@@ -389,6 +389,13 @@ class EnStrings extends AppStrings {
   String get collectionDeleteMessage =>
       'This collection will be removed. The notes, highlights and bookmarks '
       'inside it are not deleted.';
+  @override
+  String selectedCount(int count) => '$count selected';
+  @override
+  String get deleteSelectedTitle => 'Delete Selected';
+  @override
+  String deleteSelectedMessage(int count) =>
+      'Are you sure you want to delete $count selected item(s)?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

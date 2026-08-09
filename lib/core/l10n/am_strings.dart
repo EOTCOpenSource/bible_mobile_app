@@ -384,6 +384,13 @@ class AmStrings extends AppStrings {
   @override
   String get collectionDeleteMessage =>
       'ይህ ስብስብ ይሰረዛል። በውስጡ ያሉት ማስታወሻዎች፣ ማድመቂያዎችና ዕልባቶች አይሰረዙም።';
+  @override
+  String selectedCount(int count) => '$count ተመርጠዋል';
+  @override
+  String get deleteSelectedTitle => 'የተመረጡትን ሰርዝ';
+  @override
+  String deleteSelectedMessage(int count) =>
+      'እርግጠኛ ነዎት $count የተመረጡትን ንጥሎች መሰረዝ ይፈልጋሉ?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

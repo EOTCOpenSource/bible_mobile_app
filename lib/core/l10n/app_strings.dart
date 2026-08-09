@@ -223,6 +223,9 @@ abstract class AppStrings {
   String get savedOk;
   String get collectionDeleteTitle;
   String get collectionDeleteMessage; // reassures that annotations survive
+  String selectedCount(int count);
+  String get deleteSelectedTitle;
+  String deleteSelectedMessage(int count);
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"
