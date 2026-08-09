@@ -238,6 +238,10 @@ class AmStrings extends AppStrings {
   String get readingSettingsAlignJustify => 'የተመጣጠነ';
   @override
   String get readingSettingsKeepScreenOn => 'ስክሪን እንዳይጠፋ';
+  @override
+  String get readingSettingsShowCrossRefMarkers => 'የማጣቀሻ ምልክቶችን አሳይ';
+  @override
+  String get readingSettingsShowCrossRefMarkersHint => 'በጥቅሶች ላይ የማጣቀሻ ምልክት ያሳያል';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
@@ -371,6 +375,12 @@ class AmStrings extends AppStrings {
   String get verseShare => 'አጋራ';
   @override
   String get verseCrossReferences => 'ተመሳሳይ ጥቅሶች';
+  @override
+  String get crossRefTitle => 'የጽሑፍ ማጣቀሻዎች';
+  @override
+  String get crossRefNoResults => 'ለዚህ ጥቅስ ምንም ማጣቀሻ አልተገኘም';
+  @override
+  String crossRefBackTo(String reference) => '← ወደ $reference ተመለስ';
   @override
   String get verseFootnotes => 'የትርጉም ማስታወሻ';
   @override

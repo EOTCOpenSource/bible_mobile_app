@@ -242,6 +242,11 @@ class EnStrings extends AppStrings {
   String get readingSettingsAlignJustify => 'Justify';
   @override
   String get readingSettingsKeepScreenOn => 'Keep Screen On';
+  @override
+  String get readingSettingsShowCrossRefMarkers => 'Show Cross-Reference Markers';
+  @override
+  String get readingSettingsShowCrossRefMarkersHint =>
+      'Display subtle indicators on verses with cross-references';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
@@ -375,6 +380,12 @@ class EnStrings extends AppStrings {
   String get verseShare => 'Share';
   @override
   String get verseCrossReferences => 'Cross references';
+  @override
+  String get crossRefTitle => 'Cross-References';
+  @override
+  String get crossRefNoResults => 'No cross-references for this verse';
+  @override
+  String crossRefBackTo(String reference) => '← Back to $reference';
   @override
   String get verseFootnotes => 'Footnotes';
   @override

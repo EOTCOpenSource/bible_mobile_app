@@ -152,6 +152,8 @@ abstract class AppStrings {
   String get readingSettingsAlignStart;
   String get readingSettingsAlignJustify;
   String get readingSettingsKeepScreenOn;
+  String get readingSettingsShowCrossRefMarkers;
+  String get readingSettingsShowCrossRefMarkersHint;
 
   // ── Search ───────────────────────────────────────────────────────────────
   String get searchHint;
@@ -222,6 +224,9 @@ abstract class AppStrings {
 
   /// Title of the sheet listing a verse's parallel passages.
   String get verseCrossReferences;
+  String get crossRefTitle;
+  String get crossRefNoResults;
+  String crossRefBackTo(String reference);
 
   /// Title of the sheet listing a verse's translator footnotes.
   String get verseFootnotes;
