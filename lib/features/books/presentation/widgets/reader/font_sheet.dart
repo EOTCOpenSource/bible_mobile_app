@@ -78,6 +78,37 @@ class ReaderFontSheet extends StatelessWidget {
                 settings.copyWith(keepScreenOn: v),
               ),
             ),
+            const SizedBox(height: 12),
+
+            // Show cross-reference markers toggle
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s.readingSettingsShowCrossRefMarkers,
+                        style: AppTypography.amharicLabel.copyWith(color: textColor),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        s.readingSettingsShowCrossRefMarkersHint,
+                        style: AppTypography.amharicCaption.copyWith(color: mutedColor, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: settings.showCrossRefMarkers,
+                  onChanged: (v) => Settings.update(
+                    context,
+                    settings.copyWith(showCrossRefMarkers: v),
+                  ),
+                  activeThumbColor: accentColor,
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Font size slider
