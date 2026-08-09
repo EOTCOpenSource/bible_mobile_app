@@ -55,8 +55,8 @@ void main() {
 
   group('Collections & Tags Repository / Database Tests (Issue #25)', () {
     test('Collection CRUD and reordering succeed', () async {
-      final colId1 = await appDb.createCollection('Favorites', color: Colors.blue);
-      final colId2 = await appDb.createCollection('Study', color: Colors.green);
+      final colId1 = await appDb.createCollection('Favorites', color: Colors.blue.toARGB32());
+      final colId2 = await appDb.createCollection('Study', color: Colors.green.toARGB32());
 
       expect(colId1, greaterThan(0));
       expect(colId2, greaterThan(0));
