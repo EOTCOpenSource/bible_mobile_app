@@ -23,6 +23,9 @@ void main() {
     });
 
     tearDown(() async {
+      // Close the edition database first — Windows refuses to delete a
+      // directory that still has an open file handle in it.
+      repo.dispose();
       if (tmpDir.existsSync()) {
         await tmpDir.delete(recursive: true);
       }
