@@ -24,30 +24,34 @@ void main() {
   late ExportService exportService;
   late ImportService importService;
 
-  setUp(() async {
+  setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     tmpDir = await Directory.systemTemp.createTemp('backup_test');
+    bibleRepo = BibleRepository(storage: BibleStorage(rootOverride: tmpDir));
+    await bibleRepo.init();
+  });
+
+  tearDownAll(() async {
+    bibleRepo.dispose();
+    if (tmpDir.existsSync()) {
+      tmpDir.deleteSync(recursive: true);
+    }
+  });
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     db = AppDatabase();
 
     // Clear tables before each test
     final dbInstance = await db.database;
+    await dbInstance.delete('collections');
+    await dbInstance.delete('collection_items');
     await dbInstance.delete('bookmarks');
     await dbInstance.delete('highlights');
     await dbInstance.delete('notes');
 
-    bibleRepo = BibleRepository(storage: BibleStorage(rootOverride: tmpDir));
-    await bibleRepo.init();
-
     exportService = ExportService(db: db, bibleRepository: bibleRepo);
     importService = ImportService(db: db, bibleRepository: bibleRepo);
-  });
-
-  tearDown(() async {
-    bibleRepo.dispose();
-    await db.close();
-    if (tmpDir.existsSync()) {
-      tmpDir.deleteSync(recursive: true);
-    }
   });
 
   group('Backup & Restore Roundtrip Tests', () {
@@ -268,6 +272,91 @@ void main() {
       final notes = await db.getAllNotes();
       expect(notes, hasLength(1));
       expect(notes.first.content, 'Original Note\n\nAppended Note');
+    });
+
+    test('JSON Backup roundtrip preserves tags and collections', () async {
+      final now = DateTime.now();
+      final bm = Bookmark(
+        bookId: 'GEN',
+        bookNumber: 1,
+        chapter: 1,
+        verseStart: 1,
+        createdAt: now,
+        updatedAt: now,
+        tags: 'faith,grace',
+      );
+      final hl = Highlight(
+        bookId: 'GEN',
+        bookNumber: 1,
+        chapter: 1,
+        verseStart: 1,
+        color: const Color(0xFFFFE082),
+        createdAt: now,
+        updatedAt: now,
+        tags: 'prayer',
+      );
+      final nt = Note(
+        bookId: 'GEN',
+        bookNumber: 1,
+        chapter: 1,
+        verseStart: 1,
+        content: 'In the beginning test note',
+        createdAt: now,
+        updatedAt: now,
+        tags: 'study',
+      );
+
+      await db.insertBookmark(bm);
+      await db.insertHighlight(hl);
+      await db.insertNote(nt);
+
+      final bmId = (await db.getAllBookmarks()).first.id!;
+      final hlId = (await db.getAllHighlights()).first.id!;
+      final ntId = (await db.getAllNotes()).first.id!;
+
+      final colId = await db.createCollection('Favorites', color: 0xFF2196F3, icon: '59485');
+      await db.addItemToCollection(colId, 'bookmark', bmId);
+      await db.addItemToCollection(colId, 'note', ntId);
+
+      // Export to JSON
+      final exportFile = File('${tmpDir.path}/export_tags.json');
+      await exportService.exportToJson(exportFile);
+      expect(exportFile.existsSync(), isTrue);
+
+      // Clear local database
+      await db.deleteCollection(colId);
+      await db.deleteBookmark(bmId);
+      await db.deleteHighlight(hlId);
+      await db.deleteNote(ntId);
+
+      expect(await db.getAllBookmarks(), isEmpty);
+      expect(await db.getAllHighlights(), isEmpty);
+      expect(await db.getAllNotes(), isEmpty);
+      expect(await db.listCollections(), isEmpty);
+
+      // Parse & Import
+      final jsonString = await exportFile.readAsString();
+      final preview = await importService.parseAndPreview(jsonString);
+      await importService.executeImport(
+        payload: preview.payload,
+        conflictPolicy: BackupConflictPolicy.skip,
+      );
+
+      // Assert tags & collections restored
+      final restoredBookmarks = await db.getAllBookmarks();
+      final restoredHighlights = await db.getAllHighlights();
+      final restoredNotes = await db.getAllNotes();
+      final restoredCols = await db.listCollections();
+
+      expect(restoredBookmarks.first.tags, 'faith,grace');
+      expect(restoredHighlights.first.tags, 'prayer');
+      expect(restoredNotes.first.tags, 'study');
+
+      expect(restoredCols, hasLength(1));
+      expect(restoredCols.first.name, 'Favorites');
+
+      final colItems = await db.listItemsInCollection(restoredCols.first.id!);
+      expect(colItems, hasLength(2));
     });
 
     test('Markdown export creates valid file with headers and verses', () async {
