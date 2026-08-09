@@ -12,6 +12,7 @@ import '../../data/reading_models.dart';
 import '../../data/repositories/bible_repository.dart' show BibleRepository;
 import '../../providers/reading_progress_providers.dart';
 import '../widgets/edition_switcher.dart';
+import '../widgets/reader/constants.dart';
 import 'book_reader_page.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 
@@ -277,52 +278,266 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
                 child: Center(child: CircularProgressIndicator(color: c.primary)),
               )
             else ...[
-              _BookInfoCard(
-                entry: _entry,
-                totalChapters: total,
-                progress: _bookProgress,
-                s: s,
-                useGeez: useGeez,
-                isAmharic: isAmharic,
-              ),
-              const SizedBox(height: 10),
-              _ContinueCard(
-                s: s,
-                useGeez: useGeez,
-                lastChapterNum: _lastChapterNum,
-                lastVerseNum: _lastVerseNum,
-                onContinue: () => _openChapter(_lastChapterIdx),
-              ),
-              const SizedBox(height: 14),
-              _LegendRow(s: s),
-              const SizedBox(height: 10),
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                child: ListView(
                   physics: const BouncingScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.88,
-                  ),
-                  itemCount: _book!.chapters.length,
-                  itemBuilder: (ctx, i) {
-                    final chNum = _book!.chapters[i].chapterNumber;
-                    return _ChapterCell(
-                      chapterNum: chNum,
-                      isNext: _nextChapterIdx >= 0 && i == _nextChapterIdx,
-                      isRead: _readChapters.contains(chNum),
-                      isBookmarked: false,
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _BookInfoCard(
+                      entry: _entry,
+                      totalChapters: total,
+                      progress: _bookProgress,
+                      s: s,
                       useGeez: useGeez,
-                      onTap: () => _openChapter(i),
-                    );
-                  },
+                      isAmharic: isAmharic,
+                    ),
+                    const SizedBox(height: 6),
+                    BookIntroductionCard(
+                      entry: _entry,
+                      s: s,
+                      isAmharic: isAmharic,
+                      onSelectChapter: _openChapter,
+                    ),
+                    const SizedBox(height: 10),
+                    _ContinueCard(
+                      s: s,
+                      useGeez: useGeez,
+                      lastChapterNum: _lastChapterNum,
+                      lastVerseNum: _lastVerseNum,
+                      onContinue: () => _openChapter(_lastChapterIdx),
+                    ),
+                    const SizedBox(height: 14),
+                    _LegendRow(s: s),
+                    const SizedBox(height: 10),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 0.88,
+                      ),
+                      itemCount: _book!.chapters.length,
+                      itemBuilder: (ctx, i) {
+                        final chNum = _book!.chapters[i].chapterNumber;
+                        return _ChapterCell(
+                          chapterNum: chNum,
+                          isNext: _nextChapterIdx >= 0 && i == _nextChapterIdx,
+                          isRead: _readChapters.contains(chNum),
+                          isBookmarked: false,
+                          useGeez: useGeez,
+                          onTap: () => _openChapter(i),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Book introduction card ───────────────────────────────────────────────────
+
+class BookIntroductionCard extends StatefulWidget {
+  const BookIntroductionCard({
+    super.key,
+    required this.entry,
+    required this.s,
+    required this.isAmharic,
+    required this.onSelectChapter,
+  });
+
+  final BookIndexEntry entry;
+  final AppStrings s;
+  final bool isAmharic;
+  final ValueChanged<int> onSelectChapter;
+
+  @override
+  State<BookIntroductionCard> createState() => _BookIntroductionCardState();
+}
+
+class _BookIntroductionCardState extends State<BookIntroductionCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = BibleRepositoryProvider.of(context);
+    final locale = widget.isAmharic ? 'am' : 'en';
+    final intro = repo.getIntroduction(widget.entry.bookNumber, locale: locale);
+
+    if (intro == null) return const SizedBox.shrink();
+
+    final c = context.colors;
+    final settings = Settings.of(context);
+    final fontIndex = settings.bodyFontIndex.clamp(0, readerFonts.length - 1);
+    final fontFamily = readerFonts[fontIndex];
+    final summaryFontSize = (settings.fontSize * 0.82).clamp(12.0, 24.0);
+
+    final metaList = <String>[];
+    if (intro.author.isNotEmpty) metaList.add('${widget.s.author}: ${intro.author}');
+    if (intro.period.isNotEmpty) metaList.add('${widget.s.period}: ${intro.period}');
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_stories_rounded, size: 18, color: c.primary),
+              const SizedBox(width: 8),
+              Text(
+                widget.s.aboutThisBook,
+                style: AppTypography.amharicLabel.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: c.textOnParchment,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(60, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () => setState(() => _expanded = !_expanded),
+                child: Text(
+                  _expanded ? widget.s.showLess : widget.s.readMore,
+                  style: AppTypography.amharicCaption.copyWith(
+                    color: c.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (metaList.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              metaList.join('  •  '),
+              style: AppTypography.amharicCaption.copyWith(
+                color: c.textMuted,
+                fontSize: 12,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            intro.summary,
+            style: AppTypography.amharicBody.copyWith(
+              fontFamily: fontFamily,
+              color: c.textOnParchment,
+              fontSize: summaryFontSize,
+              height: 1.45,
+            ),
+            maxLines: _expanded ? null : 3,
+            overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+          ),
+          if (_expanded) ...[
+            if (intro.themes.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                widget.s.themes,
+                style: AppTypography.amharicCaption.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: c.textOnParchment,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: intro.themes.map((theme) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: c.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: c.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      theme,
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: c.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+            if (intro.outline.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                widget.s.outline,
+                style: AppTypography.amharicCaption.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: c.textOnParchment,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ...intro.outline.map((item) {
+                final chLabel = item.fromChapter == item.toChapter
+                    ? '${widget.s.chapterAbbr} ${item.fromChapter}'
+                    : '${widget.s.chapterAbbr} ${item.fromChapter}–${item.toChapter}';
+                return InkWell(
+                  onTap: () => widget.onSelectChapter(item.fromChapter - 1),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: c.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            chLabel,
+                            style: AppTypography.amharicCaption.copyWith(
+                              fontSize: 11,
+                              color: c.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.amharicCaption.copyWith(
+                              color: c.textOnParchment,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ],
+        ],
       ),
     );
   }

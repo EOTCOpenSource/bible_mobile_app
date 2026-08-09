@@ -73,6 +73,7 @@ class _BookChooserPageState extends State<BookChooserPage>
   Future<void> _loadBooks() async {
     final repo = _repo;
     if (repo == null) return;
+    await repo.loadIntroductions();
     final books = await repo.loadIndex();
     if (mounted) setState(() { _books = books; _loading = false; });
   }
@@ -532,12 +533,30 @@ class _BookRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    isAmharic ? book.bookNameEn : book.bookNameAm,
-                    style: AppTypography.englishLabel.copyWith(
-                      color: c.textMuted,
-                      fontSize: 12,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final repo = BibleRepositoryProvider.of(context);
+                      final intro = repo.getIntroduction(
+                        book.id,
+                        locale: isAmharic ? 'am' : 'en',
+                      );
+                      final otherName = isAmharic ? book.bookNameEn : book.bookNameAm;
+                      final subParts = <String>[];
+                      if (otherName.isNotEmpty) subParts.add(otherName);
+                      if (intro != null) {
+                        if (intro.author.isNotEmpty) subParts.add(intro.author);
+                        if (intro.period.isNotEmpty) subParts.add(intro.period);
+                      }
+                      return Text(
+                        subParts.join('  •  '),
+                        style: AppTypography.englishLabel.copyWith(
+                          color: c.textMuted,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    },
                   ),
                 ],
               ),

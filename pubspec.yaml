@@ -101,6 +101,7 @@ flutter:
     - assets/bibles/catalog.db.gz
     # Curated daily-verse references (not scripture text).
     - assets/bibledata/ethiopian_daily_verses.json
+    - assets/bibledata/introductions.json
     - assets/signin/
     - assets/topics/
     - assets/topics/images/

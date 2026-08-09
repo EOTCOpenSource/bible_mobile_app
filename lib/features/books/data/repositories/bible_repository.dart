@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import '../edition_database.dart';
 import '../models/book.dart';
 import '../models/book_identity.dart';
 import '../models/book_index_entry.dart';
+import '../models/book_introduction.dart';
 import '../models/edition.dart';
 
 class DailyVerseResult {
@@ -95,6 +97,8 @@ class BibleRepository extends ChangeNotifier {
   static const _prefsSecondaryEdition = 'parallel_edition_id';
   static const _dailyVersesAsset =
       'assets/bibledata/ethiopian_daily_verses.json';
+  static const _introductionsAsset =
+      'assets/bibledata/introductions.json';
 
   final BibleStorage storage;
   late final CatalogDatabase catalog;
@@ -113,6 +117,8 @@ class BibleRepository extends ChangeNotifier {
 
   Map<String, Map<String, dynamic>>? _dailyVerseIndex;
   List<Map<String, dynamic>>? _dailyVerseList;
+  Map<int, BookIntroduction>? _introductions;
+  Map<String, BookIntroduction>? _introductionsByUsfm;
 
   String get activeEditionId => _activeEditionId;
 
@@ -149,6 +155,110 @@ class BibleRepository extends ChangeNotifier {
     } else if (parallel != null) {
       await prefs.remove(_prefsSecondaryEdition);
     }
+  }
+
+  /// Parses assets/bibledata/introductions.json once and caches the result.
+  Future<void> loadIntroductions() async {
+    if (_introductions != null) return;
+    try {
+      String raw;
+      try {
+        raw = await rootBundle.loadString(_introductionsAsset);
+      } catch (_) {
+        raw = await File(_introductionsAsset).readAsString();
+      }
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      final mapByNum = <int, BookIntroduction>{};
+      final mapByUsfm = <String, BookIntroduction>{};
+
+      decoded.forEach((key, value) {
+        if (value is Map<String, dynamic>) {
+          final bookNum = int.tryParse(key);
+          if (bookNum != null) {
+            final intro = BookIntroduction.fromJson(value, bookNum);
+            mapByNum[bookNum] = intro;
+          } else {
+            final intro = BookIntroduction.fromJson(value, 0);
+            mapByUsfm[key.toUpperCase()] = intro;
+          }
+        }
+      });
+
+      _introductions = mapByNum;
+
+      if (_index != null) {
+        for (final b in _index!) {
+          if (mapByNum.containsKey(b.bookNumber)) {
+            mapByUsfm[b.id.toUpperCase()] = mapByNum[b.bookNumber]!;
+          }
+        }
+      }
+      _introductionsByUsfm = mapByUsfm;
+    } catch (e) {
+      debugPrint('Error loading introductions: $e');
+      _introductions = {};
+      _introductionsByUsfm = {};
+    }
+  }
+
+  /// Returns the cached [BookIntroduction] for [identifier] (int bookNumber or String USFM ID),
+  /// or null if missing. If [locale] is provided, returns the introduction resolved for that locale.
+  BookIntroduction? getIntroduction(dynamic identifier, {String? locale}) {
+    if (_introductions == null) {
+      loadIntroductions();
+    }
+
+    BookIntroduction? intro;
+    if (identifier is int) {
+      intro = _introductions?[identifier];
+    } else if (identifier is String) {
+      final parsedNum = int.tryParse(identifier);
+      if (parsedNum != null) {
+        intro = _introductions?[parsedNum];
+      } else {
+        intro = _introductionsByUsfm?[identifier.toUpperCase()];
+        if (intro == null) {
+          const usfmMap = {
+            'GEN': 1, 'EXO': 2, 'LEV': 3, 'NUM': 4, 'DEU': 5,
+            'JOS': 6, 'JDG': 7, 'RUT': 8, '1SA': 9, '2SA': 10,
+            '1KI': 11, '2KI': 12, '1CH': 13, '2CH': 14, 'EZR': 15,
+            'NEH': 16, 'EST': 17, 'JOB': 18, 'PSA': 19, 'PRO': 20,
+            'ECC': 21, 'SNG': 22, 'ISA': 23, 'JER': 24, 'LAM': 25,
+            'EZK': 26, 'DAN': 27, 'HOS': 28, 'JOL': 29, 'AMO': 30,
+            'OBA': 31, 'JON': 32, 'MIC': 33, 'NAM': 34, 'HAB': 35,
+            'ZEP': 36, 'HAG': 37, 'ZEC': 38, 'MAL': 39, 'TOB': 40,
+            'JDT': 41, 'WIS': 43, 'SIR': 44, 'BAR': 45, 'LJE': 46,
+            '1MA': 49, '2MA': 50, '1ES': 51, '3MA': 53, '2ES': 54,
+            '4MA': 55, 'JUB': 57, 'ENO': 58, 'MAT': 59, 'MRK': 60,
+            'LUK': 61, 'JHN': 62, 'ACT': 63, 'ROM': 64, '1CO': 65,
+            '2CO': 66, 'GAL': 67, 'EPH': 68, 'PHP': 69, 'COL': 70,
+            '1TH': 71, '2TH': 72, '1TI': 73, '2TI': 74, 'TIT': 75,
+            'PHM': 76, 'HEB': 77, 'JAS': 78, '1PE': 79, '2PE': 80,
+            '1JN': 81, '2JN': 82, '3JN': 83, 'JUD': 84, 'REV': 85,
+            'OTH': 86, 'XXG': 87, 'XXA': 88, 'XXC': 89, 'XXB': 90,
+            'XXD': 91, 'XXE': 92, 'XXF': 93, 'LAO': 94,
+          };
+          final numKey = usfmMap[identifier.toUpperCase()];
+          if (numKey != null) {
+            intro = _introductions?[numKey];
+          }
+        }
+      }
+    }
+
+    if (intro == null) return null;
+    if (locale != null) {
+      return intro.forLocale(locale);
+    }
+    return intro;
+  }
+
+  /// Returns the unmodifiable map of cached introductions keyed by book number.
+  Map<int, BookIntroduction> getAllIntroductions() {
+    if (_introductions == null) {
+      loadIntroductions();
+    }
+    return Map<int, BookIntroduction>.unmodifiable(_introductions ?? {});
   }
 
   Future<void> _openEdition(String id) async {
@@ -305,7 +415,16 @@ class BibleRepository extends ChangeNotifier {
     }).toList(growable: false);
 
     _byId = {for (final e in entries) e.id: e};
-    return _index = entries;
+    _index = entries;
+    if (_introductions != null) {
+      _introductionsByUsfm ??= {};
+      for (final e in entries) {
+        if (_introductions!.containsKey(e.bookNumber)) {
+          _introductionsByUsfm![e.id.toUpperCase()] = _introductions![e.bookNumber]!;
+        }
+      }
+    }
+    return entries;
   }
 
   /// The book with this USFM id in the active edition, or null when the
