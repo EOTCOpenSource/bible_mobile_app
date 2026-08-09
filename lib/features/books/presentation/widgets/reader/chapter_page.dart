@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/annotations/annotation_models.dart';
+import '../../../../../core/settings/app_settings.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book.dart';
@@ -494,7 +495,9 @@ class VerseView extends StatelessWidget {
     final hlColor      = annotations.highlightColor(verse.verseNumber);
     final isBookmarked = annotations.isBookmarked(verse.verseNumber);
     final hasNote      = annotations.noteFor(verse.verseNumber) != null;
-    final hasApparatus = verse.refs.isNotEmpty || verse.notes.isNotEmpty;
+    final showCrossRefs = Settings.of(context).showCrossRefMarkers;
+    final hasCrossRefs = verse.refs.isNotEmpty;
+    final hasApparatus = verse.notes.isNotEmpty || (showCrossRefs && hasCrossRefs);
 
     final bgColor = selected
         ? (hlColor?.withValues(alpha: 0.5) ??
@@ -531,7 +534,7 @@ class VerseView extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 2, right: 2),
                 child: Text(
-                  verse.notes.isNotEmpty ? '✻' : '→',
+                  verse.notes.isNotEmpty ? '✻' : '✦',
                   style: TextStyle(
                     fontSize: fontSize * 0.5,
                     color: accentColor.withValues(alpha: 0.75),
