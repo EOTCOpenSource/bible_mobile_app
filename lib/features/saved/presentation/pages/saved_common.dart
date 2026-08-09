@@ -12,6 +12,12 @@ import '../../../books/data/models/book_index_entry.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
+class AnnotationItemCollectionInfo {
+  const AnnotationItemCollectionInfo({required this.name, this.color});
+  final String name;
+  final Color? color;
+}
+
 class AnnotationItem {
   const AnnotationItem({
     required this.id,
@@ -24,6 +30,7 @@ class AnnotationItem {
     this.highlightColor,
     this.noteContent,
     this.tags,
+    this.collections,
     this.itemType = 'bookmark',
   });
 
@@ -37,6 +44,7 @@ class AnnotationItem {
   final Color? highlightColor;
   final String? noteContent;
   final String? tags;
+  final List<AnnotationItemCollectionInfo>? collections;
   final String itemType;
 
   bool get isOT => bookEntry.isOldTestament;
@@ -51,6 +59,8 @@ class AnnotationItem {
 
 // ── Annotation card ──────────────────────────────────────────────────────────
 
+enum _CardMenuAction { collection, delete }
+
 class AnnotationCard extends StatelessWidget {
   const AnnotationCard({
     super.key,
@@ -61,6 +71,9 @@ class AnnotationCard extends StatelessWidget {
     this.onAddToCollection,
     this.trailingText,
     this.onDelete,
+    this.isMultiSelect = false,
+    this.isSelected = false,
+    this.onSelectToggle,
   });
 
   final AnnotationItem item;
@@ -70,6 +83,9 @@ class AnnotationCard extends StatelessWidget {
   final VoidCallback? onAddToCollection;
   final String? trailingText;
   final VoidCallback? onDelete;
+  final bool isMultiSelect;
+  final bool isSelected;
+  final ValueChanged<bool?>? onSelectToggle;
 
   String _daysAgo(AppStrings strings) {
     final diff = DateTime.now().difference(item.createdAt);
@@ -105,14 +121,18 @@ class AnnotationCard extends StatelessWidget {
         ? '${item.bookShortName(s)} $chNum:$vStart–$vEnd'
         : '${item.bookShortName(s)} $chNum:$vStart';
 
+    final hasOverflow = !isMultiSelect &&
+        (onAddToCollection != null || onDelete != null);
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: isMultiSelect ? () => onSelectToggle?.call(!isSelected) : onTap,
       onLongPress: onLongPress,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: c.surface,
+          color: isSelected ? c.primary.withValues(alpha: 0.08) : c.surface,
           borderRadius: BorderRadius.circular(12),
+          border: isSelected ? Border.all(color: c.primary, width: 1.5) : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.07),
@@ -132,6 +152,20 @@ class AnnotationCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (isMultiSelect)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Center(
+                      child: Checkbox(
+                        value: isSelected,
+                        onChanged: onSelectToggle,
+                        activeColor: c.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
                 Container(width: 5, color: accent),
                 Expanded(
                   child: Padding(
@@ -154,43 +188,93 @@ class AnnotationCard extends StatelessWidget {
                               ),
                             ),
                             const Spacer(),
-                            Text(
-                              trailingText ?? _daysAgo(s),
-                              style: AppTypography.amharicCaption.copyWith(
-                                fontSize: 11,
-                                color: c.textCaption,
+                            if (trailingText != null)
+                              Text(
+                                trailingText!,
+                                style: AppTypography.amharicCaption.copyWith(
+                                  fontSize: 11,
+                                  color: c.textCaption,
+                                ),
+                              )
+                            else
+                              Text(
+                                _daysAgo(s),
+                                style: AppTypography.amharicCaption.copyWith(
+                                  fontSize: 11,
+                                  color: c.textCaption,
+                                ),
                               ),
-                            ),
-                            if (onAddToCollection != null) ...[
-                              const SizedBox(width: 4),
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            if (hasOverflow)
+                              PopupMenuButton<_CardMenuAction>(
                                 icon: Icon(
-                                  Icons.folder_open_outlined,
-                                  size: 18,
-                                  color: c.primary,
+                                  Icons.more_vert_rounded,
+                                  size: 20,
+                                  color: c.textMuted,
                                 ),
-                                tooltip: s.addToCollection,
-                                onPressed: onAddToCollection,
-                              ),
-                            ],
-                            if (onDelete != null) ...[
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: onDelete,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 4),
-                                  child: Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 18,
-                                    color: Colors.red.withValues(alpha: 0.70),
-                                  ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
+                                color: c.surface,
+                                onSelected: (action) {
+                                  switch (action) {
+                                    case _CardMenuAction.collection:
+                                      onAddToCollection?.call();
+                                    case _CardMenuAction.delete:
+                                      onDelete?.call();
+                                  }
+                                },
+                                itemBuilder: (ctx) => [
+                                  if (onAddToCollection != null)
+                                    PopupMenuItem(
+                                      value: _CardMenuAction.collection,
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.folder_open_rounded,
+                                            size: 18,
+                                            color: c.primary,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            s.addToCollection,
+                                            style: AppTypography.amharicLabel
+                                                .copyWith(
+                                              fontSize: 14,
+                                              color: c.textOnParchment,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  if (onDelete != null)
+                                    PopupMenuItem(
+                                      value: _CardMenuAction.delete,
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.delete_outline_rounded,
+                                            size: 18,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            s.savedDelete,
+                                            style: AppTypography.amharicLabel
+                                                .copyWith(
+                                              fontSize: 14,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .error,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
                               ),
-                            ],
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -266,33 +350,53 @@ class AnnotationCard extends StatelessWidget {
                               height: 1.65,
                             ),
                           ),
-                        if (item.tags != null && item.tags!.isNotEmpty) ...[
+                        // Self-advertising Collection Chips
+                        if (item.collections != null &&
+                            item.collections!.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Wrap(
-                            spacing: 4,
+                            spacing: 6,
                             runSpacing: 4,
                             children: [
-                              for (final t in item.tags!.split(','))
-                                if (t.trim().isNotEmpty)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: c.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      '#${t.trim()}',
-                                      style: AppTypography.amharicCaption
-                                          .copyWith(
-                                        fontSize: 10,
-                                        color: c.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                              for (final col in item.collections!)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: (col.color ?? c.primary)
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: (col.color ?? c.primary)
+                                          .withValues(alpha: 0.3),
                                     ),
                                   ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: BoxDecoration(
+                                          color: col.color ?? c.primary,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        col.name,
+                                        style: AppTypography.amharicCaption
+                                            .copyWith(
+                                          fontSize: 10,
+                                          color: c.textOnParchment,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                         ],
@@ -570,211 +674,6 @@ class AnnotationPickerSheet extends StatelessWidget {
   }
 }
 
-// ── Tag Filter Row ─────────────────────────────────────────────────────────────
-
-class TagFilterRow extends StatelessWidget {
-  const TagFilterRow({
-    super.key,
-    required this.availableTags,
-    required this.selectedTags,
-    required this.onTagToggled,
-    required this.onClearAll,
-  });
-
-  final List<String> availableTags;
-  final Set<String> selectedTags;
-  final ValueChanged<String> onTagToggled;
-  final VoidCallback onClearAll;
-
-  @override
-  Widget build(BuildContext context) {
-    if (availableTags.isEmpty) return const SizedBox.shrink();
-    final c = context.colors;
-    final s = L10n.of(context);
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Row(
-        children: [
-          FilterChip(
-            label: Text(s.all),
-            selected: selectedTags.isEmpty,
-            onSelected: (_) => onClearAll(),
-            selectedColor: c.primary.withValues(alpha: 0.2),
-            checkmarkColor: c.primary,
-            labelStyle: AppTypography.amharicCaption.copyWith(
-              color: selectedTags.isEmpty ? c.primary : c.textMuted,
-              fontWeight: selectedTags.isEmpty ? FontWeight.bold : FontWeight.normal,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          ),
-          const SizedBox(width: 8),
-          for (final tag in availableTags) ...[
-            FilterChip(
-              label: Text('#$tag'),
-              selected: selectedTags.contains(tag),
-              onSelected: (_) => onTagToggled(tag),
-              selectedColor: c.primary.withValues(alpha: 0.2),
-              checkmarkColor: c.primary,
-              labelStyle: AppTypography.amharicCaption.copyWith(
-                color: selectedTags.contains(tag) ? c.primary : c.textMuted,
-                fontWeight: selectedTags.contains(tag) ? FontWeight.bold : FontWeight.normal,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            ),
-            const SizedBox(width: 6),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ── Tag Input Field ────────────────────────────────────────────────────────────
-
-class TagInputField extends StatefulWidget {
-  const TagInputField({
-    super.key,
-    this.initialTags,
-    this.allDistinctTags = const [],
-    required this.onTagsChanged,
-  });
-
-  final String? initialTags;
-  final List<String> allDistinctTags;
-  final ValueChanged<String?> onTagsChanged;
-
-  @override
-  State<TagInputField> createState() => _TagInputFieldState();
-}
-
-class _TagInputFieldState extends State<TagInputField> {
-  final _ctrl = TextEditingController();
-  final Set<String> _tags = {};
-  String _typedText = '';
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initialTags != null && widget.initialTags!.isNotEmpty) {
-      for (final t in widget.initialTags!.split(',')) {
-        if (t.trim().isNotEmpty) _tags.add(t.trim().toLowerCase());
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _addTag(String tag) {
-    final norm = tag.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
-    if (norm.isNotEmpty) {
-      setState(() {
-        _tags.add(norm);
-        _ctrl.clear();
-        _typedText = '';
-      });
-      _notify();
-    }
-  }
-
-  void _removeTag(String tag) {
-    setState(() {
-      _tags.remove(tag);
-    });
-    _notify();
-  }
-
-  void _notify() {
-    final normalized = normalizeTags(_tags.join(','));
-    widget.onTagsChanged(normalized);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    final s = L10n.of(context);
-    final suggestions = widget.allDistinctTags
-        .where((t) =>
-            !_tags.contains(t) &&
-            (_typedText.isEmpty || t.contains(_typedText.toLowerCase())))
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            for (final tag in _tags)
-              Chip(
-                label: Text('#$tag',
-                    style: AppTypography.amharicCaption.copyWith(fontSize: 12)),
-                deleteIcon: const Icon(Icons.close, size: 14),
-                onDeleted: () => _removeTag(tag),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-          ],
-        ),
-        if (_tags.isNotEmpty) const SizedBox(height: 8),
-        TextField(
-          controller: _ctrl,
-          onChanged: (val) {
-            if (val.endsWith(',')) {
-              _addTag(val.substring(0, val.length - 1));
-            } else {
-              setState(() => _typedText = val);
-            }
-          },
-          onSubmitted: (val) => _addTag(val),
-          decoration: InputDecoration(
-            hintText: s.addTagHint,
-            hintStyle:
-                AppTypography.amharicCaption.copyWith(color: c.textMuted),
-            isDense: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            suffixIcon: _ctrl.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.check, size: 18),
-                    onPressed: () => _addTag(_ctrl.text),
-                  )
-                : null,
-          ),
-        ),
-        if (suggestions.isNotEmpty && _typedText.isNotEmpty) ...[
-          const SizedBox(height: 6),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final sug in suggestions) ...[
-                  ActionChip(
-                    label: Text('#$sug',
-                        style: AppTypography.amharicCaption
-                            .copyWith(fontSize: 11)),
-                    onPressed: () => _addTag(sug),
-                    padding: EdgeInsets.zero,
-                  ),
-                  const SizedBox(width: 4),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
 // ── Collection Picker Sheet ────────────────────────────────────────────────────
 
 class CollectionPickerSheet extends ConsumerStatefulWidget {
@@ -782,13 +681,11 @@ class CollectionPickerSheet extends ConsumerStatefulWidget {
     super.key,
     required this.itemType,
     required this.itemId,
-    this.initialTags,
     required this.onItemChanged,
   });
 
   final String itemType;
   final int itemId;
-  final String? initialTags;
   final VoidCallback onItemChanged;
 
   @override
@@ -1674,5 +1571,124 @@ IconData getCollectionIconData(String? iconStr) {
   // ignore: non_const_argument_for_const_parameter
   return IconData(codePoint, fontFamily: 'MaterialIcons');
 }
+
+// ── Multi-select Components ────────────────────────────────────────────────
+
+class MultiSelectHeaderBar extends StatelessWidget {
+  const MultiSelectHeaderBar({
+    super.key,
+    required this.selectedCount,
+    required this.onClose,
+  });
+
+  final int selectedCount;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final c = context.colors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      decoration: BoxDecoration(
+        color: c.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_outline_rounded, color: c.primary, size: 20),
+          const SizedBox(width: 10),
+          Text(
+            s.selectedCount(selectedCount),
+            style: AppTypography.amharicLabel.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: c.primary,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: Icon(Icons.close_rounded, color: c.textMuted, size: 20),
+            onPressed: onClose,
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MultiSelectBottomActionBar extends StatelessWidget {
+  const MultiSelectBottomActionBar({
+    super.key,
+    required this.selectedCount,
+    required this.onAddToCollection,
+    required this.onDelete,
+  });
+
+  final int selectedCount;
+  final VoidCallback onAddToCollection;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final c = context.colors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: c.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: selectedCount > 0 ? onAddToCollection : null,
+                icon: const Icon(Icons.folder_open_rounded, size: 18),
+                label: Text(s.addToCollection),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: selectedCount > 0 ? onDelete : null,
+                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                label: Text(s.savedDelete),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 
