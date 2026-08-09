@@ -181,21 +181,14 @@ final chapterAnnotationsProvider = StateNotifierProvider.family<
       ChapterAnnotationsNotifier(ref.watch(annotationDbProvider), ref, key),
 );
 
-// ── Collections & Tags Providers ────────────────────────────────────────────────
+// ── Collections Providers ────────────────────────────────────────────────
 
 final collectionsProvider = FutureProvider<List<Collection>>((ref) async {
   final db = ref.watch(annotationDbProvider);
   return db.listCollections();
 });
 
-final distinctTagsProvider = FutureProvider<List<String>>((ref) async {
-  final db = ref.watch(annotationDbProvider);
-  return db.listDistinctTags();
-});
-
 final selectedCollectionIdProvider = StateProvider<int?>((ref) => null);
-
-final selectedTagsProvider = StateProvider<Set<String>>((ref) => {});
 
 class CollectionsNotifier extends StateNotifier<AsyncValue<List<Collection>>> {
   CollectionsNotifier(this._db) : super(const AsyncValue.loading()) {
@@ -214,7 +207,11 @@ class CollectionsNotifier extends StateNotifier<AsyncValue<List<Collection>>> {
   }
 
   Future<int> createCollection(String name, {Color? color, String? icon}) async {
-    final id = await _db.createCollection(name, color: color, icon: icon);
+    final id = await _db.createCollection(
+      name,
+      color: color?.toARGB32(),
+      icon: icon,
+    );
     await refresh();
     return id;
   }
