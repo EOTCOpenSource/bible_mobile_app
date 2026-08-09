@@ -21,18 +21,21 @@ class BackupBookmarkModel {
     required this.chapter,
     required this.verse,
     required this.createdAt,
+    this.tags,
   });
 
   final String bookId;
   final int chapter;
   final int verse;
   final int createdAt;
+  final String? tags;
 
   Map<String, dynamic> toJson() => {
         'bookId': bookId,
         'chapter': chapter,
         'verse': verse,
         'createdAt': createdAt,
+        if (tags != null) 'tags': tags,
       };
 
   factory BackupBookmarkModel.fromJson(Map<String, dynamic> json) {
@@ -40,6 +43,7 @@ class BackupBookmarkModel {
     final chapter = json['chapter'];
     final verse = json['verse'];
     final createdAt = json['createdAt'];
+    final tags = json['tags'] as String?;
 
     if (bookId is! String || bookId.isEmpty) {
       throw const FormatException('Invalid or missing "bookId" in bookmark.');
@@ -59,6 +63,7 @@ class BackupBookmarkModel {
       chapter: chapter,
       verse: verse,
       createdAt: createdAt,
+      tags: tags,
     );
   }
 }
@@ -70,6 +75,7 @@ class BackupHighlightModel {
     required this.verse,
     required this.color,
     required this.createdAt,
+    this.tags,
   });
 
   final String bookId;
@@ -77,6 +83,7 @@ class BackupHighlightModel {
   final int verse;
   final int color;
   final int createdAt;
+  final String? tags;
 
   Map<String, dynamic> toJson() => {
         'bookId': bookId,
@@ -84,6 +91,7 @@ class BackupHighlightModel {
         'verse': verse,
         'color': color,
         'createdAt': createdAt,
+        if (tags != null) 'tags': tags,
       };
 
   factory BackupHighlightModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +100,7 @@ class BackupHighlightModel {
     final verse = json['verse'];
     final color = json['color'];
     final createdAt = json['createdAt'];
+    final tags = json['tags'] as String?;
 
     if (bookId is! String || bookId.isEmpty) {
       throw const FormatException('Invalid or missing "bookId" in highlight.');
@@ -115,6 +124,7 @@ class BackupHighlightModel {
       verse: verse,
       color: color,
       createdAt: createdAt,
+      tags: tags,
     );
   }
 }
@@ -127,6 +137,7 @@ class BackupNoteModel {
     required this.body,
     required this.createdAt,
     required this.updatedAt,
+    this.tags,
   });
 
   final String bookId;
@@ -135,6 +146,7 @@ class BackupNoteModel {
   final String body;
   final int createdAt;
   final int updatedAt;
+  final String? tags;
 
   Map<String, dynamic> toJson() => {
         'bookId': bookId,
@@ -143,6 +155,7 @@ class BackupNoteModel {
         'body': body,
         'createdAt': createdAt,
         'updatedAt': updatedAt,
+        if (tags != null) 'tags': tags,
       };
 
   factory BackupNoteModel.fromJson(Map<String, dynamic> json) {
@@ -152,6 +165,7 @@ class BackupNoteModel {
     final body = json['body'];
     final createdAt = json['createdAt'];
     final updatedAt = json['updatedAt'];
+    final tags = json['tags'] as String?;
 
     if (bookId is! String || bookId.isEmpty) {
       throw const FormatException('Invalid or missing "bookId" in note.');
@@ -179,6 +193,74 @@ class BackupNoteModel {
       body: body,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      tags: tags,
+    );
+  }
+}
+
+class BackupCollectionItemModel {
+  const BackupCollectionItemModel({
+    required this.itemType,
+    required this.bookId,
+    required this.chapter,
+    required this.verse,
+  });
+
+  final String itemType;
+  final String bookId;
+  final int chapter;
+  final int verse;
+
+  Map<String, dynamic> toJson() => {
+        'itemType': itemType,
+        'bookId': bookId,
+        'chapter': chapter,
+        'verse': verse,
+      };
+
+  factory BackupCollectionItemModel.fromJson(Map<String, dynamic> json) {
+    return BackupCollectionItemModel(
+      itemType: json['itemType'] as String,
+      bookId: json['bookId'] as String,
+      chapter: json['chapter'] as int,
+      verse: json['verse'] as int,
+    );
+  }
+}
+
+class BackupCollectionModel {
+  const BackupCollectionModel({
+    required this.name,
+    this.color,
+    this.icon,
+    required this.items,
+  });
+
+  final String name;
+  final int? color;
+  final String? icon;
+  final List<BackupCollectionItemModel> items;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        if (color != null) 'color': color,
+        if (icon != null) 'icon': icon,
+        'items': items.map((i) => i.toJson()).toList(),
+      };
+
+  factory BackupCollectionModel.fromJson(Map<String, dynamic> json) {
+    final name = json['name'] as String;
+    final color = json['color'] as int?;
+    final icon = json['icon'] as String?;
+    final rawItems = json['items'] as List? ?? [];
+    final items = rawItems
+        .map((e) => BackupCollectionItemModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return BackupCollectionModel(
+      name: name,
+      color: color,
+      icon: icon,
+      items: items,
     );
   }
 }
@@ -191,6 +273,7 @@ class BackupPayload {
     required this.bookmarks,
     required this.highlights,
     required this.notes,
+    this.collections,
   });
 
   static const int currentFormatVersion = 1;
@@ -201,6 +284,7 @@ class BackupPayload {
   final List<BackupBookmarkModel> bookmarks;
   final List<BackupHighlightModel> highlights;
   final List<BackupNoteModel> notes;
+  final List<BackupCollectionModel>? collections;
 
   Map<String, dynamic> toJson() => {
         'formatVersion': formatVersion,
@@ -209,6 +293,8 @@ class BackupPayload {
         'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
         'highlights': highlights.map((h) => h.toJson()).toList(),
         'notes': notes.map((n) => n.toJson()).toList(),
+        if (collections != null)
+          'collections': collections!.map((c) => c.toJson()).toList(),
       };
 
   factory BackupPayload.fromJson(Map<String, dynamic> json) {
@@ -249,6 +335,11 @@ class BackupPayload {
         .map((e) => BackupNoteModel.fromJson(e as Map<String, dynamic>))
         .toList();
 
+    final rawCollections = json['collections'] as List?;
+    final collections = rawCollections
+        ?.map((e) => BackupCollectionModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
     return BackupPayload(
       formatVersion: formatVersion,
       exportedAt: exportedAt,
@@ -256,6 +347,7 @@ class BackupPayload {
       bookmarks: bookmarks,
       highlights: highlights,
       notes: notes,
+      collections: collections,
     );
   }
 }
