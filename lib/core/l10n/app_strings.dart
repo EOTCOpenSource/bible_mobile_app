@@ -21,6 +21,13 @@ abstract class AppStrings {
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  String get streakEmojiTitle;
+  String get streakEmojiHint;
+  String get streakEmojiSectionChoose;
+  String get streakEmojiPreviewLabel;
+  String get streakEmojiWidgetNote;
+
   // ── Streak page ───────────────────────────────────────────────────────────
   String get streakPageTitle;
   String get streakDayStreakLabel;

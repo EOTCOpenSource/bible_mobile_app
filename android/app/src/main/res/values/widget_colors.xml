@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home screen widget palette, light.
+
+  Hand-mirrored from AppColorScheme.light in
+  lib/core/theme/app_color_scheme.dart. The launcher renders widgets in its own
+  process with no Flutter engine, so these cannot be read from Dart at draw
+  time and have to be duplicated here. Keep the two in step — a widget in last
+  season's maroon next to an app in this season's is more jarring than a widget
+  that is plainly its own thing.
+-->
+<resources>
+    <color name="widget_primary">#FF6B1F2A</color>
+    <color name="widget_accent">#FFD4A853</color>
+    <color name="widget_background">#FFFFFFFF</color>
+    <color name="widget_surface_dim">#FFF8F5F0</color>
+    <color name="widget_text">#FF2C1810</color>
+    <color name="widget_text_muted">#FF7A6458</color>
+    <color name="widget_border">#FFE8D9C4</color>
+    <color name="widget_track">#FFE0D8CC</color>
+</resources>

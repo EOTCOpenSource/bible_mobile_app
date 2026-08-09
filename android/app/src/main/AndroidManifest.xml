@@ -74,6 +74,49 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- Home screen widgets.
+
+             Exported, and they have to be: the launcher lives in another
+             process and cannot bind an unexported receiver, so a widget
+             declared exported="false" simply never appears in the picker.
+             Nothing sensitive crosses the boundary — the receivers only read
+             the shared preferences the app itself wrote and draw text. -->
+        <receiver
+            android:name=".widgets.DailyVerseWidget"
+            android:exported="true"
+            android:label="@string/widget_daily_verse_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_daily_verse_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widgets.ContinueReadingWidget"
+            android:exported="true"
+            android:label="@string/widget_continue_reading_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_continue_reading_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widgets.StreakWidget"
+            android:exported="true"
+            android:label="@string/widget_streak_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_streak_info" />
+        </receiver>
+
         <!-- flutter_local_notifications: fires scheduled notifications that were
              already triggered but the app was not running at fire time. -->
         <receiver

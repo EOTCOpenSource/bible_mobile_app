@@ -31,6 +31,19 @@ class AmStrings extends AppStrings {
   @override
   String get streakReadTodayBtn => 'ዛሬ ያንብቡ';
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  @override
+  String get streakEmojiTitle => 'የተከታታይ ንባብ ምልክት';
+  @override
+  String get streakEmojiHint => 'ከንባብ ቀኖችዎ ጎን የሚታየው ምልክት';
+  @override
+  String get streakEmojiSectionChoose => 'ምልክት ይምረጡ';
+  @override
+  String get streakEmojiPreviewLabel => 'ቅድመ እይታ';
+  @override
+  String get streakEmojiWidgetNote =>
+      'የመረጡት ምልክት በመነሻ ገጽ መግብር ላይም ይታያል።';
+
   // ── Streak page ───────────────────────────────────────────────────────────
   @override
   String get streakPageTitle => 'ተከታታይ ንባብ';

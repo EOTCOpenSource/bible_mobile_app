@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  updatePeriodMillis is 0 on purpose. The system clamps it to 30 minutes
+  minimum and skips it entirely in Doze, so it can neither be relied on for
+  freshness nor made cheap enough to leave on. Dart drives every update
+  instead, from app launch and resume.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:initialLayout="@layout/widget_daily_verse"
+    android:previewLayout="@layout/widget_daily_verse"
+    android:description="@string/widget_daily_verse_description"
+    android:updatePeriodMillis="0" />

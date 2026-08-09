@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Continue reading, 4×1 up to 4×2.
+
+  Tapping anywhere resumes the last position, so the whole root carries the
+  PendingIntent rather than a button — a widget this small has no room for a
+  tap target that is smaller than itself.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_background"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/continue_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/ethiopic_body"
+        android:textColor="@color/widget_text_muted"
+        android:textSize="10sp"
+        android:text="@string/widget_continue_label" />
+
+    <TextView
+        android:id="@+id/continue_book"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/ethiopic_bold"
+        android:textColor="@color/widget_text"
+        android:textSize="16sp"
+        tools:text="መጽሐፈ ነገሥት ቀዳማዊ" />
+
+    <TextView
+        android:id="@+id/continue_ref"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/ethiopic_body"
+        android:textColor="@color/widget_primary"
+        android:textSize="12sp"
+        tools:text="ምዕ. 8" />
+
+    <!--
+      Two stacked views rather than a ProgressBar: RemoteViews can only set a
+      ProgressBar's value, not tint it per theme below API 31, and the clip
+      drawable's level is settable from RemoteViews on every version we ship to.
+    -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="8dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/widget_progress_track" />
+
+        <ImageView
+            android:id="@+id/continue_progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:contentDescription="@null"
+            android:src="@drawable/widget_progress_fill" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/continue_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="gone"
+        android:fontFamily="@font/ethiopic_body"
+        android:text="@string/widget_start_reading"
+        android:textColor="@color/widget_text_muted"
+        android:textSize="13sp" />
+
+</LinearLayout>

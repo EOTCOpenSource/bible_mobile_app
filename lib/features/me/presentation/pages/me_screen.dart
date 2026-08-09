@@ -22,6 +22,7 @@ import '../../../backup/data/backup_models.dart';
 import '../../../backup/providers/backup_providers.dart';
 import '../widgets/web_reader_card.dart';
 import 'reading_settings_page.dart';
+import 'streak_emoji_page.dart';
 import 'voice_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
@@ -99,6 +100,19 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   onChanged: (v) => Settings.update(
                     context,
                     settings.copyWith(isDarkReader: v),
+                  ),
+                ),
+                // The current emoji is the row's value, so the choice is
+                // readable without opening the page.
+                _ArrowRow(
+                  label: s.streakEmojiTitle,
+                  value: settings.streakEmoji,
+                  hint: s.streakEmojiHint,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const StreakEmojiPage(),
+                    ),
                   ),
                 ),
                 // Audio reading is set up before it is used: the user's own

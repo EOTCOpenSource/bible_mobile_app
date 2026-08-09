@@ -7,7 +7,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 11;
+  static const _version = 12;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -93,6 +93,15 @@ class AppDatabase {
     }
     if (oldVersion >= 6 && oldVersion < 11) {
       await _migrateSettingsTypography(db);
+    }
+    // v11→v12: the streak emoji. Same shape as v7→v8 — only databases whose
+    // `app_settings` predates the column need the ALTER, since anything older
+    // than v6 had the table created above by [_createSettingsTable], which
+    // already declares it.
+    if (oldVersion >= 6 && oldVersion < 12) {
+      await db.execute(
+        "ALTER TABLE app_settings ADD COLUMN streak_emoji TEXT NOT NULL DEFAULT '🔥'",
+      );
     }
   }
 
@@ -1213,7 +1222,8 @@ class AppDatabase {
       line_height REAL NOT NULL DEFAULT 1.6,
       margin_scale REAL NOT NULL DEFAULT 1.0,
       text_align INTEGER NOT NULL DEFAULT 0,
-      keep_screen_on INTEGER NOT NULL DEFAULT 0
+      keep_screen_on INTEGER NOT NULL DEFAULT 0,
+      streak_emoji TEXT NOT NULL DEFAULT '🔥'
     )
   ''');
     await db.insert('app_settings', {
@@ -1246,6 +1256,7 @@ class AppDatabase {
     double marginScale = 1.0,
     int textAlign = 0,
     bool keepScreenOn = false,
+    String streakEmoji = '🔥',
   }) async {
     final db = await database;
     await db.update(
@@ -1263,6 +1274,7 @@ class AppDatabase {
         'margin_scale': marginScale,
         'text_align': textAlign,
         'keep_screen_on': keepScreenOn ? 1 : 0,
+        'streak_emoji': streakEmoji,
       },
       where: 'id = ?',
       whereArgs: [1],

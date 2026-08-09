@@ -31,6 +31,19 @@ class EnStrings extends AppStrings {
   @override
   String get streakReadTodayBtn => 'Read Now';
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  @override
+  String get streakEmojiTitle => 'Streak Emoji';
+  @override
+  String get streakEmojiHint => 'The emoji shown beside your reading days';
+  @override
+  String get streakEmojiSectionChoose => 'Choose an emoji';
+  @override
+  String get streakEmojiPreviewLabel => 'Preview';
+  @override
+  String get streakEmojiWidgetNote =>
+      'Your choice also appears on the home screen widget.';
+
   // ── Streak page ───────────────────────────────────────────────────────────
   @override
   String get streakPageTitle => 'Reading Streak';

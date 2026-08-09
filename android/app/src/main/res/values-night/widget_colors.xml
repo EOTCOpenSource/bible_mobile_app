@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home screen widget palette, dark. Mirrors AppColorScheme.dark.
+
+  Every name in values/widget_colors.xml must also appear here: a name defined
+  in only one of the two resolves to the light value on a dark launcher, which
+  is how a widget ends up with black text on a black card.
+-->
+<resources>
+    <color name="widget_primary">#FFA03848</color>
+    <color name="widget_accent">#FFD4A853</color>
+    <color name="widget_background">#FF1E1A16</color>
+    <color name="widget_surface_dim">#FF161210</color>
+    <color name="widget_text">#FFEEE4D4</color>
+    <color name="widget_text_muted">#FF9A8878</color>
+    <color name="widget_border">#FF2E2420</color>
+    <color name="widget_track">#FF3A2E24</color>
+</resources>
