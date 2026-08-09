@@ -18,6 +18,7 @@ class VerseActionBar extends StatelessWidget {
     required this.onNote,
     required this.onCopy,
     required this.onShare,
+    this.onCrossRef,
   });
 
   final AppStrings s;
@@ -32,58 +33,87 @@ class VerseActionBar extends StatelessWidget {
   final VoidCallback onNote;
   final VoidCallback onCopy;
   final VoidCallback onShare;
+  final VoidCallback? onCrossRef;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompact = screenWidth < 360;
+
+    Widget rowContent = Row(
+      mainAxisAlignment: isCompact ? MainAxisAlignment.start : MainAxisAlignment.spaceEvenly,
+      mainAxisSize: isCompact ? MainAxisSize.min : MainAxisSize.max,
+      children: [
+        if (onCrossRef != null)
           _ActionBtn(
-            icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_add_outlined,
-            label: s.verseBookmark,
-            textColor: isBookmarked ? context.colors.primary : textColor,
-            onTap: onBookmark,
-          ),
-          _ActionBtn(
-            icon: Icons.format_color_fill_rounded,
-            label: s.verseHighlight,
-            textColor: highlightColor ?? textColor,
-            onTap: onHighlight,
-            dot: highlightColor,
-          ),
-          _ActionBtn(
-            icon: hasNote ? Icons.sticky_note_2_rounded : Icons.sticky_note_2_outlined,
-            label: s.verseNote,
-            textColor: hasNote ? context.colors.accentDeep : textColor,
-            onTap: onNote,
-          ),
-          _ActionBtn(
-            icon: Icons.copy_rounded,
-            label: s.verseCopy,
+            icon: Icons.alt_route_rounded,
+            label: s.verseCrossReferences,
             textColor: textColor,
-            onTap: onCopy,
+            onTap: onCrossRef!,
           ),
-          _ActionBtn(
-            icon: Icons.share_outlined,
-            label: s.verseShare,
-            textColor: textColor,
-            onTap: onShare,
+        _ActionBtn(
+          icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_add_outlined,
+          label: s.verseBookmark,
+          textColor: isBookmarked ? context.colors.primary : textColor,
+          onTap: onBookmark,
+        ),
+        _ActionBtn(
+          icon: Icons.format_color_fill_rounded,
+          label: s.verseHighlight,
+          textColor: highlightColor ?? textColor,
+          onTap: onHighlight,
+          dot: highlightColor,
+        ),
+        _ActionBtn(
+          icon: hasNote ? Icons.sticky_note_2_rounded : Icons.sticky_note_2_outlined,
+          label: s.verseNote,
+          textColor: hasNote ? context.colors.accentDeep : textColor,
+          onTap: onNote,
+        ),
+        _ActionBtn(
+          icon: Icons.copy_rounded,
+          label: s.verseCopy,
+          textColor: textColor,
+          onTap: onCopy,
+        ),
+        _ActionBtn(
+          icon: Icons.share_outlined,
+          label: s.verseShare,
+          textColor: textColor,
+          onTap: onShare,
+        ),
+      ],
+    );
+
+    if (isCompact) {
+      rowContent = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: rowContent,
+      );
+    }
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
           ),
-        ],
+          child: rowContent,
+        ),
       ),
     );
   }
