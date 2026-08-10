@@ -532,7 +532,7 @@ class VerseView extends StatelessWidget {
               onTap: () => onApparatusTap?.call(verse),
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.only(left: 2, right: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 child: Text(
                   verse.notes.isNotEmpty ? '✻' : '✦',
                   style: TextStyle(
