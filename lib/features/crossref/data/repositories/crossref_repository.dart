@@ -12,7 +12,7 @@ class CrossRefRepository {
   /// Max number of book JSONs kept in memory LRU cache.
   static const int _maxCacheSize = 5;
 
-  /// In-memory cache: book number -> (verseKey -> List<CrossRef>)
+  /// In-memory cache: book number -> (verseKey -> `List<CrossRef>`)
   final Map<int, Map<String, List<CrossRef>>> _cache = {};
 
   /// Tracking book loading order for LRU eviction.
