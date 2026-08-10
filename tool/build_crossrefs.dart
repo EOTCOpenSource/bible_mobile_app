@@ -43,7 +43,7 @@ class _RawRef {
 }
 
 void main(List<String> args) async {
-  print('=== Treasury of Scripture Knowledge (TSK) Cross-Reference Builder ===');
+  stdout.writeln('=== Treasury of Scripture Knowledge (TSK) Cross-Reference Builder ===');
 
   // 1. Decompress am-2000.db.gz to temporary file to read bounds via SQLite
   final dbGzFile = File('assets/bibles/am-2000.db.gz');
@@ -86,12 +86,12 @@ void main(List<String> args) async {
     }
   }
 
-  db.dispose();
+  db.close();
   if (tempDbFile.existsSync()) {
     tempDbFile.deleteSync();
   }
 
-  print('Loaded database bounds for ${usfmToBookNumber.length} books.');
+  stdout.writeln('Loaded database bounds for ${usfmToBookNumber.length} books.');
 
   // 2. Read raw TSK data
   File gzSource = File('tool/data/cross_references.txt.gz');
@@ -183,7 +183,7 @@ void main(List<String> args) async {
     }
   }
 
-  print('Parsed ${rawRefs.length} valid cross-reference links.');
+  stdout.writeln('Parsed ${rawRefs.length} valid cross-reference links.');
 
   // Group by source verse and calculate weights (0..10)
   final perBookData = <int, Map<String, List<Map<String, dynamic>>>>{};
@@ -263,6 +263,6 @@ void main(List<String> args) async {
   }
 
   final totalMb = (totalSizeBytes / (1024 * 1024)).toStringAsFixed(2);
-  print('Successfully wrote assets/crossrefs/ per-book JSON files.');
-  print('Total assets/crossrefs/ size: $totalMb MB ($totalSizeBytes bytes).');
+  stdout.writeln('Successfully wrote assets/crossrefs/ per-book JSON files.');
+  stdout.writeln('Total assets/crossrefs/ size: $totalMb MB ($totalSizeBytes bytes).');
 }
