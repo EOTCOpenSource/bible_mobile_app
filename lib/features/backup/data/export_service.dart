@@ -31,6 +31,7 @@ class ExportService {
           chapter: b.chapter,
           verse: b.verseStart,
           createdAt: b.createdAt.millisecondsSinceEpoch,
+          tags: b.tags,
         );
       }).toList();
 
@@ -41,6 +42,7 @@ class ExportService {
           verse: h.verseStart,
           color: h.color.toARGB32(),
           createdAt: h.createdAt.millisecondsSinceEpoch,
+          tags: h.tags,
         );
       }).toList();
 
@@ -52,8 +54,57 @@ class ExportService {
           body: n.content,
           createdAt: n.createdAt.millisecondsSinceEpoch,
           updatedAt: n.updatedAt.millisecondsSinceEpoch,
+          tags: n.tags,
         );
       }).toList();
+
+      final collections = await _db.listCollections();
+      final backupCollections = <BackupCollectionModel>[];
+      final bMap = {for (final b in bookmarks) b.id: b};
+      final hMap = {for (final h in highlights) h.id: h};
+      final nMap = {for (final n in notes) n.id: n};
+
+      for (final col in collections) {
+        if (col.id == null) continue;
+        final rawItems = await _db.listItemsInCollection(col.id!);
+        final items = <BackupCollectionItemModel>[];
+        for (final item in rawItems) {
+          final type = item['item_type'] as String?;
+          final itemId = item['item_id'] as int?;
+          if (type == null || itemId == null) continue;
+          if (type == 'bookmark' && bMap.containsKey(itemId)) {
+            final b = bMap[itemId]!;
+            items.add(BackupCollectionItemModel(
+              itemType: type,
+              bookId: apiBookIdFromUsfm(b.bookId),
+              chapter: b.chapter,
+              verse: b.verseStart,
+            ));
+          } else if (type == 'highlight' && hMap.containsKey(itemId)) {
+            final h = hMap[itemId]!;
+            items.add(BackupCollectionItemModel(
+              itemType: type,
+              bookId: apiBookIdFromUsfm(h.bookId),
+              chapter: h.chapter,
+              verse: h.verseStart,
+            ));
+          } else if (type == 'note' && nMap.containsKey(itemId)) {
+            final n = nMap[itemId]!;
+            items.add(BackupCollectionItemModel(
+              itemType: type,
+              bookId: apiBookIdFromUsfm(n.bookId),
+              chapter: n.chapter,
+              verse: n.verseStart,
+            ));
+          }
+        }
+        backupCollections.add(BackupCollectionModel(
+          name: col.name,
+          color: col.color?.toARGB32(),
+          icon: col.icon,
+          items: items,
+        ));
+      }
 
       final payload = BackupPayload(
         formatVersion: BackupPayload.currentFormatVersion,
@@ -62,6 +113,7 @@ class ExportService {
         bookmarks: backupBookmarks,
         highlights: backupHighlights,
         notes: backupNotes,
+        collections: backupCollections,
       );
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(payload.toJson());

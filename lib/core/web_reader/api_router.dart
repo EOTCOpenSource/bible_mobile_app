@@ -131,7 +131,7 @@ class ApiRouter {
     if (direct != null) return direct;
     try {
       final decoded = Uri.decodeComponent(raw);
-      if (decoded != raw) return bible.resolveBook(decoded);
+      if (decoded != raw) return await bible.resolveBook(decoded);
     } on ArgumentError {
       // Not valid percent-encoding; the first attempt was the only one.
     }

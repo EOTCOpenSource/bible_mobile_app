@@ -355,6 +355,58 @@ class AmStrings extends AppStrings {
   String get loadMore => 'ተጨማሪ አሳይ';
   @override
   String get savedDeleteHistoryTitle => 'ይህን መዝገብ ከታሪክ ያጥፋ?';
+  @override
+  String get collections => 'ስብስቦች';
+  @override
+  String get newCollection => 'አዲስ ስብስብ';
+  @override
+  String get addToCollection => 'ወደ ስብስብ ጨምር';
+  @override
+  String get collectionSubtitle =>
+      'ይህንን ንጥል በአንድ ወይም ከዚያ በላይ በሆኑ ስብስቦች ውስጥ ያደራጁ።';
+  @override
+  String get collectionSearchHint => 'ስብስብ ይፈልጉ ወይም ይፍጠሩ...';
+  @override
+  String createNamedCollection(String name) => '"$name" ፍጠር';
+  @override
+  String get recentCollections => 'የቅርብ ጊዜ ስብስቦች';
+  @override
+  String get allCollections => 'ሁሉም ስብስቦች';
+  @override
+  String get noCollectionsEmptyHint =>
+      'የመጀመሪያዎን ስብስብ ለመፍጠር መተየብ ይጀምሩ።';
+  @override
+  String get noCollectionsFound => 'ምንም ስብስቦች አልተገኙም';
+  @override
+  String get tags => 'መለያዎች';
+  @override
+  String get addTags => 'መለያ ጨምር';
+  @override
+  String get all => 'ሁሉም';
+  @override
+  String get noCollections => 'እስካሁን ስብስብ የለም';
+  @override
+  String get addTagHint => 'መለያ ያስገቡ (ኮማ ወይም Enter ይጫኑ)...';
+  @override
+  String get collectionNameHint => 'የስብስብ ስም';
+  @override
+  String get collectionColorLabel => 'ቀለም';
+  @override
+  String get collectionCreateAction => 'ፍጠር';
+  @override
+  String get savedOk => 'እሺ';
+  @override
+  String get collectionDeleteTitle => 'ስብስብ ሰርዝ';
+  @override
+  String get collectionDeleteMessage =>
+      'ይህ ስብስብ ይሰረዛል። በውስጡ ያሉት ማስታወሻዎች፣ ማድመቂያዎችና ዕልባቶች አይሰረዙም።';
+  @override
+  String selectedCount(int count) => '$count ተመርጠዋል';
+  @override
+  String get deleteSelectedTitle => 'የተመረጡትን ሰርዝ';
+  @override
+  String deleteSelectedMessage(int count) =>
+      'እርግጠኛ ነዎት $count የተመረጡትን ንጥሎች መሰረዝ ይፈልጋሉ?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

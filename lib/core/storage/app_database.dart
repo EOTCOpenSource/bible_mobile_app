@@ -7,7 +7,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 11;
+  static const _version = 12;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -91,8 +91,19 @@ class AppDatabase {
     if (oldVersion < 10) {
       await _createReadingHistoryTable(db);
     }
+    // v10→v11: the typography columns. Only databases whose `app_settings`
+    // predates them need the ALTER — anything older than v6 just had the table
+    // created above by [_createSettingsTable], which already declares them.
     if (oldVersion >= 6 && oldVersion < 11) {
       await _migrateSettingsTypography(db);
+    }
+    // v11→v12: collections and tags. This landed alongside the typography
+    // migration above, which had already claimed v11 on main — so it takes v12
+    // rather than sharing, or devices already upgraded to v11 would never run
+    // it and would silently end up without the tables.
+    if (oldVersion < 12) {
+      await _createCollectionsTables(db);
+      await _addTagsColumnToAnnotations(db);
     }
   }
 
@@ -311,6 +322,40 @@ class AppDatabase {
     await _createReadingHistoryTable(db);
   }
 
+  Future<void> _createCollectionsTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS collections (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT    NOT NULL,
+        color       INTEGER,
+        icon        TEXT,
+        sort_order  INTEGER NOT NULL DEFAULT 0,
+        created_at  INTEGER NOT NULL,
+        remote_id   TEXT,
+        sync_status TEXT    NOT NULL DEFAULT 'pendingCreate'
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS collection_items (
+        collection_id INTEGER NOT NULL,
+        item_type     TEXT    NOT NULL,
+        item_id       INTEGER NOT NULL,
+        added_at      INTEGER NOT NULL,
+        PRIMARY KEY (collection_id, item_type, item_id)
+      )
+    ''');
+  }
+
+  Future<void> _addTagsColumnToAnnotations(Database db) async {
+    for (final table in ['bookmarks', 'highlights', 'notes']) {
+      try {
+        await db.execute('ALTER TABLE $table ADD COLUMN tags TEXT');
+      } catch (_) {
+        // Ignored if column already exists
+      }
+    }
+  }
+
   Future<void> _onCreate(Database db, int _) async {
     await db.execute('''
       CREATE TABLE bookmarks (
@@ -324,6 +369,7 @@ class AppDatabase {
         updated_at   INTEGER NOT NULL,
         sync_status  TEXT    NOT NULL DEFAULT 'pendingCreate',
         remote_id    TEXT,
+        tags         TEXT,
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
@@ -341,6 +387,7 @@ class AppDatabase {
         updated_at   INTEGER NOT NULL,
         sync_status  TEXT    NOT NULL DEFAULT 'pendingCreate',
         remote_id    TEXT,
+        tags         TEXT,
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
@@ -358,6 +405,7 @@ class AppDatabase {
         updated_at   INTEGER NOT NULL,
         sync_status  TEXT    NOT NULL DEFAULT 'pendingCreate',
         remote_id    TEXT,
+        tags         TEXT,
         UNIQUE(book_id, chapter, verse_start)
       )
     ''');
@@ -365,6 +413,7 @@ class AppDatabase {
     await _createReadDayTable(db);
     await _createPlanPositionTable(db);
     await _createSettingsTable(db);
+    await _createCollectionsTables(db);
   }
 
   Future<void> _createPlanPositionTable(Database db) => db.execute('''
@@ -831,8 +880,12 @@ class AppDatabase {
         if (existing.isEmpty) {
           await txn.insert('bookmarks', b.toMap());
         } else if (conflictPolicy == BackupConflictPolicy.replace) {
-          final existingId = existing.first['id'] as int;
+          final existingRow = existing.first;
+          final existingId = existingRow['id'] as int;
           final map = b.toMap()..['id'] = existingId;
+          if (b.tags == null && existingRow['tags'] != null) {
+            map['tags'] = existingRow['tags'];
+          }
           await txn.update('bookmarks', map, where: 'id = ?', whereArgs: [existingId]);
         }
       }
@@ -848,8 +901,12 @@ class AppDatabase {
         if (existing.isEmpty) {
           await txn.insert('highlights', h.toMap());
         } else if (conflictPolicy == BackupConflictPolicy.replace) {
-          final existingId = existing.first['id'] as int;
+          final existingRow = existing.first;
+          final existingId = existingRow['id'] as int;
           final map = h.toMap()..['id'] = existingId;
+          if (h.tags == null && existingRow['tags'] != null) {
+            map['tags'] = existingRow['tags'];
+          }
           await txn.update('highlights', map, where: 'id = ?', whereArgs: [existingId]);
         }
       }
@@ -869,18 +926,25 @@ class AppDatabase {
           final existingId = existingRow['id'] as int;
           if (conflictPolicy == BackupConflictPolicy.replace) {
             final map = n.toMap()..['id'] = existingId;
+            if (n.tags == null && existingRow['tags'] != null) {
+              map['tags'] = existingRow['tags'];
+            }
             await txn.update('notes', map, where: 'id = ?', whereArgs: [existingId]);
           } else if (conflictPolicy == BackupConflictPolicy.merge) {
             final existingContent = existingRow['content'] as String? ?? '';
             if (existingContent.trim() != n.content.trim()) {
               final mergedContent = '$existingContent\n\n${n.content}';
+              final updates = <String, dynamic>{
+                'content': mergedContent,
+                'updated_at': DateTime.now().millisecondsSinceEpoch,
+                'sync_status': SyncStatus.pendingUpdate.name,
+              };
+              if (n.tags != null) {
+                updates['tags'] = n.tags;
+              }
               await txn.update(
                 'notes',
-                {
-                  'content': mergedContent,
-                  'updated_at': DateTime.now().millisecondsSinceEpoch,
-                  'sync_status': SyncStatus.pendingUpdate.name,
-                },
+                updates,
                 where: 'id = ?',
                 whereArgs: [existingId],
               );
@@ -1210,6 +1274,8 @@ class AppDatabase {
       reading_time_minute INTEGER,
       has_seen_onboarding INTEGER NOT NULL DEFAULT 0,
       has_seen_reader_hint INTEGER NOT NULL DEFAULT 0,
+      collection_hint_views INTEGER NOT NULL DEFAULT 0,
+      has_dismissed_collection_hint INTEGER NOT NULL DEFAULT 0,
       line_height REAL NOT NULL DEFAULT 1.6,
       margin_scale REAL NOT NULL DEFAULT 1.0,
       text_align INTEGER NOT NULL DEFAULT 0,
@@ -1242,12 +1308,23 @@ class AppDatabase {
     int? readingTimeMinute,
     bool hasSeenOnboarding = false,
     bool hasSeenReaderHint = false,
+    int collectionHintViews = 0,
+    bool hasDismissedCollectionHint = false,
     double lineHeight = 1.6,
     double marginScale = 1.0,
     int textAlign = 0,
     bool keepScreenOn = false,
   }) async {
     final db = await database;
+    try {
+      await db.execute(
+          'ALTER TABLE app_settings ADD COLUMN collection_hint_views INTEGER NOT NULL DEFAULT 0');
+    } catch (_) {}
+    try {
+      await db.execute(
+          'ALTER TABLE app_settings ADD COLUMN has_dismissed_collection_hint INTEGER NOT NULL DEFAULT 0');
+    } catch (_) {}
+
     await db.update(
       'app_settings',
       {
@@ -1259,6 +1336,8 @@ class AppDatabase {
         'reading_time_minute': readingTimeMinute,
         'has_seen_onboarding': hasSeenOnboarding ? 1 : 0,
         'has_seen_reader_hint': hasSeenReaderHint ? 1 : 0,
+        'collection_hint_views': collectionHintViews,
+        'has_dismissed_collection_hint': hasDismissedCollectionHint ? 1 : 0,
         'line_height': lineHeight,
         'margin_scale': marginScale,
         'text_align': textAlign,
@@ -1266,6 +1345,183 @@ class AppDatabase {
       },
       where: 'id = ?',
       whereArgs: [1],
+    );
+  }
+
+  // ── Collection & Tag Management (Issue #25) ──────────────────────────────────
+  // Note: Collections are local-only for now. sync_status and remote_id columns
+  // exist in the database schema to support future cloud sync API endpoints seamlessly.
+
+  Future<int> createCollection(
+    String name, {
+    int? color,
+    String? icon,
+  }) async {
+    final db = await database;
+    final maxSortRes =
+        await db.rawQuery('SELECT MAX(sort_order) as m FROM collections');
+    final maxSort = (maxSortRes.first['m'] as int?) ?? -1;
+    final map = <String, dynamic>{
+      'name': name,
+      'color': color,
+      'icon': icon,
+      'sort_order': maxSort + 1,
+      'created_at': DateTime.now().millisecondsSinceEpoch,
+      'sync_status': SyncStatus.pendingCreate.name,
+    };
+    return db.insert('collections', map);
+  }
+
+  Future<void> updateCollection(Collection collection) async {
+    final db = await database;
+    if (collection.id == null) return;
+    await db.update(
+      'collections',
+      collection.toMap(),
+      where: 'id = ?',
+      whereArgs: [collection.id],
+    );
+  }
+
+  Future<void> deleteCollection(int id) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'collection_items',
+        where: 'collection_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        'collections',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
+  }
+
+  Future<void> addItemToCollection(
+    int collectionId,
+    String itemType,
+    int itemId,
+  ) async {
+    final db = await database;
+    await db.insert(
+      'collection_items',
+      {
+        'collection_id': collectionId,
+        'item_type': itemType,
+        'item_id': itemId,
+        'added_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> removeItemFromCollection(
+    int collectionId,
+    String itemType,
+    int itemId,
+  ) async {
+    final db = await database;
+    await db.delete(
+      'collection_items',
+      where: 'collection_id = ? AND item_type = ? AND item_id = ?',
+      whereArgs: [collectionId, itemType, itemId],
+    );
+  }
+
+  Future<List<Collection>> listCollections() async {
+    final db = await database;
+    final res = await db.query(
+      'collections',
+      orderBy: 'sort_order ASC, created_at ASC',
+    );
+    return res.map((m) => Collection.fromMap(m)).toList();
+  }
+
+  Future<void> reorderCollections(List<Collection> collections) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      for (var i = 0; i < collections.length; i++) {
+        final c = collections[i];
+        if (c.id != null) {
+          await txn.update(
+            'collections',
+            {'sort_order': i},
+            where: 'id = ?',
+            whereArgs: [c.id],
+          );
+        }
+      }
+    });
+  }
+
+  Future<List<Map<String, Object?>>> listItemsInCollection(
+      int collectionId) async {
+    final db = await database;
+    return db.query(
+      'collection_items',
+      where: 'collection_id = ?',
+      whereArgs: [collectionId],
+    );
+  }
+
+  Future<List<String>> listDistinctTags() async {
+    final db = await database;
+    final tagSet = <String>{};
+
+    for (final table in ['bookmarks', 'highlights', 'notes']) {
+      final rows = await db.query(
+        table,
+        columns: ['tags'],
+        where: 'tags IS NOT NULL AND sync_status != ?',
+        whereArgs: [SyncStatus.pendingDelete.name],
+      );
+      for (final row in rows) {
+        final raw = row['tags'] as String?;
+        if (raw != null && raw.isNotEmpty) {
+          final normalized = normalizeTags(raw);
+          if (normalized != null) {
+            tagSet.addAll(normalized.split(','));
+          }
+        }
+      }
+    }
+
+    final sorted = tagSet.toList()..sort();
+    return sorted;
+  }
+
+  Future<void> updateTags(
+      String itemType, int itemId, String? tagsString) async {
+    final db = await database;
+    final table = switch (itemType) {
+      'bookmark' => 'bookmarks',
+      'highlight' => 'highlights',
+      'note' => 'notes',
+      _ => throw ArgumentError('Unknown itemType: $itemType'),
+    };
+
+    final normalized = normalizeTags(tagsString);
+
+    final rows = await db.query(table,
+        columns: ['sync_status'], where: 'id = ?', whereArgs: [itemId]);
+    if (rows.isEmpty) return;
+
+    final currentSync = rows.first['sync_status'] as String?;
+    final newSync = (currentSync == SyncStatus.synced.name)
+        ? SyncStatus.pendingUpdate.name
+        : (currentSync ?? SyncStatus.pendingCreate.name);
+
+    await db.update(
+      table,
+      {
+        'tags': normalized,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': newSync,
+      },
+      where: 'id = ?',
+      whereArgs: [itemId],
     );
   }
 
