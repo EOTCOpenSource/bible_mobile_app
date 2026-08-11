@@ -91,40 +91,47 @@ class StreakPill extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = L10n.of(context);
     final c = context.colors;
     final useGeez = Settings.of(context).useGeezNumbers;
     final count = ref.watch(readingStreakStateProvider).value?.currentStreak ?? 0;
 
-    return Material(
-      color: c.surface,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
+    return Semantics(
+      button: true,
+      label: s.semanticsStreakCard,
+      child: Material(
+        color: c.surface,
         borderRadius: BorderRadius.circular(22),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => StreakScreen(onReadToday: onReadToday),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => StreakScreen(onReadToday: onReadToday),
+            ),
           ),
-        ),
-        child: Container(
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: c.borderSubtle),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🔥', style: TextStyle(fontSize: 15)),
-              const SizedBox(width: 6),
-              Text(
-                useGeez ? toGeez(count) : '$count',
-                style: AppTypography.amharicSubheading.copyWith(
-                  color: c.textOnParchment,
-                  fontSize: 15,
-                ),
+          child: ExcludeSemantics(
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: c.borderSubtle),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🔥', style: TextStyle(fontSize: 15)),
+                  const SizedBox(width: 6),
+                  Text(
+                    useGeez ? toGeez(count) : '$count',
+                    style: AppTypography.amharicSubheading.copyWith(
+                      color: c.textOnParchment,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -154,11 +161,16 @@ class _SignInButton extends StatelessWidget {
           height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           alignment: Alignment.center,
-          child: Text(
-            s.loginButton,
-            style: AppTypography.amharicLabel.copyWith(
-              color: c.textOnDark,
-              fontSize: 13,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              s.loginButton,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.amharicLabel.copyWith(
+                color: c.textOnDark,
+                fontSize: 13,
+              ),
             ),
           ),
         ),
