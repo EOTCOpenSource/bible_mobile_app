@@ -37,9 +37,10 @@ double _calculateContrastRatio(Color color1, Color color2) {
 
 void main() {
   group('WCAG AA Color Contrast Tests', () {
-    test('textCaption against parchment meets WCAG AA 4.5:1', () {
+    test('textCaption against parchment meets WCAG AA 4.5:1 (computed 7.01:1)', () {
       final ratio = _calculateContrastRatio(AppColors.textCaption, AppColors.parchment);
       expect(ratio, greaterThanOrEqualTo(4.5));
+      expect(ratio, closeTo(7.01, 0.1));
     });
 
     test('textMuted against parchment meets WCAG AA 4.5:1', () {
@@ -52,19 +53,22 @@ void main() {
       expect(ratio, greaterThanOrEqualTo(4.5));
     });
 
-    test('accentDark against white surface meets WCAG AA 4.5:1', () {
+    test('accentDark against white surface meets WCAG AA 4.5:1 (computed 6.03:1)', () {
       final ratio = _calculateContrastRatio(AppColors.accentDark, AppColors.surface);
       expect(ratio, greaterThanOrEqualTo(4.5));
+      expect(ratio, closeTo(6.03, 0.1));
     });
 
-    test('readerShellDarkMuted against readerShellDarkBg meets WCAG AA 4.5:1', () {
+    test('readerShellDarkMuted against readerShellDarkBg meets WCAG AA 4.5:1 (computed 5.55:1)', () {
       final ratio = _calculateContrastRatio(AppColors.readerShellDarkMuted, AppColors.readerShellDarkBg);
       expect(ratio, greaterThanOrEqualTo(4.5));
+      expect(ratio, closeTo(5.55, 0.1));
     });
 
-    test('readerShellDarkMuted against readerShellDarkSurface meets WCAG AA 4.5:1', () {
+    test('readerShellDarkMuted against readerShellDarkSurface meets WCAG AA 4.5:1 (computed 4.91:1)', () {
       final ratio = _calculateContrastRatio(AppColors.readerShellDarkMuted, AppColors.readerShellDarkSurface);
       expect(ratio, greaterThanOrEqualTo(4.5));
+      expect(ratio, closeTo(4.91, 0.1));
     });
 
     test('accentDeep against parchment meets WCAG AA 4.5:1', () {
