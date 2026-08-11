@@ -38,16 +38,25 @@ class ReaderBreadcrumb extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Row(
         children: [
-          BreadcrumbChip(text: bookTag, accentColor: accentColor),
+          Flexible(
+            child: BreadcrumbChip(text: bookTag, accentColor: accentColor),
+          ),
           const SizedBox(width: 8),
           BreadcrumbChip(text: '${s.chapterAbbr} $chNum', accentColor: accentColor),
-          const Spacer(),
-          Text(
-            testTag,
-            style: TextStyle(
-              fontFamily: AppTypography.amharicCaption.fontFamily,
-              fontSize: 10,
-              color: mutedColor,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                testTag,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTypography.amharicCaption.fontFamily,
+                  fontSize: 10,
+                  color: mutedColor,
+                ),
+              ),
             ),
           ),
         ],
@@ -76,6 +85,8 @@ class BreadcrumbChip extends StatelessWidget {
       ),
       child: Text(
         text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontFamily: AppTypography.shiromeda,
           fontSize: 11,
