@@ -107,6 +107,20 @@ void main() {
       expect(style.fontSize, lessThanOrEqualTo(48.0));
       expect(style.fontSize, greaterThanOrEqualTo(12.0));
     });
+
+    test('ReaderStyleResolver computes clamped font size across various OS scales (1.0, 1.3, 1.6, 2.5)', () {
+      for (final scale in [1.0, 1.3, 1.6, 2.5]) {
+        final style = ReaderStyleResolver.computeBodyStyle(
+          fontFamily: 'Shiromeda',
+          fontSize: 24.0,
+          lineHeight: 1.5,
+          textColor: Colors.black,
+          textScaler: TextScaler.linear(scale),
+        );
+        expect(style.fontSize, lessThanOrEqualTo(48.0));
+        expect(style.fontSize, greaterThanOrEqualTo(12.0));
+      }
+    });
   });
 
   group('Semantics & Screen Reader Label Widget Tests', () {
