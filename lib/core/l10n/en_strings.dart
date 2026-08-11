@@ -1025,4 +1025,49 @@ class EnStrings extends AppStrings {
       'Not connected to WiFi — join a network first.';
   @override
   String get webReaderNoPort => 'The port is in use by another app.';
+
+  // ── Accessibility ────────────────────────────────────────────────────────
+  @override
+  String get semanticsMenuBtn => 'Open menu';
+  @override
+  String get semanticsAudioBtn => 'Play audio';
+  @override
+  String semanticsChapterPickerBtn(String chapterLabel) =>
+      'Select chapter, currently $chapterLabel';
+  @override
+  String get semanticsRefJumpBtn => 'Jump to reference';
+  @override
+  String get semanticsSearchBtn => 'Search in book';
+  @override
+  String get semanticsFontSettingsBtn => 'Typography settings';
+  @override
+  String get semanticsBookmarkAdd => 'Add bookmark';
+  @override
+  String get semanticsBookmarkRemove => 'Bookmarked, tap to remove';
+  @override
+  String get semanticsNoteAdd => 'Add note';
+  @override
+  String get semanticsNoteEdit => 'Has note, tap to edit';
+  @override
+  String get semanticsHighlightAdd => 'Add highlight';
+  @override
+  String get semanticsHighlightActive => 'Highlighted';
+  @override
+  String get semanticsFootnotes => 'Footnotes and cross references';
+  @override
+  String semanticsTabAnnouncement(String tabName, int index, int total) =>
+      '$tabName, tab $index of $total';
+  @override
+  String semanticsVerseLabel(String verseNum, String text) =>
+      'Verse $verseNum, $text';
+  @override
+  String get semanticsDailyVerseShare => 'Share daily verse';
+  @override
+  String get semanticsDailyVerseCopy => 'Copy daily verse';
+  @override
+  String semanticsContinueReading(String title) => 'Continue reading $title';
+  @override
+  String semanticsStartReading(String title) => 'Start reading $title';
+  @override
+  String get semanticsStreakCard => 'Reading streak statistics';
 }
