@@ -52,6 +52,21 @@ void main() {
       expect(ratio, greaterThanOrEqualTo(4.5));
     });
 
+    test('accentDark against white surface meets WCAG AA 4.5:1', () {
+      final ratio = _calculateContrastRatio(AppColors.accentDark, AppColors.surface);
+      expect(ratio, greaterThanOrEqualTo(4.5));
+    });
+
+    test('readerShellDarkMuted against readerShellDarkBg meets WCAG AA 4.5:1', () {
+      final ratio = _calculateContrastRatio(AppColors.readerShellDarkMuted, AppColors.readerShellDarkBg);
+      expect(ratio, greaterThanOrEqualTo(4.5));
+    });
+
+    test('readerShellDarkMuted against readerShellDarkSurface meets WCAG AA 4.5:1', () {
+      final ratio = _calculateContrastRatio(AppColors.readerShellDarkMuted, AppColors.readerShellDarkSurface);
+      expect(ratio, greaterThanOrEqualTo(4.5));
+    });
+
     test('accentDeep against parchment meets WCAG AA 4.5:1', () {
       final ratio = _calculateContrastRatio(AppColors.accentDeep, AppColors.parchment);
       expect(ratio, greaterThanOrEqualTo(4.5));
