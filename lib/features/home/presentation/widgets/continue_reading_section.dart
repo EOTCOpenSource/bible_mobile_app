@@ -154,9 +154,6 @@ class _BookTile extends StatelessWidget {
   final Widget footer;
   final VoidCallback onTap;
 
-  /// Height of the footer and the gap above it.
-  static const double _footerBlock = 26;
-
   /// A closed book is taller than it is wide; covers keep that ratio until the
   /// strip is too short for it, then they shrink rather than crop.
   static const double _coverAspect = 1.42;
