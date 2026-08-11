@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/annotations/annotation_models.dart';
+import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book.dart';
@@ -488,6 +489,8 @@ class VerseView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final textScaler = MediaQuery.textScalerOf(context);
     // The edition supplies the Ge'ez numeral in `alt` and the display label —
     // which covers the odd ones like `3b` — so neither is computed here.
     final numStr       = verse.displayNumber(useGeez: useGeez);
@@ -524,17 +527,23 @@ class VerseView extends StatelessWidget {
     // carries fourteen cross references and would bury the verse it belongs to.
     final apparatusSpan = hasApparatus
         ? WidgetSpan(
-            alignment: PlaceholderAlignment.top,
-            child: GestureDetector(
-              onTap: () => onApparatusTap?.call(verse),
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 2, right: 2),
-                child: Text(
-                  verse.notes.isNotEmpty ? '✻' : '→',
-                  style: TextStyle(
-                    fontSize: fontSize * 0.5,
-                    color: accentColor.withValues(alpha: 0.75),
+            alignment: PlaceholderAlignment.middle,
+            child: Semantics(
+              button: true,
+              label: s.semanticsFootnotes,
+              child: GestureDetector(
+                onTap: () => onApparatusTap?.call(verse),
+                behavior: HitTestBehavior.opaque,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                  child: Center(
+                    child: Text(
+                      verse.notes.isNotEmpty ? '✻' : '→',
+                      style: TextStyle(
+                        fontSize: fontSize * 0.6,
+                        color: accentColor.withValues(alpha: 0.85),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -542,11 +551,16 @@ class VerseView extends StatelessWidget {
           )
         : null;
 
+    final fullVerseLabel = numStr.isNotEmpty
+        ? s.semanticsVerseLabel(numStr, verse.text)
+        : verse.text;
+
     // `lines` is `text` split by poetic line, never extra content — render one
     // or the other, never both.
     final Widget verseBody = verse.lines.isEmpty
         ? RichText(
             textAlign: effectiveTextAlign,
+            textScaler: textScaler,
             text: TextSpan(children: [
               numberSpan,
               TextSpan(text: verse.text, style: bodyStyle),
@@ -563,6 +577,7 @@ class VerseView extends StatelessWidget {
                   ),
                   child: RichText(
                     textAlign: effectiveTextAlign,
+                    textScaler: textScaler,
                     text: TextSpan(children: [
                       if (li == 0) numberSpan,
                       TextSpan(text: verse.lines[li].text, style: bodyStyle),
@@ -576,36 +591,48 @@ class VerseView extends StatelessWidget {
     Widget verseWidget = Stack(
       clipBehavior: Clip.none,
       children: [
-        GestureDetector(
-          key: isSpotlight ? spotlightKey : null,
-          onTap: () => onVerseTap(verseKey),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            margin: const EdgeInsets.only(bottom: 2),
-            padding: EdgeInsets.fromLTRB(isBookmarked ? 3 : 6, 4, 6, 4),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(6),
-              border: isBookmarked
-                  ? Border(left: BorderSide(color: accentColor, width: 3))
-                  : null,
+        Semantics(
+          label: fullVerseLabel,
+          child: GestureDetector(
+            key: isSpotlight ? spotlightKey : null,
+            onTap: () => onVerseTap(verseKey),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              margin: const EdgeInsets.only(bottom: 2),
+              padding: EdgeInsets.fromLTRB(isBookmarked ? 3 : 6, 4, 6, 4),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(6),
+                border: isBookmarked
+                    ? Border(left: BorderSide(color: accentColor, width: 3))
+                    : null,
+              ),
+              child: ExcludeSemantics(child: verseBody),
             ),
-            child: verseBody,
           ),
         ),
         if (hasNote)
           Positioned(
             right: 0,
             top: 0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onNoteTap?.call(verseKey, annotations),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.sticky_note_2_rounded,
-                  size: 13,
-                  color: context.colors.accentDeep,
+            child: Semantics(
+              button: true,
+              label: s.semanticsNoteEdit,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onNoteTap?.call(verseKey, annotations),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.sticky_note_2_rounded,
+                      size: 16,
+                      color: context.colors.accentDeep,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -713,6 +740,9 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
       screenWidth: MediaQuery.sizeOf(context).width,
     );
 
+    final s = L10n.of(context);
+    final textScaler = MediaQuery.textScalerOf(context);
+
     for (final verse in widget.section.verses) {
       final key = widget.verseKeyFn(
           widget.chapter.chapterNumber, widget.secIdx, verse.verseNumber);
@@ -730,6 +760,10 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
           ? (hlColor?.withValues(alpha: 0.5) ??
               widget.accentColor.withValues(alpha: widget.isDark ? 0.18 : 0.15))
           : hlColor?.withValues(alpha: 0.28);
+
+      final verseLabel = numStr.isNotEmpty
+          ? s.semanticsVerseLabel(numStr, verse.text)
+          : verse.text;
 
       // Verse number — pill with accent background when bookmarked, plain otherwise
       if (isBookmarked) {
@@ -765,9 +799,10 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
         ));
       }
 
-      // Verse text — tappable
+      // Verse text — tappable with merged semantic label
       spans.add(TextSpan(
         text: verse.text,
+        semanticsLabel: verseLabel,
         recognizer: rec,
         style: ReaderStyleResolver.computeBodyStyle(
           fontFamily: widget.fontFamily,
@@ -777,18 +812,25 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
         ).copyWith(backgroundColor: bgColor),
       ));
 
-      // Note indicator — tappable inline icon
+      // Note indicator — tappable inline icon with 48x48dp target & semantics
       if (hasNote) {
         spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.top,
-          child: GestureDetector(
-            onTap: () => widget.onNoteTap?.call(key, widget.annotations),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 2),
-              child: Icon(
-                Icons.sticky_note_2_rounded,
-                size: 11,
-                color: context.colors.accentDeep,
+          alignment: PlaceholderAlignment.middle,
+          child: Semantics(
+            button: true,
+            label: s.semanticsNoteEdit,
+            child: GestureDetector(
+              onTap: () => widget.onNoteTap?.call(key, widget.annotations),
+              behavior: HitTestBehavior.opaque,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                child: Center(
+                  child: Icon(
+                    Icons.sticky_note_2_rounded,
+                    size: 14,
+                    color: context.colors.accentDeep,
+                  ),
+                ),
               ),
             ),
           ),
@@ -801,6 +843,7 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
     return RichText(
       key: _sectionHasSpotlight ? widget.spotlightKey : null,
       textAlign: effectiveTextAlign,
+      textScaler: textScaler,
       text: TextSpan(children: spans),
     );
   }
