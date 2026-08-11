@@ -2,12 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bibleflutter/core/l10n/app_strings.dart';
-import 'package:bibleflutter/core/l10n/en_strings.dart';
-import 'package:bibleflutter/core/l10n/am_strings.dart';
 import 'package:bibleflutter/core/l10n/l10n.dart';
 import 'package:bibleflutter/core/theme/app_colors.dart';
-import 'package:bibleflutter/core/theme/app_color_scheme.dart';
 import 'package:bibleflutter/core/widgets/accessible_button.dart';
 import 'package:bibleflutter/core/widgets/app_bottom_nav.dart';
 import 'package:bibleflutter/features/books/presentation/widgets/reader/toolbar.dart';
@@ -22,9 +18,9 @@ double _calculateLuminance(Color color) {
     return c <= 0.03928 ? c / 12.92 : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
   }
 
-  final r = sRGB(color.red / 255.0);
-  final g = sRGB(color.green / 255.0);
-  final b = sRGB(color.blue / 255.0);
+  final r = sRGB((color.r * 255.0).round().clamp(0, 255) / 255.0);
+  final g = sRGB((color.g * 255.0).round().clamp(0, 255) / 255.0);
+  final b = sRGB((color.b * 255.0).round().clamp(0, 255) / 255.0);
 
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
