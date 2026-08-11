@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kenat/kenat.dart';
 import '../../../../../core/l10n/app_strings.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../data/models/book_index_entry.dart';
@@ -64,13 +63,6 @@ class ReaderToolbar extends StatelessWidget {
   /// already name. Both arrived on the same icon and only one would have
   /// survived.
   final VoidCallback? onGoToReference;
-
-  String get _label {
-    final n    = chapterNumber ?? currentChapter + 1;
-    final ch   = useGeez ? toGeez(n) : '$n';
-    final book = isAmharic ? entry.bookShortNameAm : entry.bookShortNameEn;
-    return '$book · ${s.chapterAbbr} $ch';
-  }
 
   @override
   Widget build(BuildContext context) {
