@@ -9,6 +9,11 @@ class ReaderStyleResolver {
   static const double baseHorizontalPadding = 20.0;
   static const double minJustifyScreenWidth = 340.0;
 
+  static const double minFontSize = 12.0;
+  static const double maxFontSize = 48.0;
+  static const double minSystemScale = 0.85;
+  static const double maxSystemScale = 1.60;
+
   /// Computes the horizontal padding for the chapter body container.
   static EdgeInsets computeBodyPadding({
     required double marginScale,
@@ -27,15 +32,26 @@ class ReaderStyleResolver {
     required Color textColor,
     FontWeight fontWeight = FontWeight.w400,
     FontStyle fontStyle = FontStyle.normal,
+    TextScaler? textScaler,
   }) {
+    final clampedBase = fontSize.clamp(minFontSize, maxFontSize);
+    final effectiveSize = textScaler != null
+        ? textScaler.scale(clampedBase).clamp(minFontSize, maxFontSize)
+        : clampedBase;
+
     return TextStyle(
       fontFamily: fontFamily,
-      fontSize: fontSize,
+      fontSize: effectiveSize,
       height: lineHeight,
       color: textColor,
       fontWeight: fontWeight,
       fontStyle: fontStyle,
     );
+  }
+
+  /// Clamps a system text scale factor to safe bounds (0.85 .. 1.60).
+  static double clampTextScale(double scale) {
+    return scale.clamp(minSystemScale, maxSystemScale);
   }
 
   /// Maps [textAlign] integer (0: start, 1: justify) to [TextAlign].
