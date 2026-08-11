@@ -331,6 +331,7 @@ class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
                     const SizedBox(width: 8),
                     _IconAction(
                       icon: Icons.share_outlined,
+                      label: s.semanticsDailyVerseShare,
                       onTap: result != null ? () => _share(result) : null,
                       child: _sharing
                           ? CircularProgressIndicator(
@@ -369,8 +370,6 @@ class _LoadingLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // One bar per line the verse box holds, so nothing shifts when
-    // the real text arrives.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -395,32 +394,46 @@ class _LoadingLines extends StatelessWidget {
 }
 
 class _IconAction extends StatelessWidget {
-  const _IconAction({required this.icon, this.onTap, this.child});
+  const _IconAction({
+    required this.icon,
+    required this.label,
+    this.selected,
+    this.onTap,
+    this.child,
+  });
 
   final IconData icon;
+  final String label;
+  final bool? selected;
   final VoidCallback? onTap;
-
-  /// Drawn in place of [icon] — used for the spinner while audio is being
-  /// generated, so the button keeps its size and position.
   final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.10),
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap ?? () {},
-        customBorder: const CircleBorder(),
-        child: SizedBox(
-          width: 38,
-          height: 38,
-          child: Center(
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: child ??
-                  Icon(icon, size: 18, color: context.colors.textOnDark),
+    return Semantics(
+      button: true,
+      label: label,
+      selected: selected,
+      child: Material(
+        color: Colors.white.withValues(alpha: 0.10),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap ?? () {},
+          customBorder: const CircleBorder(),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 48,
+            ),
+            child: Center(
+              child: ExcludeSemantics(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: child ??
+                      Icon(icon, size: 18, color: context.colors.textOnDark),
+                ),
+              ),
             ),
           ),
         ),
@@ -429,11 +442,6 @@ class _IconAction extends StatelessWidget {
   }
 }
 
-/// The bookmark button, filled once this verse is saved.
-///
-/// Reads the same chapter annotations the reader does, so bookmarking here and
-/// opening the chapter agree, and a bookmark removed in the reader empties this
-/// icon without the card being rebuilt by hand.
 class _BookmarkAction extends ConsumerWidget {
   const _BookmarkAction({
     required this.chapterKey,
@@ -447,6 +455,7 @@ class _BookmarkAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = L10n.of(context);
     var saved = false;
     if (chapterKey != null && verse != null) {
       final annotations = ref.watch(chapterAnnotationsProvider(chapterKey!));
@@ -455,16 +464,13 @@ class _BookmarkAction extends ConsumerWidget {
 
     return _IconAction(
       icon: saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+      label: saved ? s.semanticsBookmarkRemove : s.semanticsBookmarkAdd,
+      selected: saved,
       onTap: onTap,
     );
   }
 }
 
-/// The speaker button on the card, reflecting this verse's own playback.
-///
-/// It watches the audio service rather than local state because the reader can
-/// start something else on the same player: when that happens this button has
-/// to fall back to "play", not keep offering to stop audio it no longer owns.
 class _VoiceAction extends StatelessWidget {
   const _VoiceAction({required this.onTap, required this.title});
 
@@ -473,6 +479,7 @@ class _VoiceAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
     final audio = AudioService.instance;
 
     return ValueListenableBuilder<String?>(
@@ -489,6 +496,8 @@ class _VoiceAction extends StatelessWidget {
 
             return _IconAction(
               icon: playing ? Icons.stop_rounded : Icons.volume_up_outlined,
+              label: s.semanticsAudioBtn,
+              selected: playing,
               onTap: onTap,
               child: busy
                   ? CircularProgressIndicator(
