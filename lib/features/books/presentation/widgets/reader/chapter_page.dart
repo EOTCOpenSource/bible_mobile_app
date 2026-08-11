@@ -769,20 +769,22 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
       if (isBookmarked) {
         spans.add(WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Container(
-            margin: const EdgeInsets.only(right: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-            decoration: BoxDecoration(
-              color: widget.accentColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              numStr,
-              style: TextStyle(
-                fontFamily: AppTypography.nokiaPureheadline,
-                fontSize: widget.fontSize * 0.58,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+          child: ExcludeSemantics(
+            child: Container(
+              margin: const EdgeInsets.only(right: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: widget.accentColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                numStr,
+                style: TextStyle(
+                  fontFamily: AppTypography.nokiaPureheadline,
+                  fontSize: widget.fontSize * 0.58,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -790,6 +792,7 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
       } else {
         spans.add(TextSpan(
           text: '$numStr ',
+          semanticsLabel: '',
           style: TextStyle(
             fontFamily: AppTypography.nokiaPureheadline,
             fontSize: widget.fontSize * 0.62,
