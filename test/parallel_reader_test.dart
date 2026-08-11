@@ -1,5 +1,5 @@
 import 'package:bibleflutter/core/annotations/annotation_models.dart';
-import 'package:bibleflutter/core/l10n/en_strings.dart';
+import 'package:bibleflutter/core/l10n/l10n.dart';
 import 'package:bibleflutter/core/theme/app_theme.dart';
 import 'package:bibleflutter/features/books/data/models/book.dart';
 import 'package:bibleflutter/features/books/data/models/book_index_entry.dart';
@@ -34,13 +34,16 @@ void main() {
       );
 
   Widget wrap(Widget child, {Size size = const Size(900, 1200)}) =>
-      MediaQuery(
-        data: MediaQueryData(size: size),
-        // The reader reads its parchment colors off the theme extension, so a
-        // bare MaterialApp is not enough to build it.
-        child: MaterialApp(
-          theme: AppTheme.parchment,
-          home: Scaffold(body: child),
+      L10n(
+        initialLanguage: AppLanguage.english,
+        child: MediaQuery(
+          data: MediaQueryData(size: size),
+          // The reader reads its parchment colors off the theme extension, so a
+          // bare MaterialApp is not enough to build it.
+          child: MaterialApp(
+            theme: AppTheme.parchment,
+            home: Scaffold(body: child),
+          ),
         ),
       );
 
