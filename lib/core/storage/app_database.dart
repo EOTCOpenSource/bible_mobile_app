@@ -7,7 +7,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 13;
+  static const _version = 14;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -121,6 +121,16 @@ class AppDatabase {
         await _addStreakEmojiColumn(db);
       }
     }
+    // v13→v14: the cross-reference marker toggle.
+    //
+    // The third branch to reach for v12 in parallel — main took it for
+    // collections, the widgets branch for the streak emoji, this one for this
+    // column. Same resolution as the step above: run regardless of which of
+    // the three a database at 12 actually got, and tolerate the column
+    // already being there, because the version number cannot tell them apart.
+    if (oldVersion >= 6 && oldVersion < 14) {
+      await _migrateSettingsCrossRefMarkers(db);
+    }
   }
 
   /// Idempotent for the same reason [_addTagsColumnToAnnotations] is: a
@@ -131,6 +141,18 @@ class AppDatabase {
     try {
       await db.execute(
         "ALTER TABLE app_settings ADD COLUMN streak_emoji TEXT NOT NULL DEFAULT '🔥'",
+      );
+    } catch (_) {
+      // Ignored if the column already exists.
+    }
+  }
+
+  /// Adds the show_cross_ref_markers column to app_settings. Idempotent for
+  /// the same reason [_addStreakEmojiColumn] is.
+  Future<void> _migrateSettingsCrossRefMarkers(Database db) async {
+    try {
+      await db.execute(
+        'ALTER TABLE app_settings ADD COLUMN show_cross_ref_markers INTEGER NOT NULL DEFAULT 0',
       );
     } catch (_) {
       // Ignored if the column already exists.
@@ -1310,6 +1332,7 @@ class AppDatabase {
       margin_scale REAL NOT NULL DEFAULT 1.0,
       text_align INTEGER NOT NULL DEFAULT 0,
       keep_screen_on INTEGER NOT NULL DEFAULT 0,
+      show_cross_ref_markers INTEGER NOT NULL DEFAULT 0,
       streak_emoji TEXT NOT NULL DEFAULT '🔥'
     )
   ''');
@@ -1345,6 +1368,7 @@ class AppDatabase {
     double marginScale = 1.0,
     int textAlign = 0,
     bool keepScreenOn = false,
+    bool showCrossRefMarkers = false,
     String streakEmoji = '🔥',
   }) async {
     final db = await database;
@@ -1374,6 +1398,7 @@ class AppDatabase {
         'margin_scale': marginScale,
         'text_align': textAlign,
         'keep_screen_on': keepScreenOn ? 1 : 0,
+        'show_cross_ref_markers': showCrossRefMarkers ? 1 : 0,
         'streak_emoji': streakEmoji,
       },
       where: 'id = ?',

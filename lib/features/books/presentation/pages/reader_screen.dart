@@ -39,6 +39,7 @@ import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
+import '../../../crossref/presentation/widgets/cross_ref_sheet.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 import '../../../share/verse_card_sheet.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -98,18 +99,35 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   String? _selectedKey;
   String? _selectionEndKey;
   final GlobalKey _spotlightKey = GlobalKey();
+
+  /// About a second at 60fps — long enough for a book swap to lay out, short
+  /// enough that a verse which never renders stops costing frames.
+  static const int _kSpotlightScrollAttempts = 60;
   final GlobalKey _audioScrollKey = GlobalKey();
   bool _isAudioPlaying = false;
 
   Timer? _dwellTimer;
   int? _dwellChapterNumber;
 
-  /// Page index used only to spotlight [initialVerse] on first open.
+  /// Page index of the chapter currently holding the spotlight.
   int? _spotlightChapterPageIndex;
+
+  /// The verse to select, scroll to and spotlight on the next chapter render.
+  ///
+  /// Starts as [ReaderScreen.initialVerse] but has to be state rather than the
+  /// widget property, because the jumps that need it stay inside this State: a
+  /// cross-reference tap and a step back along the trail both move the reader
+  /// without rebuilding it. Reading the property instead would spotlight
+  /// whatever verse the reader was *opened* at — or, in the common case where
+  /// it was opened at no verse at all, nothing.
+  int? _spotlightVerse;
   int _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
 
   /// Toolbar, breadcrumb, chapter footer, and home bottom nav follow this.
   bool _readerChromeVisible = true;
+
+  /// Stack of cross-reference navigation points for returning back.
+  final List<({BookIndexEntry entry, int chapter, int verse, String label})> _navTrail = [];
 
   /// Root container for updates that must not use [ref] after dispose (immersive flag).
   ProviderContainer? _riverpodContainer;
@@ -404,15 +422,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       _book = book;
       _currentChapter = pageIdx;
       _loading = false;
+      _spotlightVerse = widget.initialVerse;
       _spotlightChapterPageIndex = widget.initialVerse != null ? pageIdx : null;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_pageCtrl.hasClients) return;
-      if (_pageCtrl.page?.round() != pageIdx) {
-        _pageCtrl.jumpToPage(pageIdx);
-      }
-    });
+    _ensureOnPage(pageIdx);
 
     _persistReadingPosition();
     _scheduleDwellTimer();
@@ -561,7 +575,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   void _autoSelectInitialVerse(int chapterPageIndex) {
-    final targetVerse = widget.initialVerse;
+    final targetVerse = _spotlightVerse;
     if (targetVerse == null || _book == null) return;
     final chIdx = chapterPageIndex.clamp(0, _book!.chapters.length - 1);
     final chapter = _book!.chapters[chIdx];
@@ -572,25 +586,65 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         setState(() {
           _selectedKey = _verseKey(chapter.chapterNumber, sIdx, targetVerse);
         });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // Wait one extra frame so any page jump has time to render the
-          // target chapter before we try to scroll within it.
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            final ctx = _spotlightKey.currentContext;
-            if (ctx != null) {
-              Scrollable.ensureVisible(
-                ctx,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-                alignment: 0.3,
-              );
-            }
-          });
-        });
+        _scrollToSpotlight();
         break;
       }
     }
+  }
+
+  /// Moves the PageView onto [pageIdx] after the controller behind it has been
+  /// replaced.
+  ///
+  /// Replacing a [PageController] does not move the view. [Scrollable] hands
+  /// the *existing* [ScrollPosition] to the new controller, and `initialPage`
+  /// is only consulted when a position is built from scratch — so a jump into
+  /// another book keeps whatever page the previous book was on, which is
+  /// chapter 1 nine times out of ten. Every piece of chrome meanwhile reads the
+  /// chapter out of state and says 45, so the reader shows Isaiah 1 under a
+  /// header that reads Isaiah 45.
+  void _ensureOnPage(int pageIdx) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_pageCtrl.hasClients) return;
+      if (_pageCtrl.page?.round() != pageIdx) {
+        _pageCtrl.jumpToPage(pageIdx);
+      }
+    });
+  }
+
+  /// Scrolls the spotlighted verse into view once it exists to be scrolled to.
+  ///
+  /// Waiting a fixed two frames is enough when only the page index changes, but
+  /// not when a cross-reference into another book replaces the book, the
+  /// PageView and its controller: the target chapter is then still being laid
+  /// out — with a cacheExtent large enough to pre-build every section — and
+  /// `currentContext` is null for several frames. A fixed wait lands early,
+  /// silently does nothing, and leaves the reader at the top of the chapter
+  /// with the right verse selected but off screen.
+  ///
+  /// So it retries frame by frame until the verse is there, and gives up after
+  /// [_kSpotlightScrollAttempts] rather than looping forever on a verse that
+  /// never renders.
+  void _scrollToSpotlight([int attempt = 0]) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _spotlightKey.currentContext;
+      if (ctx == null) {
+        if (attempt < _kSpotlightScrollAttempts) {
+          // A post-frame callback only runs when a frame is scheduled, and an
+          // idle reader schedules none — so ask for one, or the retry stops
+          // silently after however many frames the jump happened to produce.
+          WidgetsBinding.instance.scheduleFrame();
+          _scrollToSpotlight(attempt + 1);
+        }
+        return;
+      }
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+        alignment: 0.3,
+      );
+    });
   }
 
   void _goToChapter(int idx) {
@@ -1010,6 +1064,133 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  void _showCrossRefSheet() {
+    final vNum = _selectionVerseStart ?? 1;
+    final useGeez = Settings.of(context).useGeezNumbers;
+    final isAm = L10n.of(context) is AmStrings;
+    final bookName = isAm ? _entry.bookNameAm : _entry.bookNameEn;
+    final vDisplay = useGeez ? toGeez(vNum) : '$vNum';
+    final chDisplay = useGeez ? toGeez(_currentChapterNumber) : '$_currentChapterNumber';
+    final sourceRefLabel = '$bookName $chDisplay:$vDisplay';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CrossRefSheet(
+        sourceBook: _entry.bookNumber,
+        sourceChapter: _currentChapterNumber,
+        sourceVerse: vNum,
+        sourceReferenceLabel: sourceRefLabel,
+        onSelectCrossRef: (targetBook, targetChapter, targetVerse) =>
+            _jumpToCrossRef(
+              sourceLabel: sourceRefLabel,
+              targetBook: targetBook,
+              targetChapter: targetChapter,
+              targetVerse: targetVerse,
+            ),
+      ),
+    );
+  }
+
+  Future<void> _jumpToCrossRef({
+    required String sourceLabel,
+    required int targetBook,
+    required int targetChapter,
+    required int targetVerse,
+  }) async {
+    _navTrail.add((
+      entry: _entry,
+      chapter: _currentChapterNumber,
+      verse: _selectionVerseStart ?? 1,
+      label: sourceLabel,
+    ));
+
+    _deselect();
+    final repo = _repo ?? BibleRepositoryProvider.of(context);
+    final targetEntry = await repo.findBook(targetBook);
+    if (targetEntry == null || !mounted) return;
+
+    if (targetEntry.id == _entry.id) {
+      var pageIdx = _book?.chapters.indexWhere((c) => c.chapterNumber == targetChapter) ?? -1;
+      if (pageIdx < 0) pageIdx = targetChapter - 1;
+      _goToChapter(pageIdx);
+      // The verse, not just the chapter. A reference that lands the reader at
+      // the top of Isaiah 45 has not answered "and where in it?" — the whole
+      // point of following one is the line it points at.
+      setState(() {
+        _spotlightVerse = targetVerse;
+        _spotlightChapterPageIndex = pageIdx;
+      });
+      _autoSelectInitialVerse(pageIdx);
+    } else {
+      final book = await repo.loadBook(targetEntry);
+      if (!mounted) return;
+      var pageIdx = book.chapters.indexWhere((c) => c.chapterNumber == targetChapter);
+      if (pageIdx < 0) pageIdx = (targetChapter - 1).clamp(0, book.chapters.length - 1);
+
+      final previous = _pageCtrl;
+      setState(() {
+        _entry = targetEntry;
+        _book = book;
+        _loading = false;
+        _currentChapter = pageIdx;
+        _selectedKey = null;
+        _selectionEndKey = null;
+        _spotlightVerse = targetVerse;
+        _spotlightChapterPageIndex = pageIdx;
+        _pageCtrl = PageController(initialPage: pageIdx);
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+      _ensureOnPage(pageIdx);
+      _autoSelectInitialVerse(pageIdx);
+    }
+  }
+
+  Future<void> _popNavTrail() async {
+    if (_navTrail.isEmpty) return;
+    final last = _navTrail.removeLast();
+    _deselect();
+
+    final repo = _repo ?? BibleRepositoryProvider.of(context);
+    final targetEntry = await repo.findBook(last.entry.bookNumber);
+    if (targetEntry == null || !mounted) return;
+
+    if (targetEntry.id == _entry.id) {
+      var pageIdx = _book?.chapters.indexWhere((c) => c.chapterNumber == last.chapter) ?? -1;
+      if (pageIdx < 0) pageIdx = last.chapter - 1;
+      _goToChapter(pageIdx);
+      // Back to the verse that was left, not just its chapter — the trail
+      // records the verse for exactly this.
+      setState(() {
+        _spotlightVerse = last.verse;
+        _spotlightChapterPageIndex = pageIdx;
+      });
+      _autoSelectInitialVerse(pageIdx);
+    } else {
+      final book = await repo.loadBook(targetEntry);
+      if (!mounted) return;
+      var pageIdx = book.chapters.indexWhere((c) => c.chapterNumber == last.chapter);
+      if (pageIdx < 0) pageIdx = (last.chapter - 1).clamp(0, book.chapters.length - 1);
+
+      final previous = _pageCtrl;
+      setState(() {
+        _entry = targetEntry;
+        _book = book;
+        _loading = false;
+        _currentChapter = pageIdx;
+        _selectedKey = null;
+        _selectionEndKey = null;
+        _spotlightVerse = last.verse;
+        _spotlightChapterPageIndex = pageIdx;
+        _pageCtrl = PageController(initialPage: pageIdx);
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+      _ensureOnPage(pageIdx);
+      _autoSelectInitialVerse(pageIdx);
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
@@ -1113,6 +1294,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   bgColor: bgColor,
                                   accentColor: accentColor,
                                   mutedColor: mutedColor,
+                                  backTrailLabel: _navTrail.isNotEmpty ? _navTrail.last.label : null,
+                                  onBackTrailTap: _navTrail.isNotEmpty ? _popNavTrail : null,
                                 ),
                             ],
                           )
@@ -1172,10 +1355,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                   .value ??
                                               ChapterAnnotations.empty;
                                           final spotlightVerse =
-                                              (widget.initialVerse != null &&
+                                              (_spotlightVerse != null &&
                                                       i ==
                                                           _spotlightChapterPageIndex)
-                                                  ? widget.initialVerse
+                                                  ? _spotlightVerse
                                                   : null;
                                           final spotlightKey =
                                               spotlightVerse == null
@@ -1282,6 +1465,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                         isBookmarked: isBookmarked,
                                         highlightColor: highlightColor,
                                         hasNote: hasNote,
+                                        onCrossRef: _showCrossRefSheet,
                                         onBookmark: () {
                                           if (verseNum == null) return;
                                           final c = _riverpodContainer;

@@ -57,9 +57,19 @@ class ReaderFontSheet extends StatelessWidget {
                 const Spacer(),
                 Switch(
                   value: settings.continuousReading,
+                  // The two are mutually exclusive: continuous reading runs a
+                  // whole section together as one paragraph, which leaves the
+                  // apparatus nowhere to sit — it belongs under the verse it
+                  // annotates, and there are no separate verses to sit under.
+                  // Turning either on turns the other off rather than leaving a
+                  // switch on that quietly does nothing.
                   onChanged: (v) => Settings.update(
                     context,
-                    settings.copyWith(continuousReading: v),
+                    settings.copyWith(
+                      continuousReading: v,
+                      showCrossRefMarkers:
+                          v ? false : settings.showCrossRefMarkers,
+                    ),
                   ),
                   activeThumbColor: accentColor,
                 ),
@@ -77,6 +87,42 @@ class ReaderFontSheet extends StatelessWidget {
                 context,
                 settings.copyWith(keepScreenOn: v),
               ),
+            ),
+            const SizedBox(height: 12),
+
+            // Show cross-reference markers toggle
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s.readingSettingsShowCrossRefMarkers,
+                        style: AppTypography.amharicLabel.copyWith(color: textColor),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        s.readingSettingsShowCrossRefMarkersHint,
+                        style: AppTypography.amharicCaption.copyWith(color: mutedColor, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: settings.showCrossRefMarkers,
+                  // See the continuous-reading switch above: one excludes the
+                  // other, in both directions.
+                  onChanged: (v) => Settings.update(
+                    context,
+                    settings.copyWith(
+                      showCrossRefMarkers: v,
+                      continuousReading: v ? false : settings.continuousReading,
+                    ),
+                  ),
+                  activeThumbColor: accentColor,
+                ),
+              ],
             ),
             const SizedBox(height: 16),
 

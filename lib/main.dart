@@ -53,6 +53,7 @@ void main() async {
       marginScale: (saved['margin_scale'] as num?)?.toDouble() ?? 1.0,
       textAlign: (saved['text_align'] as int?) ?? 0,
       keepScreenOn: saved['keep_screen_on'] == 1,
+      showCrossRefMarkers: saved['show_cross_ref_markers'] == 1,
       streakEmoji:
           AppSettings.sanitizeStreakEmoji(saved['streak_emoji'] as String?),
     );

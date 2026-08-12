@@ -16,6 +16,8 @@ class ReaderBreadcrumb extends StatelessWidget {
     required this.bgColor,
     required this.accentColor,
     required this.mutedColor,
+    this.backTrailLabel,
+    this.onBackTrailTap,
   });
 
   final BookIndexEntry entry;
@@ -26,6 +28,8 @@ class ReaderBreadcrumb extends StatelessWidget {
   final Color bgColor;
   final Color accentColor;
   final Color mutedColor;
+  final String? backTrailLabel;
+  final VoidCallback? onBackTrailTap;
 
   @override
   Widget build(BuildContext context) {
@@ -36,21 +40,47 @@ class ReaderBreadcrumb extends StatelessWidget {
     return Container(
       color: bgColor,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      child: Row(
-        children: [
-          BreadcrumbChip(text: bookTag, accentColor: accentColor),
-          const SizedBox(width: 8),
-          BreadcrumbChip(text: '${s.chapterAbbr} $chNum', accentColor: accentColor),
-          const Spacer(),
-          Text(
-            testTag,
-            style: TextStyle(
-              fontFamily: AppTypography.amharicCaption.fontFamily,
-              fontSize: 10,
-              color: mutedColor,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (backTrailLabel != null && onBackTrailTap != null) ...[
+              GestureDetector(
+                onTap: onBackTrailTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    s.crossRefBackTo(backTrailLabel!),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            BreadcrumbChip(text: bookTag, accentColor: accentColor),
+            const SizedBox(width: 8),
+            BreadcrumbChip(text: '${s.chapterAbbr} $chNum', accentColor: accentColor),
+            const SizedBox(width: 16),
+            Text(
+              testTag,
+              style: TextStyle(
+                fontFamily: AppTypography.amharicCaption.fontFamily,
+                fontSize: 10,
+                color: mutedColor,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

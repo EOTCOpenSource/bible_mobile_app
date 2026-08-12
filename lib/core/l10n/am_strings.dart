@@ -322,6 +322,11 @@ class AmStrings extends AppStrings {
   String get readingSettingsAlignJustify => 'የተመጣጠነ';
   @override
   String get readingSettingsKeepScreenOn => 'ስክሪን እንዳይጠፋ';
+  @override
+  String get readingSettingsShowCrossRefMarkers => 'ማስታወሻና ማጣቀሻ አሳይ';
+  @override
+  String get readingSettingsShowCrossRefMarkersHint =>
+      'የዕትሙን ማስታወሻና ማጣቀሻ ከጥቅሱ ስር ያሳያል';
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
@@ -506,7 +511,19 @@ class AmStrings extends AppStrings {
   @override
   String get verseShare => 'አጋራ';
   @override
-  String get verseCrossReferences => 'ተመሳሳይ ጥቅሶች';
+  // One word, like every other label in the verse action bar — the pair of
+  // them made this button half again as wide as its neighbours.
+  String get verseCrossReferences => 'ተመሳሳይ';
+  @override
+  String get verseReference => 'ማጣቀሻ';
+  @override
+  String get crossRefTitle => 'የጽሑፍ ማጣቀሻዎች';
+  @override
+  String crossRefCount(int n) => '$n ማጣቀሻዎች';
+  @override
+  String get crossRefNoResults => 'ለዚህ ጥቅስ ምንም ማጣቀሻ አልተገኘም';
+  @override
+  String crossRefBackTo(String reference) => '← ወደ $reference ተመለስ';
   @override
   String get verseFootnotes => 'የትርጉም ማስታወሻ';
   @override

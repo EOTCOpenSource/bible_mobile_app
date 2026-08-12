@@ -57,6 +57,7 @@ class AppSettings {
     this.marginScale = 1.0,
     this.textAlign = 0,
     this.keepScreenOn = false,
+    this.showCrossRefMarkers = false,
     this.streakEmoji = kDefaultStreakEmoji,
   });
 
@@ -115,6 +116,8 @@ class AppSettings {
   final int textAlign;
   final bool keepScreenOn;
 
+  /// Whether inline cross-reference markers are displayed in the reader text.
+  final bool showCrossRefMarkers;
   /// The emoji shown beside the reading streak, on the streak page, the home
   /// header and the Android streak widget. Always one of
   /// [kStreakEmojiChoices]; [copyWith] rejects anything else.
@@ -145,6 +148,7 @@ class AppSettings {
     double? marginScale,
     int? textAlign,
     bool? keepScreenOn,
+    bool? showCrossRefMarkers,
     String? streakEmoji,
   }) =>
       AppSettings(
@@ -177,6 +181,7 @@ class AppSettings {
         marginScale: (marginScale ?? this.marginScale).clamp(0.6, 1.6),
         textAlign: textAlign ?? this.textAlign,
         keepScreenOn: keepScreenOn ?? this.keepScreenOn,
+        showCrossRefMarkers: showCrossRefMarkers ?? this.showCrossRefMarkers,
         streakEmoji: sanitizeStreakEmoji(streakEmoji ?? this.streakEmoji),
       );
 
@@ -214,6 +219,7 @@ class AppSettings {
         'marginScale': marginScale,
         'textAlign': textAlign,
         'keepScreenOn': keepScreenOn,
+        'showCrossRefMarkers': showCrossRefMarkers,
         'streakEmoji': streakEmoji,
       };
 
@@ -245,6 +251,7 @@ class AppSettings {
         marginScale: ((map['marginScale'] as num?)?.toDouble() ?? 1.0).clamp(0.6, 1.6),
         textAlign: map['textAlign'] as int? ?? 0,
         keepScreenOn: map['keepScreenOn'] as bool? ?? false,
+        showCrossRefMarkers: map['showCrossRefMarkers'] as bool? ?? false,
         streakEmoji: sanitizeStreakEmoji(map['streakEmoji'] as String?),
       );
 
@@ -275,6 +282,7 @@ class AppSettings {
       other.marginScale == marginScale &&
       other.textAlign == textAlign &&
       other.keepScreenOn == keepScreenOn &&
+      other.showCrossRefMarkers == showCrossRefMarkers &&
       other.streakEmoji == streakEmoji;
 
   @override
@@ -303,6 +311,7 @@ class AppSettings {
         marginScale,
         textAlign,
         keepScreenOn,
+        showCrossRefMarkers,
         streakEmoji,
       ]);
 }
@@ -344,6 +353,7 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
       marginScale: updated.marginScale,
       textAlign: updated.textAlign,
       keepScreenOn: updated.keepScreenOn,
+      showCrossRefMarkers: updated.showCrossRefMarkers,
       streakEmoji: updated.streakEmoji,
     );
   }

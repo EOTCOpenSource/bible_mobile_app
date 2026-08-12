@@ -1,5 +1,6 @@
 import 'package:bibleflutter/core/annotations/annotation_models.dart';
 import 'package:bibleflutter/core/l10n/en_strings.dart';
+import 'package:bibleflutter/core/settings/app_settings.dart';
 import 'package:bibleflutter/core/theme/app_theme.dart';
 import 'package:bibleflutter/features/books/data/models/book.dart';
 import 'package:bibleflutter/features/books/data/models/book_index_entry.dart';
@@ -33,16 +34,18 @@ void main() {
         sections: [Section(title: title, verses: verses)],
       );
 
-  Widget wrap(Widget child, {Size size = const Size(900, 1200)}) =>
-      MediaQuery(
-        data: MediaQueryData(size: size),
-        // The reader reads its parchment colors off the theme extension, so a
-        // bare MaterialApp is not enough to build it.
-        child: MaterialApp(
-          theme: AppTheme.parchment,
-          home: Scaffold(body: child),
-        ),
-      );
+  Widget wrap(WidgetTester tester, Widget child, {Size size = const Size(900, 1200)}) {
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    return Settings(
+      notifier: ValueNotifier(const AppSettings()),
+      child: MaterialApp(
+        theme: AppTheme.parchment,
+        home: Scaffold(body: child),
+      ),
+    );
+  }
 
   ParallelChapterPage page({
     required Chapter primary,
@@ -74,7 +77,7 @@ void main() {
 
   testWidgets('renders both editions side by side on a wide screen',
       (tester) async {
-    await tester.pumpWidget(wrap(page(
+    await tester.pumpWidget(wrap(tester, page(
       primary: chapter([verse(1, 'primary one'), verse(2, 'primary two')]),
       secondary: chapter([verse(1, 'secondary one'), verse(2, 'secondary two')]),
     )));
@@ -93,7 +96,7 @@ void main() {
   testWidgets('a verse only the primary has still renders', (tester) async {
     // The second edition folds verse 2 into verse 1, which is the ordinary
     // versification disagreement between editions.
-    await tester.pumpWidget(wrap(page(
+    await tester.pumpWidget(wrap(tester, page(
       primary: chapter([
         verse(1, 'primary one'),
         verse(2, 'primary two'),
@@ -110,7 +113,7 @@ void main() {
 
   testWidgets('a verse only the parallel edition has is not dropped',
       (tester) async {
-    await tester.pumpWidget(wrap(page(
+    await tester.pumpWidget(wrap(tester, page(
       primary: chapter([verse(1, 'primary one'), verse(3, 'primary three')]),
       secondary: chapter([
         verse(1, 'secondary one'),
@@ -124,11 +127,8 @@ void main() {
   });
 
   testWidgets('stacks the pair on a narrow screen', (tester) async {
-    tester.view.physicalSize = const Size(400, 900);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
     await tester.pumpWidget(wrap(
+      tester,
       page(
         primary: chapter([verse(1, 'primary one')]),
         secondary: chapter([verse(1, 'secondary one')]),
@@ -151,7 +151,7 @@ void main() {
 
   testWidgets('says so when the parallel canon has no such book',
       (tester) async {
-    await tester.pumpWidget(wrap(page(
+    await tester.pumpWidget(wrap(tester, page(
       primary: chapter([verse(1, 'primary one')]),
       secondary: null,
       bookMissing: true,
