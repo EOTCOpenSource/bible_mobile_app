@@ -259,6 +259,30 @@ abstract class AppStrings {
   String get historyEmptyHint;
   String get loadMore;
   String get savedDeleteHistoryTitle;
+  String get collections;
+  String get newCollection;
+  String get addToCollection;
+  String get collectionSubtitle;
+  String get collectionSearchHint;
+  String createNamedCollection(String name);
+  String get recentCollections;
+  String get allCollections;
+  String get noCollectionsEmptyHint;
+  String get noCollectionsFound;
+  String get tags;
+  String get addTags;
+  String get all;
+  String get noCollections;
+  String get addTagHint;
+  String get collectionNameHint;
+  String get collectionColorLabel;
+  String get collectionCreateAction;
+  String get savedOk;
+  String get collectionDeleteTitle;
+  String get collectionDeleteMessage; // reassures that annotations survive
+  String selectedCount(int count);
+  String get deleteSelectedTitle;
+  String deleteSelectedMessage(int count);
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"

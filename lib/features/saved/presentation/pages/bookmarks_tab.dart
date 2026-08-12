@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_dialog.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import 'saved_common.dart';
 
@@ -27,17 +28,19 @@ class _BookmarksTabState extends ConsumerState<BookmarksTab> {
   String? _bookFilter;
   int? _chapterFilter;
 
-  List<AnnotationItem> get _filtered => widget.items.where((item) {
-    if (_testamentFilter == 'OT' && !item.isOT) return false;
-    if (_testamentFilter == 'NT' && item.isOT) return false;
-    if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
-      return false;
-    }
-    if (_chapterFilter != null && item.chapter != _chapterFilter) {
-      return false;
-    }
-    return true;
-  }).toList();
+  List<AnnotationItem> get _filtered {
+    return widget.items.where((item) {
+      if (_testamentFilter == 'OT' && !item.isOT) return false;
+      if (_testamentFilter == 'NT' && item.isOT) return false;
+      if (_bookFilter != null && item.bookEntry.id != _bookFilter) {
+        return false;
+      }
+      if (_chapterFilter != null && item.chapter != _chapterFilter) {
+        return false;
+      }
+      return true;
+    }).toList();
+  }
 
   Set<String> get _availableBookIds => widget.items
       .where((item) {
@@ -129,45 +132,26 @@ class _BookmarksTabState extends ConsumerState<BookmarksTab> {
 
   void _deleteBookmark(AnnotationItem item) async {
     final s = L10n.of(context);
-    final c = context.colors;
     final reference = '${item.bookName(s)} ${item.chapter}:${item.verseStart}';
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: c.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          s.savedDeleteBookmarkTitle,
-          style: AppTypography.amharicLabel.copyWith(
-            color: c.textOnParchment,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+      builder: (ctx) => AppDialog(
+        icon: Icons.delete_outline_rounded,
+        title: s.savedDeleteBookmarkTitle,
+        caption: 'DELETE',
+        actions: AppDialogActions(
+          cancelLabel: s.savedCancel,
+          onCancel: () => Navigator.pop(ctx, false),
+          confirmLabel: s.savedDelete,
+          destructive: true,
+          onConfirm: () => Navigator.pop(ctx, true),
         ),
-        content: Text(
-          s.savedDeleteBookmarkMessage(reference),
-          style: AppTypography.amharicBody.copyWith(
-            color: c.textMuted,
-            fontSize: 15,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              s.savedCancel,
-              style: AppTypography.amharicLabel.copyWith(color: c.textMuted),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(
-              s.savedDelete,
-              style: AppTypography.amharicLabel.copyWith(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
+        children: [
+          Text(
+            s.savedDeleteBookmarkMessage(reference),
+            style: AppTypography.amharicBody.copyWith(
+              color: context.colors.textMuted,
+              fontSize: 14,
             ),
           ),
         ],
@@ -187,100 +171,223 @@ class _BookmarksTabState extends ConsumerState<BookmarksTab> {
     }
   }
 
+  bool _isMultiSelect = false;
+  final Set<int> _selectedIds = {};
+
+  void _toggleSelect(int id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+        if (_selectedIds.isEmpty) {
+          _isMultiSelect = false;
+        }
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _enterMultiSelect(int id) {
+    setState(() {
+      _isMultiSelect = true;
+      _selectedIds.add(id);
+    });
+  }
+
+  void _exitMultiSelect() {
+    setState(() {
+      _isMultiSelect = false;
+      _selectedIds.clear();
+    });
+  }
+
+  Future<void> _batchDeleteBookmarks() async {
+    final s = L10n.of(context);
+    final count = _selectedIds.length;
+    if (count == 0) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dlgCtx) => AppDialog(
+        icon: Icons.delete_outline_rounded,
+        title: s.deleteSelectedTitle,
+        caption: 'BOOKMARKS',
+        actions: AppDialogActions(
+          cancelLabel: s.savedCancel,
+          onCancel: () => Navigator.pop(dlgCtx),
+          confirmLabel: s.savedDelete,
+          destructive: true,
+          onConfirm: () async {
+            final db = ref.read(annotationDbProvider);
+            for (final id in _selectedIds.toList()) {
+              await db.deleteBookmark(id);
+            }
+            _exitMultiSelect();
+            await widget.onRefresh();
+            if (dlgCtx.mounted) Navigator.pop(dlgCtx);
+          },
+        ),
+        children: [
+          Text(
+            s.deleteSelectedMessage(count),
+            style: AppTypography.amharicBody.copyWith(
+              color: context.colors.textOnParchment,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _batchAddToCollection() {
+    if (_selectedIds.isEmpty) return;
+    final firstId = _selectedIds.first;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CollectionPickerSheet(
+        itemType: 'bookmark',
+        itemId: firstId,
+        onItemChanged: () async {
+          await widget.onRefresh();
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final items = _filtered;
     final availableBookIds = _availableBookIds;
     final availableChapters = _availableChapters;
-    final currentBookEntry = _bookFilter == null
-        ? null
-        : widget.items
-              .where((i) => i.bookEntry.id == _bookFilter)
-              .firstOrNull
-              ?.bookEntry;
+    final currentBookEntry =
+        _bookFilter == null
+            ? null
+            : widget.items
+                .where((i) => i.bookEntry.id == _bookFilter)
+                .firstOrNull
+                ?.bookEntry;
 
-    return ColoredBox(
-      color: context.colors.surfaceDim,
-      child: Column(
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-            child: Row(
-              children: [
-                SavedFilterChip(
-                  label: s.savedFilterAll,
-                  active: _testamentFilter == null,
-                  onTap: () => setState(() => _testamentFilter = null),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: ColoredBox(
+        color: context.colors.surfaceDim,
+        child: Column(
+          children: [
+            if (_isMultiSelect)
+              MultiSelectHeaderBar(
+                selectedCount: _selectedIds.length,
+                onClose: _exitMultiSelect,
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                child: Row(
+                  children: [
+                    SavedFilterChip(
+                      label: s.savedFilterAll,
+                      active: _testamentFilter == null,
+                      onTap: () => setState(() => _testamentFilter = null),
+                    ),
+                    const SizedBox(width: 6),
+                    SavedFilterChip(
+                      label: s.savedFilterOld,
+                      active: _testamentFilter == 'OT',
+                      onTap: () => setState(() {
+                        _testamentFilter =
+                            _testamentFilter == 'OT' ? null : 'OT';
+                        _bookFilter = null;
+                        _chapterFilter = null;
+                      }),
+                    ),
+                    const SizedBox(width: 6),
+                    SavedFilterChip(
+                      label: s.savedFilterNew,
+                      active: _testamentFilter == 'NT',
+                      onTap: () => setState(() {
+                        _testamentFilter =
+                            _testamentFilter == 'NT' ? null : 'NT';
+                        _bookFilter = null;
+                        _chapterFilter = null;
+                      }),
+                    ),
+                    if (availableBookIds.length > 1) ...[
+                      const SizedBox(width: 6),
+                      SavedFilterChip(
+                        label: currentBookEntry == null
+                            ? s.savedFilterAll
+                            : s is EnStrings
+                            ? currentBookEntry.bookNameEn
+                            : currentBookEntry.bookNameAm,
+                        active: _bookFilter != null,
+                        trailing: Icons.expand_more_rounded,
+                        onTap: _showBookPicker,
+                      ),
+                    ],
+                    if (_bookFilter != null &&
+                        availableChapters.length > 1) ...[
+                      const SizedBox(width: 6),
+                      SavedFilterChip(
+                        label: _chapterFilter != null
+                            ? s.savedChapterLabel(_chapterFilter!)
+                            : s.savedAllChaptersShort,
+                        active: _chapterFilter != null,
+                        trailing: Icons.expand_more_rounded,
+                        onTap: _showChapterPicker,
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(width: 6),
-                SavedFilterChip(
-                  label: s.savedFilterOld,
-                  active: _testamentFilter == 'OT',
-                  onTap: () => setState(() {
-                    _testamentFilter = _testamentFilter == 'OT' ? null : 'OT';
-                    _bookFilter = null;
-                    _chapterFilter = null;
-                  }),
-                ),
-                const SizedBox(width: 6),
-                SavedFilterChip(
-                  label: s.savedFilterNew,
-                  active: _testamentFilter == 'NT',
-                  onTap: () => setState(() {
-                    _testamentFilter = _testamentFilter == 'NT' ? null : 'NT';
-                    _bookFilter = null;
-                    _chapterFilter = null;
-                  }),
-                ),
-                if (availableBookIds.length > 1) ...[
-                  const SizedBox(width: 6),
-                  SavedFilterChip(
-                    label: currentBookEntry == null
-                        ? s.savedFilterAll
-                        : s is EnStrings
-                        ? currentBookEntry.bookNameEn
-                        : currentBookEntry.bookNameAm,
-                    active: _bookFilter != null,
-                    trailing: Icons.expand_more_rounded,
-                    onTap: _showBookPicker,
-                  ),
-                ],
-                if (_bookFilter != null && availableChapters.length > 1) ...[
-                  const SizedBox(width: 6),
-                  SavedFilterChip(
-                    label: _chapterFilter != null
-                        ? s.savedChapterLabel(_chapterFilter!)
-                        : s.savedAllChaptersShort,
-                    active: _chapterFilter != null,
-                    trailing: Icons.expand_more_rounded,
-                    onTap: _showChapterPicker,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Expanded(
-            child: items.isEmpty
-                ? const AnnotationEmptyState(tab: 1)
-                : RefreshIndicator(
-                    onRefresh: widget.onRefresh,
-                    color: context.colors.primary,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-                      itemCount: items.length,
-                      itemBuilder: (_, i) => AnnotationCard(
-                        item: items[i],
-                        tab: 1,
-                        onTap: () => widget.onOpen(items[i]),
-                        onLongPress: () => _deleteBookmark(items[i]),
+              ),
+            Expanded(
+              child: items.isEmpty
+                  ? const AnnotationEmptyState(tab: 1)
+                  : RefreshIndicator(
+                      onRefresh: widget.onRefresh,
+                      color: context.colors.primary,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                        itemCount: items.length,
+                        itemBuilder: (_, i) => AnnotationCard(
+                          item: items[i],
+                          tab: 1,
+                          isMultiSelect: _isMultiSelect,
+                          isSelected: _selectedIds.contains(items[i].id),
+                          onSelectToggle: (_) => _toggleSelect(items[i].id),
+                          onTap: () {
+                            if (_isMultiSelect) {
+                              _toggleSelect(items[i].id);
+                            } else {
+                              widget.onOpen(items[i]);
+                            }
+                          },
+                          onAddToCollection: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) => CollectionPickerSheet(
+                              itemType: 'bookmark',
+                              itemId: items[i].id,
+                              onItemChanged: widget.onRefresh,
+                            ),
+                          ),
+                          onLongPress: () => _enterMultiSelect(items[i].id),
+                          onDelete: () => _deleteBookmark(items[i]),
+                        ),
                       ),
                     ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
+      bottomNavigationBar: _isMultiSelect
+          ? MultiSelectBottomActionBar(
+              selectedCount: _selectedIds.length,
+              onAddToCollection: _batchAddToCollection,
+              onDelete: _batchDeleteBookmarks,
+            )
+          : null,
     );
   }
 }

@@ -446,6 +446,59 @@ class EnStrings extends AppStrings {
   String get loadMore => 'Load more';
   @override
   String get savedDeleteHistoryTitle => 'Remove this from history?';
+  @override
+  String get collections => 'Collections';
+  @override
+  String get newCollection => 'New collection';
+  @override
+  String get addToCollection => 'Add to collection';
+  @override
+  String get collectionSubtitle =>
+      'Organize this item into one or more collections.';
+  @override
+  String get collectionSearchHint => 'Search or create collection...';
+  @override
+  String createNamedCollection(String name) => 'Create "$name"';
+  @override
+  String get recentCollections => 'Recent Collections';
+  @override
+  String get allCollections => 'All Collections';
+  @override
+  String get noCollectionsEmptyHint =>
+      'Start typing to create your first collection.';
+  @override
+  String get noCollectionsFound => 'No collections found';
+  @override
+  String get tags => 'Tags';
+  @override
+  String get addTags => 'Add tags';
+  @override
+  String get all => 'All';
+  @override
+  String get noCollections => 'No collections yet';
+  @override
+  String get addTagHint => 'Add tag (press comma or Enter)...';
+  @override
+  String get collectionNameHint => 'Collection name';
+  @override
+  String get collectionColorLabel => 'Color';
+  @override
+  String get collectionCreateAction => 'Create';
+  @override
+  String get savedOk => 'OK';
+  @override
+  String get collectionDeleteTitle => 'Delete collection';
+  @override
+  String get collectionDeleteMessage =>
+      'This collection will be removed. The notes, highlights and bookmarks '
+      'inside it are not deleted.';
+  @override
+  String selectedCount(int count) => '$count selected';
+  @override
+  String get deleteSelectedTitle => 'Delete Selected';
+  @override
+  String deleteSelectedMessage(int count) =>
+      'Are you sure you want to delete $count selected item(s)?';
 
   // ── Reader ────────────────────────────────────────────────────────────────
   @override

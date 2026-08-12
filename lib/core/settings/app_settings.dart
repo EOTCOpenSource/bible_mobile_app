@@ -51,6 +51,8 @@ class AppSettings {
     this.readingTimeNotificationTime,
     this.hasSeenOnboarding = false,
     this.hasSeenReaderHint = false,
+    this.collectionHintViews = 0,
+    this.hasDismissedCollectionHint = false,
     this.lineHeight = 1.6,
     this.marginScale = 1.0,
     this.textAlign = 0,
@@ -101,6 +103,12 @@ class AppSettings {
   /// Whether the user has seen the contextual reader action hint.
   final bool hasSeenReaderHint;
 
+  /// Number of times the collection feature hint has been shown.
+  final int collectionHintViews;
+
+  /// Whether the user has interacted with or dismissed the collection hint.
+  final bool hasDismissedCollectionHint;
+
   /// Reader typography preferences
   final double lineHeight;
   final double marginScale;
@@ -131,6 +139,8 @@ class AppSettings {
     TimeOfDay? readingTimeNotificationTime,
     bool? hasSeenOnboarding,
     bool? hasSeenReaderHint,
+    int? collectionHintViews,
+    bool? hasDismissedCollectionHint,
     double? lineHeight,
     double? marginScale,
     int? textAlign,
@@ -160,6 +170,9 @@ class AppSettings {
             readingTimeNotificationTime ?? this.readingTimeNotificationTime,
         hasSeenOnboarding: hasSeenOnboarding ?? this.hasSeenOnboarding,
         hasSeenReaderHint: hasSeenReaderHint ?? this.hasSeenReaderHint,
+        collectionHintViews: collectionHintViews ?? this.collectionHintViews,
+        hasDismissedCollectionHint:
+            hasDismissedCollectionHint ?? this.hasDismissedCollectionHint,
         lineHeight: (lineHeight ?? this.lineHeight).clamp(1.2, 2.2),
         marginScale: (marginScale ?? this.marginScale).clamp(0.6, 1.6),
         textAlign: textAlign ?? this.textAlign,
@@ -195,6 +208,8 @@ class AppSettings {
         'readingTimeNotificationEnabled': readingTimeNotificationEnabled,
         'hasSeenOnboarding': hasSeenOnboarding,
         'hasSeenReaderHint': hasSeenReaderHint,
+        'collectionHintViews': collectionHintViews,
+        'hasDismissedCollectionHint': hasDismissedCollectionHint,
         'lineHeight': lineHeight,
         'marginScale': marginScale,
         'textAlign': textAlign,
@@ -221,6 +236,11 @@ class AppSettings {
             map['readingTimeNotificationEnabled'] as bool? ?? false,
         hasSeenOnboarding: map['hasSeenOnboarding'] as bool? ?? false,
         hasSeenReaderHint: map['hasSeenReaderHint'] as bool? ?? false,
+        collectionHintViews: map['collectionHintViews'] as int? ??
+            (map['collection_hint_views'] as int? ?? 0),
+        hasDismissedCollectionHint:
+            map['hasDismissedCollectionHint'] as bool? ??
+                ((map['has_dismissed_collection_hint'] as int? ?? 0) == 1),
         lineHeight: ((map['lineHeight'] as num?)?.toDouble() ?? 1.6).clamp(1.2, 2.2),
         marginScale: ((map['marginScale'] as num?)?.toDouble() ?? 1.0).clamp(0.6, 1.6),
         textAlign: map['textAlign'] as int? ?? 0,
@@ -249,6 +269,8 @@ class AppSettings {
       other.readingTimeNotificationTime == readingTimeNotificationTime &&
       other.hasSeenOnboarding == hasSeenOnboarding &&
       other.hasSeenReaderHint == hasSeenReaderHint &&
+      other.collectionHintViews == collectionHintViews &&
+      other.hasDismissedCollectionHint == hasDismissedCollectionHint &&
       other.lineHeight == lineHeight &&
       other.marginScale == marginScale &&
       other.textAlign == textAlign &&
@@ -275,6 +297,8 @@ class AppSettings {
         readingTimeNotificationTime,
         hasSeenOnboarding,
         hasSeenReaderHint,
+        collectionHintViews,
+        hasDismissedCollectionHint,
         lineHeight,
         marginScale,
         textAlign,
@@ -314,6 +338,8 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
       readingTimeMinute: updated.readingTimeNotificationTime?.minute,
       hasSeenOnboarding: updated.hasSeenOnboarding,
       hasSeenReaderHint: updated.hasSeenReaderHint,
+      collectionHintViews: updated.collectionHintViews,
+      hasDismissedCollectionHint: updated.hasDismissedCollectionHint,
       lineHeight: updated.lineHeight,
       marginScale: updated.marginScale,
       textAlign: updated.textAlign,

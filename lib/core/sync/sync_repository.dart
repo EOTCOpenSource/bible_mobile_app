@@ -3,6 +3,11 @@ import '../annotations/annotation_models.dart';
 import '../api/api_client.dart';
 import '../../features/books/data/models/book_identity.dart';
 
+// Note (Issue #25): Collections are local-only for now.
+// The `collections` and `collection_items` database tables include `sync_status`
+// and `remote_id` columns, ready for seamless integration when the backend API
+// exposes endpoints for syncing collections.
+
 class SyncRepository {
   const SyncRepository(this._client, this._token);
 
