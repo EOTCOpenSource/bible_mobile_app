@@ -57,9 +57,19 @@ class ReaderFontSheet extends StatelessWidget {
                 const Spacer(),
                 Switch(
                   value: settings.continuousReading,
+                  // The two are mutually exclusive: continuous reading runs a
+                  // whole section together as one paragraph, which leaves the
+                  // apparatus nowhere to sit — it belongs under the verse it
+                  // annotates, and there are no separate verses to sit under.
+                  // Turning either on turns the other off rather than leaving a
+                  // switch on that quietly does nothing.
                   onChanged: (v) => Settings.update(
                     context,
-                    settings.copyWith(continuousReading: v),
+                    settings.copyWith(
+                      continuousReading: v,
+                      showCrossRefMarkers:
+                          v ? false : settings.showCrossRefMarkers,
+                    ),
                   ),
                   activeThumbColor: accentColor,
                 ),
@@ -101,9 +111,14 @@ class ReaderFontSheet extends StatelessWidget {
                 ),
                 Switch(
                   value: settings.showCrossRefMarkers,
+                  // See the continuous-reading switch above: one excludes the
+                  // other, in both directions.
                   onChanged: (v) => Settings.update(
                     context,
-                    settings.copyWith(showCrossRefMarkers: v),
+                    settings.copyWith(
+                      showCrossRefMarkers: v,
+                      continuousReading: v ? false : settings.continuousReading,
+                    ),
                   ),
                   activeThumbColor: accentColor,
                 ),

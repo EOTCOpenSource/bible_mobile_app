@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/annotations/annotation_models.dart';
+import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/settings/app_settings.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
@@ -495,9 +496,15 @@ class VerseView extends StatelessWidget {
     final hlColor      = annotations.highlightColor(verse.verseNumber);
     final isBookmarked = annotations.isBookmarked(verse.verseNumber);
     final hasNote      = annotations.noteFor(verse.verseNumber) != null;
-    final showCrossRefs = Settings.of(context).showCrossRefMarkers;
-    final hasCrossRefs = verse.refs.isNotEmpty;
-    final hasApparatus = verse.notes.isNotEmpty || (showCrossRefs && hasCrossRefs);
+    // With the toggle on, the edition's own notes and cross references are set
+    // under the verse the way the web reader sets them, rather than folded
+    // behind a marker. Genesis 1:1 carries fourteen references and does bury
+    // the verse it belongs to — which is why this is a setting and not the
+    // default, and why the marker remains the quiet way to read the same thing.
+    final inlineApparatus = Settings.of(context).showCrossRefMarkers;
+    // One or the other, never both: inline already shows in full what the
+    // marker would open a sheet to show.
+    final hasApparatus = !inlineApparatus && verse.notes.isNotEmpty;
 
     final bgColor = selected
         ? (hlColor?.withValues(alpha: 0.5) ??
@@ -576,6 +583,40 @@ class VerseView extends StatelessWidget {
             ],
           );
 
+    // The strings are looked up only when there is apparatus to label, so a
+    // verse without one — every verse, until the setting is turned on — does
+    // not take a dependency on L10n. VerseView is shared with the parallel
+    // reader, which is pumped in tests without it.
+    final auxLines = <Widget>[];
+    if (inlineApparatus && (verse.notes.isNotEmpty || verse.refs.isNotEmpty)) {
+      final s = L10n.of(context);
+      for (final note in verse.notes) {
+        if (note.body.trim().isEmpty) continue;
+        auxLines.add(AuxLine(
+          label: s.verseNote,
+          text: note.body,
+          fontSize: fontSize,
+          textColor: textColor,
+          accentColor: accentColor,
+          isDark: isDark,
+        ));
+      }
+      for (final ref in verse.refs) {
+        auxLines.add(AuxLine(
+          label: s.verseReference,
+          // The arrow is the edition's own convention for "this passage points
+          // at that one", and the web reader prints it the same way.
+          text: [ref.origin, ref.target]
+              .where((part) => part.trim().isNotEmpty)
+              .join(' → '),
+          fontSize: fontSize,
+          textColor: textColor,
+          accentColor: accentColor,
+          isDark: isDark,
+        ));
+      }
+    }
+
     Widget verseWidget = Stack(
       clipBehavior: Clip.none,
       children: [
@@ -593,7 +634,12 @@ class VerseView extends StatelessWidget {
                   ? Border(left: BorderSide(color: accentColor, width: 3))
                   : null,
             ),
-            child: verseBody,
+            child: auxLines.isEmpty
+                ? verseBody
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [verseBody, ...auxLines],
+                  ),
           ),
         ),
         if (hasNote)
@@ -621,6 +667,79 @@ class VerseView extends StatelessWidget {
           SpotlightWrapper(accentColor: accentColor, child: verseWidget);
     }
     return verseWidget;
+  }
+}
+
+// ── Inline apparatus line ─────────────────────────────────────────────────────
+
+/// One note or cross reference, set under the verse it belongs to.
+///
+/// A direct port of the web reader's `.aux` rule, down to the proportions: a
+/// hairline in the left margin, the label in the accent, the body a little over
+/// half the reading size in the Latin face. Keeping the two readers identical
+/// here matters more than styling it afresh — the same edition's apparatus
+/// should look like itself wherever it is read.
+class AuxLine extends StatelessWidget {
+  const AuxLine({
+    super.key,
+    required this.label,
+    required this.text,
+    required this.fontSize,
+    required this.textColor,
+    required this.accentColor,
+    required this.isDark,
+  });
+
+  final String label;
+  final String text;
+
+  /// The reader's body size — the apparatus scales with it rather than sitting
+  /// at a fixed size, so turning the text up does not leave the notes behind.
+  final double fontSize;
+
+  final Color textColor;
+  final Color accentColor;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.trim().isEmpty) return const SizedBox.shrink();
+
+    final muted = textColor.withValues(alpha: isDark ? 0.62 : 0.66);
+    final size = fontSize * 0.62;
+
+    return Container(
+      margin: EdgeInsets.only(top: 6, left: fontSize * 1.2),
+      padding: const EdgeInsets.only(left: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: accentColor.withValues(alpha: isDark ? 0.35 : 0.30),
+            width: 2,
+          ),
+        ),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            fontFamily: AppTypography.nokiaPureheadline,
+            fontSize: size,
+            height: 1.7,
+            color: muted,
+          ),
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: accentColor,
+              ),
+            ),
+            TextSpan(text: text),
+          ],
+        ),
+      ),
+    );
   }
 }
 

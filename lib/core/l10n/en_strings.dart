@@ -330,10 +330,10 @@ class EnStrings extends AppStrings {
   @override
   String get readingSettingsKeepScreenOn => 'Keep Screen On';
   @override
-  String get readingSettingsShowCrossRefMarkers => 'Show Cross-Reference Markers';
+  String get readingSettingsShowCrossRefMarkers => 'Show notes and references';
   @override
   String get readingSettingsShowCrossRefMarkersHint =>
-      'Display subtle indicators on verses with cross-references';
+      "Set the edition's own notes and cross-references under each verse";
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
@@ -519,9 +519,13 @@ class EnStrings extends AppStrings {
   @override
   String get verseShare => 'Share';
   @override
-  String get verseCrossReferences => 'Cross references';
+  String get verseCrossReferences => 'Similar';
+  @override
+  String get verseReference => 'Reference';
   @override
   String get crossRefTitle => 'Cross-References';
+  @override
+  String crossRefCount(int n) => n == 1 ? '1 reference' : '$n references';
   @override
   String get crossRefNoResults => 'No cross-references for this verse';
   @override

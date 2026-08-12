@@ -296,7 +296,15 @@ abstract class AppStrings {
 
   /// Title of the sheet listing a verse's parallel passages.
   String get verseCrossReferences;
+
+  /// The label on an inline apparatus line under a verse — "ማጣቀሻ: 1፥1 → …".
+  /// Deliberately the short form: it is a prefix, not a heading.
+  String get verseReference;
+
   String get crossRefTitle;
+
+  /// e.g. "57 references" under the sheet's source reference.
+  String crossRefCount(int n);
   String get crossRefNoResults;
   String crossRefBackTo(String reference);
 
