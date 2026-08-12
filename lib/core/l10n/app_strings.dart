@@ -28,6 +28,47 @@ abstract class AppStrings {
   String get streakEmojiPreviewLabel;
   String get streakEmojiWidgetNote;
 
+  // ── Home screen widgets ───────────────────────────────────────────────────
+  String get sectionWidgets;
+  String get widgetsTitle;
+  String get widgetsHint;
+  String get widgetsChooseLabel;
+
+  String get widgetNameDailyVerse;
+  String get widgetNameContinue;
+  String get widgetNameStreak;
+
+  String get widgetSectionTheme;
+  String get widgetThemeAuto;
+  String get widgetThemeLight;
+  String get widgetThemeDark;
+  String get widgetThemeBrand;
+
+  String get widgetSectionTextSize;
+  String get widgetTextSmall;
+  String get widgetTextMedium;
+  String get widgetTextLarge;
+
+  String get widgetSectionOpacity;
+  String get widgetSectionOptions;
+
+  /// Toggle labels. Two per widget, in the order they appear on the card.
+  String get widgetToggleVerseTag;
+  String get widgetToggleVerseRef;
+  String get widgetToggleContinueLabel;
+  String get widgetToggleProgressBar;
+  String get widgetToggleStreakDays;
+  String get widgetToggleStreakEmoji;
+
+  /// What the preview shows when there is no verse or no reading history yet.
+  String get widgetEmptyVerse;
+  String get widgetEmptyContinue;
+
+  String get widgetAddToHome;
+  String get widgetAddUnsupported;
+  String get widgetResizeHint;
+  String get widgetsAndroidOnly;
+
   // ── Streak page ───────────────────────────────────────────────────────────
   String get streakPageTitle;
   String get streakDayStreakLabel;

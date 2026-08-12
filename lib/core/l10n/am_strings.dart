@@ -42,7 +42,78 @@ class AmStrings extends AppStrings {
   String get streakEmojiPreviewLabel => 'ቅድመ እይታ';
   @override
   String get streakEmojiWidgetNote =>
-      'የመረጡት ምልክት በመነሻ ገጽ መግብር ላይም ይታያል።';
+      'የመረጡት ምልክት በመተግበሪያው ውስጥ ካሉት የተከታታይ ንባብ ገጾች ጎንም ይታያል።';
+
+  // ── Home screen widgets ───────────────────────────────────────────────────
+  @override
+  String get sectionWidgets => 'መግብሮች';
+  @override
+  String get widgetsTitle => 'የመነሻ ገጽ መግብሮች';
+  @override
+  String get widgetsHint => 'ገጽታ፣ የጽሑፍ መጠንና የሚታዩ ክፍሎችን ያብጁ';
+  @override
+  String get widgetsChooseLabel => 'መግብር ይምረጡ';
+
+  @override
+  String get widgetNameDailyVerse => 'የዕለቱ ቃል';
+  @override
+  String get widgetNameContinue => 'ንባብ ቀጥል';
+  @override
+  String get widgetNameStreak => 'ተከታታይ ንባብ';
+
+  @override
+  String get widgetSectionTheme => 'ገጽታ';
+  @override
+  String get widgetThemeAuto => 'ራስ-ሰር';
+  @override
+  String get widgetThemeLight => 'ብሩህ';
+  @override
+  String get widgetThemeDark => 'ጨለማ';
+  @override
+  String get widgetThemeBrand => 'ወይን ጠጅ';
+
+  @override
+  String get widgetSectionTextSize => 'የጽሑፍ መጠን';
+  @override
+  String get widgetTextSmall => 'ትንሽ';
+  @override
+  String get widgetTextMedium => 'መካከለኛ';
+  @override
+  String get widgetTextLarge => 'ትልቅ';
+
+  @override
+  String get widgetSectionOpacity => 'የጀርባ ግልጽነት';
+  @override
+  String get widgetSectionOptions => 'የሚታዩ ክፍሎች';
+
+  @override
+  String get widgetToggleVerseTag => 'የላይኛው መለያ';
+  @override
+  String get widgetToggleVerseRef => 'የጥቅስ ማጣቀሻ';
+  @override
+  String get widgetToggleContinueLabel => 'መለያ';
+  @override
+  String get widgetToggleProgressBar => 'የእድገት መስመር';
+  @override
+  String get widgetToggleStreakDays => 'የቀናት መለያ';
+  @override
+  String get widgetToggleStreakEmoji => 'ምልክት';
+
+  @override
+  String get widgetEmptyVerse => 'መተግበሪያውን ይክፈቱ';
+  @override
+  String get widgetEmptyContinue => 'ንባብ ይጀምሩ';
+
+  @override
+  String get widgetAddToHome => 'ወደ መነሻ ገጽ ጨምር';
+  @override
+  String get widgetAddUnsupported =>
+      'ማስጀመሪያዎ ይህን አይፈቅድም። መነሻ ገጽዎን ተጭነው በመያዝ መግብሩን ያክሉ።';
+  @override
+  String get widgetResizeHint =>
+      'መግብሩን በመነሻ ገጽ ላይ ተጭነው በመያዝ መጠኑን መቀየር ይችላሉ፤ ይዘቱ ከመጠኑ ጋር ይስተካከላል።';
+  @override
+  String get widgetsAndroidOnly => 'የመነሻ ገጽ መግብሮች በአንድሮይድ ላይ ብቻ ይገኛሉ።';
 
   // ── Streak page ───────────────────────────────────────────────────────────
   @override
