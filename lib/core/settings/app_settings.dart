@@ -1,6 +1,36 @@
 import 'package:flutter/material.dart';
 import '../storage/app_database.dart';
 
+/// The streak flame everyone starts with.
+///
+/// Also the fallback whenever a stored value is empty or unrecognised — the
+/// streak surfaces read this directly rather than each picking their own
+/// default, so a corrupted row can never leave one screen showing 🔥 and
+/// another showing nothing.
+const String kDefaultStreakEmoji = '🔥';
+
+/// The emoji offered on the customisation page, in display order.
+///
+/// A closed set rather than free text: the value is rendered by an Android
+/// `TextView` in the launcher's process, which has no access to the app's
+/// bundled fonts and falls back to the system emoji font. Everything here is
+/// in the base emoji set that every supported Android version can draw, so a
+/// choice can never come out as a blank box on the home screen.
+const List<String> kStreakEmojiChoices = [
+  '🔥',
+  '⚡',
+  '✨',
+  '🌟',
+  '⭐',
+  '📖',
+  '🕯️',
+  '🙏',
+  '👑',
+  '🌱',
+  '☀️',
+  '💎',
+];
+
 class AppSettings {
   const AppSettings({
     this.useGeezNumbers = false,
@@ -27,6 +57,8 @@ class AppSettings {
     this.marginScale = 1.0,
     this.textAlign = 0,
     this.keepScreenOn = false,
+    this.showCrossRefMarkers = false,
+    this.streakEmoji = kDefaultStreakEmoji,
   });
 
   final bool useGeezNumbers;
@@ -84,6 +116,13 @@ class AppSettings {
   final int textAlign;
   final bool keepScreenOn;
 
+  /// Whether inline cross-reference markers are displayed in the reader text.
+  final bool showCrossRefMarkers;
+  /// The emoji shown beside the reading streak, on the streak page, the home
+  /// header and the Android streak widget. Always one of
+  /// [kStreakEmojiChoices]; [copyWith] rejects anything else.
+  final String streakEmoji;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
@@ -109,6 +148,8 @@ class AppSettings {
     double? marginScale,
     int? textAlign,
     bool? keepScreenOn,
+    bool? showCrossRefMarkers,
+    String? streakEmoji,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -140,7 +181,20 @@ class AppSettings {
         marginScale: (marginScale ?? this.marginScale).clamp(0.6, 1.6),
         textAlign: textAlign ?? this.textAlign,
         keepScreenOn: keepScreenOn ?? this.keepScreenOn,
+        showCrossRefMarkers: showCrossRefMarkers ?? this.showCrossRefMarkers,
+        streakEmoji: sanitizeStreakEmoji(streakEmoji ?? this.streakEmoji),
       );
+
+  /// Coerces [value] to a supported emoji, falling back to
+  /// [kDefaultStreakEmoji].
+  ///
+  /// Applied on the way in from both `copyWith` and the database so no other
+  /// surface has to defend against an emoji that a future build dropped from
+  /// [kStreakEmojiChoices].
+  static String sanitizeStreakEmoji(String? value) =>
+      (value != null && kStreakEmojiChoices.contains(value))
+          ? value
+          : kDefaultStreakEmoji;
 
   Map<String, dynamic> toMap() => {
         'useGeezNumbers': useGeezNumbers,
@@ -165,6 +219,8 @@ class AppSettings {
         'marginScale': marginScale,
         'textAlign': textAlign,
         'keepScreenOn': keepScreenOn,
+        'showCrossRefMarkers': showCrossRefMarkers,
+        'streakEmoji': streakEmoji,
       };
 
   factory AppSettings.fromMap(Map<String, dynamic> map) => AppSettings(
@@ -195,6 +251,8 @@ class AppSettings {
         marginScale: ((map['marginScale'] as num?)?.toDouble() ?? 1.0).clamp(0.6, 1.6),
         textAlign: map['textAlign'] as int? ?? 0,
         keepScreenOn: map['keepScreenOn'] as bool? ?? false,
+        showCrossRefMarkers: map['showCrossRefMarkers'] as bool? ?? false,
+        streakEmoji: sanitizeStreakEmoji(map['streakEmoji'] as String?),
       );
 
   @override
@@ -223,7 +281,9 @@ class AppSettings {
       other.lineHeight == lineHeight &&
       other.marginScale == marginScale &&
       other.textAlign == textAlign &&
-      other.keepScreenOn == keepScreenOn;
+      other.keepScreenOn == keepScreenOn &&
+      other.showCrossRefMarkers == showCrossRefMarkers &&
+      other.streakEmoji == streakEmoji;
 
   @override
   int get hashCode => Object.hashAll([
@@ -251,6 +311,8 @@ class AppSettings {
         marginScale,
         textAlign,
         keepScreenOn,
+        showCrossRefMarkers,
+        streakEmoji,
       ]);
 }
 
@@ -291,6 +353,8 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
       marginScale: updated.marginScale,
       textAlign: updated.textAlign,
       keepScreenOn: updated.keepScreenOn,
+      showCrossRefMarkers: updated.showCrossRefMarkers,
+      streakEmoji: updated.streakEmoji,
     );
   }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The "auto" aliases, pointed at the dark palette.
+
+  Only the aliases live here. The palettes themselves are in
+  values/widget_colors.xml and are the same in both modes — a widget the user
+  pinned to "light" must stay light on a dark launcher, which it cannot do if
+  its colours are night-qualified.
+
+  Every alias in values/widget_colors.xml must also appear here: a name
+  overridden in only one of the two resolves to the light value on a dark
+  launcher, which is how a widget ends up with black text on a black card.
+-->
+<resources>
+    <color name="widget_background">@color/widget_dark_bg</color>
+    <color name="widget_text">@color/widget_dark_text</color>
+    <color name="widget_text_muted">@color/widget_dark_muted</color>
+    <color name="widget_primary">@color/widget_dark_accent</color>
+    <color name="widget_border">@color/widget_dark_border</color>
+    <color name="widget_track">@color/widget_dark_track</color>
+</resources>

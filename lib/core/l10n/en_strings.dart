@@ -31,6 +31,93 @@ class EnStrings extends AppStrings {
   @override
   String get streakReadTodayBtn => 'Read Now';
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  @override
+  String get streakEmojiTitle => 'Streak Emoji';
+  @override
+  String get streakEmojiHint => 'The emoji shown beside your reading days';
+  @override
+  String get streakEmojiSectionChoose => 'Choose an emoji';
+  @override
+  String get streakEmojiPreviewLabel => 'Preview';
+  @override
+  String get streakEmojiWidgetNote =>
+      'Your choice also appears beside your streak inside the app.';
+
+  // ── Home screen widgets ───────────────────────────────────────────────────
+  @override
+  String get sectionWidgets => 'Widgets';
+  @override
+  String get widgetsTitle => 'Home Screen Widgets';
+  @override
+  String get widgetsHint => 'Theme, text size and which rows are shown';
+  @override
+  String get widgetsChooseLabel => 'Choose a widget';
+
+  @override
+  String get widgetNameDailyVerse => 'Daily Verse';
+  @override
+  String get widgetNameContinue => 'Continue Reading';
+  @override
+  String get widgetNameStreak => 'Reading Streak';
+
+  @override
+  String get widgetSectionTheme => 'Theme';
+  @override
+  String get widgetThemeAuto => 'Auto';
+  @override
+  String get widgetThemeLight => 'Light';
+  @override
+  String get widgetThemeDark => 'Dark';
+  @override
+  String get widgetThemeBrand => 'Maroon';
+
+  @override
+  String get widgetSectionTextSize => 'Text size';
+  @override
+  String get widgetTextSmall => 'Small';
+  @override
+  String get widgetTextMedium => 'Medium';
+  @override
+  String get widgetTextLarge => 'Large';
+
+  @override
+  String get widgetSectionOpacity => 'Background opacity';
+  @override
+  String get widgetSectionOptions => 'Visible parts';
+
+  @override
+  String get widgetToggleVerseTag => 'Header tag';
+  @override
+  String get widgetToggleVerseRef => 'Reference line';
+  @override
+  String get widgetToggleContinueLabel => 'Label';
+  @override
+  String get widgetToggleProgressBar => 'Progress bar';
+  @override
+  String get widgetToggleStreakDays => 'Days label';
+  @override
+  String get widgetToggleStreakEmoji => 'Emoji';
+
+  @override
+  String get widgetEmptyVerse => 'Open the app';
+  @override
+  String get widgetEmptyContinue => 'Start reading';
+
+  @override
+  String get widgetAddToHome => 'Add to home screen';
+  @override
+  String get widgetAddUnsupported =>
+      'Your launcher does not allow this. Press and hold your home screen to '
+      'add the widget instead.';
+  @override
+  String get widgetResizeHint =>
+      'Press and hold a widget on your home screen to resize it — its contents '
+      'adjust to the size you give it.';
+  @override
+  String get widgetsAndroidOnly =>
+      'Home screen widgets are available on Android only.';
+
   // ── Streak page ───────────────────────────────────────────────────────────
   @override
   String get streakPageTitle => 'Reading Streak';
@@ -242,6 +329,11 @@ class EnStrings extends AppStrings {
   String get readingSettingsAlignJustify => 'Justify';
   @override
   String get readingSettingsKeepScreenOn => 'Keep Screen On';
+  @override
+  String get readingSettingsShowCrossRefMarkers => 'Show notes and references';
+  @override
+  String get readingSettingsShowCrossRefMarkersHint =>
+      "Set the edition's own notes and cross-references under each verse";
 
   // ── Search ───────────────────────────────────────────────────────────────
   @override
@@ -427,7 +519,17 @@ class EnStrings extends AppStrings {
   @override
   String get verseShare => 'Share';
   @override
-  String get verseCrossReferences => 'Cross references';
+  String get verseCrossReferences => 'Similar';
+  @override
+  String get verseReference => 'Reference';
+  @override
+  String get crossRefTitle => 'Cross-References';
+  @override
+  String crossRefCount(int n) => n == 1 ? '1 reference' : '$n references';
+  @override
+  String get crossRefNoResults => 'No cross-references for this verse';
+  @override
+  String crossRefBackTo(String reference) => '← Back to $reference';
   @override
   String get verseFootnotes => 'Footnotes';
   @override

@@ -4,6 +4,8 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/deep_links/deep_link_uri.dart';
+import 'core/home_widget/home_widget_refresher.dart';
+import 'core/home_widget/home_widget_service.dart';
 import 'core/l10n/l10n.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/services/bible_repository_provider.dart';
@@ -16,6 +18,8 @@ import 'core/web_reader/web_reader_providers.dart';
 import 'features/books/data/repositories/bible_repository.dart';
 import 'features/books/presentation/pages/reader_screen.dart';
 import 'features/home/presentation/pages/home_screen.dart';
+import 'features/home/presentation/pages/streak_screen.dart';
+import 'features/home/providers/home_tab_provider.dart';
 import 'features/onboarding/presentation/pages/onboarding_screen.dart';
 
 void main() async {
@@ -49,6 +53,9 @@ void main() async {
       marginScale: (saved['margin_scale'] as num?)?.toDouble() ?? 1.0,
       textAlign: (saved['text_align'] as int?) ?? 0,
       keepScreenOn: saved['keep_screen_on'] == 1,
+      showCrossRefMarkers: saved['show_cross_ref_markers'] == 1,
+      streakEmoji:
+          AppSettings.sanitizeStreakEmoji(saved['streak_emoji'] as String?),
     );
   }
 
@@ -120,6 +127,29 @@ class _BibleMaterialAppState extends ConsumerState<_BibleMaterialApp>
     if (state == AppLifecycleState.detached) {
       unawaited(ref.read(webReaderProvider.notifier).stopForLifecycle());
     }
+    // Resume, not launch alone: the widgets have to survive the app being left
+    // in the background across an Ethiopian date rollover, when nothing else
+    // would recompute the day's verse.
+    if (state == AppLifecycleState.resumed) {
+      _refreshHomeWidgets();
+    }
+  }
+
+  /// Pushes current app state to the Android home screen widgets.
+  ///
+  /// Reads [L10n] and [Settings] from the widget tree here, at the call site,
+  /// because both are `InheritedWidget`s the refresher itself cannot reach.
+  void _refreshHomeWidgets() {
+    if (!HomeWidgetService.isSupported) return;
+    final s = L10n.of(context);
+    unawaited(
+      refreshHomeWidgets(
+        ref,
+        s: s,
+        isAmharic: s is AmStrings,
+        settings: Settings.of(context),
+      ),
+    );
   }
 
   @override
@@ -139,6 +169,11 @@ class _BibleMaterialAppState extends ConsumerState<_BibleMaterialApp>
       unawaited(
         NotificationService.instance.restoreScheduledNotifications(settings),
       );
+
+      // First push of the session. `resumed` does not fire on a cold start, so
+      // without this the widgets would stay on yesterday's verse until the app
+      // was backgrounded and reopened.
+      _refreshHomeWidgets();
     }
   }
 
@@ -154,6 +189,16 @@ class _BibleMaterialAppState extends ConsumerState<_BibleMaterialApp>
   Future<void> _handleUri(Uri uri) async {
     final repo = _repo;
     if (repo == null) return;
+
+    // Routes are checked first: they carry no chapter/verse, so the verse
+    // parser below would reject one and show "link not found".
+    final route = parseAppRoute(uri);
+    if (route != null) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _openAppRoute(route));
+      return;
+    }
+
     final index = await repo.loadIndex();
     final target = parseDeepLink(uri, index);
     // All context/navigator access deferred to next frame to avoid async-gap lint.
@@ -177,6 +222,24 @@ class _BibleMaterialAppState extends ConsumerState<_BibleMaterialApp>
         ),
       );
     });
+  }
+
+  /// Pushes the destination named by a non-verse `openinapp` link.
+  ///
+  /// Only the home screen widgets produce these, so there is no "not found"
+  /// branch: an unknown slug never became an [AppRoute] in the first place.
+  void _openAppRoute(AppRoute route) {
+    switch (route) {
+      case AppRoute.streak:
+        _navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => StreakScreen(
+              onReadToday: () => ref.read(homeTabIndexProvider.notifier).state =
+                  kBooksTabIndex,
+            ),
+          ),
+        );
+    }
   }
 
   @override

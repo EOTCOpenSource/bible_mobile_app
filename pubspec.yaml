@@ -57,6 +57,7 @@ dependencies:
   just_audio: ^0.10.6
   file_picker: ^8.0.0
   wakelock_plus: ^1.2.8
+  home_widget: ^0.9.0
 
   # Bible editions ship as SQLite databases (80-weahadu). sqlite3_flutter_libs
   # is required, not optional: verse_fts uses the `trigram` tokenizer, which
@@ -102,6 +103,7 @@ flutter:
     # Curated daily-verse references (not scripture text).
     - assets/bibledata/ethiopian_daily_verses.json
     - assets/bibledata/introductions.json
+    - assets/crossrefs/
     - assets/signin/
     - assets/topics/
     - assets/topics/images/

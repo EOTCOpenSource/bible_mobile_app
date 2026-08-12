@@ -443,6 +443,20 @@ class BibleRepository extends ChangeNotifier {
     return table[_bookKey(raw)];
   }
 
+  /// Finds a book index entry by 1-based book number or string USFM ID.
+  Future<BookIndexEntry?> findBook(dynamic target) async {
+    final index = await loadIndex();
+    if (target is int) {
+      for (final entry in index) {
+        if (entry.bookNumber == target) return entry;
+      }
+      return null;
+    } else if (target is String) {
+      return resolveBook(target);
+    }
+    return null;
+  }
+
   Future<Book> loadBook(BookIndexEntry entry) async {
     final cached = _bookCache[entry.id];
     if (cached != null) return cached;

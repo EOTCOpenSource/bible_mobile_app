@@ -21,6 +21,54 @@ abstract class AppStrings {
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  String get streakEmojiTitle;
+  String get streakEmojiHint;
+  String get streakEmojiSectionChoose;
+  String get streakEmojiPreviewLabel;
+  String get streakEmojiWidgetNote;
+
+  // ── Home screen widgets ───────────────────────────────────────────────────
+  String get sectionWidgets;
+  String get widgetsTitle;
+  String get widgetsHint;
+  String get widgetsChooseLabel;
+
+  String get widgetNameDailyVerse;
+  String get widgetNameContinue;
+  String get widgetNameStreak;
+
+  String get widgetSectionTheme;
+  String get widgetThemeAuto;
+  String get widgetThemeLight;
+  String get widgetThemeDark;
+  String get widgetThemeBrand;
+
+  String get widgetSectionTextSize;
+  String get widgetTextSmall;
+  String get widgetTextMedium;
+  String get widgetTextLarge;
+
+  String get widgetSectionOpacity;
+  String get widgetSectionOptions;
+
+  /// Toggle labels. Two per widget, in the order they appear on the card.
+  String get widgetToggleVerseTag;
+  String get widgetToggleVerseRef;
+  String get widgetToggleContinueLabel;
+  String get widgetToggleProgressBar;
+  String get widgetToggleStreakDays;
+  String get widgetToggleStreakEmoji;
+
+  /// What the preview shows when there is no verse or no reading history yet.
+  String get widgetEmptyVerse;
+  String get widgetEmptyContinue;
+
+  String get widgetAddToHome;
+  String get widgetAddUnsupported;
+  String get widgetResizeHint;
+  String get widgetsAndroidOnly;
+
   // ── Streak page ───────────────────────────────────────────────────────────
   String get streakPageTitle;
   String get streakDayStreakLabel;
@@ -152,6 +200,8 @@ abstract class AppStrings {
   String get readingSettingsAlignStart;
   String get readingSettingsAlignJustify;
   String get readingSettingsKeepScreenOn;
+  String get readingSettingsShowCrossRefMarkers;
+  String get readingSettingsShowCrossRefMarkersHint;
 
   // ── Search ───────────────────────────────────────────────────────────────
   String get searchHint;
@@ -246,6 +296,17 @@ abstract class AppStrings {
 
   /// Title of the sheet listing a verse's parallel passages.
   String get verseCrossReferences;
+
+  /// The label on an inline apparatus line under a verse — "ማጣቀሻ: 1፥1 → …".
+  /// Deliberately the short form: it is a prefix, not a heading.
+  String get verseReference;
+
+  String get crossRefTitle;
+
+  /// e.g. "57 references" under the sheet's source reference.
+  String crossRefCount(int n);
+  String get crossRefNoResults;
+  String crossRefBackTo(String reference);
 
   /// Title of the sheet listing a verse's translator footnotes.
   String get verseFootnotes;

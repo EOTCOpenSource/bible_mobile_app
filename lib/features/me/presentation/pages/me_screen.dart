@@ -24,6 +24,7 @@ import '../../../backup/providers/backup_providers.dart';
 import '../widgets/web_reader_card.dart';
 import 'reading_settings_page.dart';
 import 'voice_settings_page.dart';
+import 'widgets_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
@@ -117,6 +118,29 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const VoiceSettingsPage(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+          // ── Widgets ──────────────────────────────────────────────────────
+          // Its own section rather than a row under Reading: the page behind
+          // it customises three widgets, only one of which is about reading.
+          SliverToBoxAdapter(
+            child: _SettingsSection(
+              amLabel: s.sectionWidgets,
+              enLabel: 'WIDGETS',
+              rows: [
+                _ArrowRow(
+                  label: s.widgetsTitle,
+                  hint: s.widgetsHint,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const WidgetsSettingsPage(),
                     ),
                   ),
                 ),
