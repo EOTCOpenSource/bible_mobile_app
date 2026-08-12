@@ -5,6 +5,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_dialog.dart';
 import 'saved_common.dart';
 
 class HistoryTab extends ConsumerWidget {
@@ -89,40 +90,20 @@ class HistoryTab extends ConsumerWidget {
 
   void _confirmDeleteSingleItem(
       BuildContext context, AppStrings s, int itemId) async {
-    final c = context.colors;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: c.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          s.savedDeleteHistoryTitle,
-          style: AppTypography.amharicLabel.copyWith(
-            color: c.textOnParchment,
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-          ),
+      builder: (ctx) => AppDialog(
+        icon: Icons.delete_outline_rounded,
+        title: s.savedDeleteHistoryTitle,
+        caption: 'DELETE',
+        actions: AppDialogActions(
+          cancelLabel: s.savedCancel,
+          onCancel: () => Navigator.pop(ctx, false),
+          confirmLabel: s.savedDelete,
+          destructive: true,
+          onConfirm: () => Navigator.pop(ctx, true),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              s.savedCancel,
-              style: AppTypography.amharicLabel.copyWith(color: c.textMuted),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(
-              s.savedDelete,
-              style: AppTypography.amharicLabel.copyWith(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+        children: const [],
       ),
     );
 

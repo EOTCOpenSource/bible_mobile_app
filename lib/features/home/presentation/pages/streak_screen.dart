@@ -238,7 +238,10 @@ class _Header extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text('🔥', style: TextStyle(fontSize: 30)),
+                      Text(
+                        Settings.of(context).streakEmoji,
+                        style: const TextStyle(fontSize: 30),
+                      ),
                       const SizedBox(width: 10),
                       Text(
                         format(streakCount),

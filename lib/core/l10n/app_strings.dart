@@ -21,6 +21,54 @@ abstract class AppStrings {
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  String get streakEmojiTitle;
+  String get streakEmojiHint;
+  String get streakEmojiSectionChoose;
+  String get streakEmojiPreviewLabel;
+  String get streakEmojiWidgetNote;
+
+  // ── Home screen widgets ───────────────────────────────────────────────────
+  String get sectionWidgets;
+  String get widgetsTitle;
+  String get widgetsHint;
+  String get widgetsChooseLabel;
+
+  String get widgetNameDailyVerse;
+  String get widgetNameContinue;
+  String get widgetNameStreak;
+
+  String get widgetSectionTheme;
+  String get widgetThemeAuto;
+  String get widgetThemeLight;
+  String get widgetThemeDark;
+  String get widgetThemeBrand;
+
+  String get widgetSectionTextSize;
+  String get widgetTextSmall;
+  String get widgetTextMedium;
+  String get widgetTextLarge;
+
+  String get widgetSectionOpacity;
+  String get widgetSectionOptions;
+
+  /// Toggle labels. Two per widget, in the order they appear on the card.
+  String get widgetToggleVerseTag;
+  String get widgetToggleVerseRef;
+  String get widgetToggleContinueLabel;
+  String get widgetToggleProgressBar;
+  String get widgetToggleStreakDays;
+  String get widgetToggleStreakEmoji;
+
+  /// What the preview shows when there is no verse or no reading history yet.
+  String get widgetEmptyVerse;
+  String get widgetEmptyContinue;
+
+  String get widgetAddToHome;
+  String get widgetAddUnsupported;
+  String get widgetResizeHint;
+  String get widgetsAndroidOnly;
+
   // ── Streak page ───────────────────────────────────────────────────────────
   String get streakPageTitle;
   String get streakDayStreakLabel;
@@ -213,6 +261,30 @@ abstract class AppStrings {
   String get historyEmptyHint;
   String get loadMore;
   String get savedDeleteHistoryTitle;
+  String get collections;
+  String get newCollection;
+  String get addToCollection;
+  String get collectionSubtitle;
+  String get collectionSearchHint;
+  String createNamedCollection(String name);
+  String get recentCollections;
+  String get allCollections;
+  String get noCollectionsEmptyHint;
+  String get noCollectionsFound;
+  String get tags;
+  String get addTags;
+  String get all;
+  String get noCollections;
+  String get addTagHint;
+  String get collectionNameHint;
+  String get collectionColorLabel;
+  String get collectionCreateAction;
+  String get savedOk;
+  String get collectionDeleteTitle;
+  String get collectionDeleteMessage; // reassures that annotations survive
+  String selectedCount(int count);
+  String get deleteSelectedTitle;
+  String deleteSelectedMessage(int count);
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"
