@@ -106,6 +106,8 @@ class BreadcrumbChip extends StatelessWidget {
       ),
       child: Text(
         text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontFamily: AppTypography.shiromeda,
           fontSize: 11,

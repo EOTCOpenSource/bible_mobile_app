@@ -130,9 +130,8 @@ class EditionChip extends ConsumerWidget {
               Icon(Icons.translate_rounded, size: dense ? 13 : 14, color: fg),
               const SizedBox(width: 5),
               ConstrainedBox(
-                // "አማርኛ 2000" fits; a parallel pair needs the extra room.
                 constraints: BoxConstraints(
-                  maxWidth: (dense ? 92.0 : 124.0) + (parallel == null ? 0 : 60),
+                  maxWidth: (dense ? 72.0 : 124.0) + (parallel == null ? 0 : 40),
                 ),
                 child: Text(
                   label.isEmpty ? '—' : label,
@@ -140,7 +139,7 @@ class EditionChip extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: AppTypography.shiromeda,
-                    fontSize: dense ? 11.5 : 12.5,
+                    fontSize: dense ? 11.0 : 12.5,
                     fontWeight: FontWeight.w700,
                     color: fg,
                     height: 1.1,

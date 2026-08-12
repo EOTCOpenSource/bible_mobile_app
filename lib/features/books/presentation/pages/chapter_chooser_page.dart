@@ -872,36 +872,39 @@ class _LegendRow extends StatelessWidget {
     final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          _LegendDot(color: c.primary, label: s.legendNextChapter),
-          const SizedBox(width: 10),
-          _LegendIcon(
-            icon: Icons.menu_book_rounded,
-            color: c.primary,
-            label: s.chapSelectorProgressSuffix,
-          ),
-          const SizedBox(width: 10),
-          _LegendIcon(
-            icon: Icons.book_rounded,
-            color: c.textMuted,
-            label: s.legendUnread,
-          ),
-          const SizedBox(width: 10),
-          _LegendIcon(
-            icon: Icons.bookmark_rounded,
-            color: c.accentDark,
-            label: s.legendBookmark,
-          ),
-          const Spacer(),
-          Text(
-            s.chapSelectorChapNosLabel,
-            style: AppTypography.englishLabel.copyWith(
-              color: c.textCaption,
-              fontSize: 10,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _LegendDot(color: c.primary, label: s.legendNextChapter),
+            const SizedBox(width: 10),
+            _LegendIcon(
+              icon: Icons.menu_book_rounded,
+              color: c.primary,
+              label: s.chapSelectorProgressSuffix,
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            _LegendIcon(
+              icon: Icons.book_rounded,
+              color: c.textMuted,
+              label: s.legendUnread,
+            ),
+            const SizedBox(width: 10),
+            _LegendIcon(
+              icon: Icons.bookmark_rounded,
+              color: c.accentDark,
+              label: s.legendBookmark,
+            ),
+            const SizedBox(width: 14),
+            Text(
+              s.chapSelectorChapNosLabel,
+              style: AppTypography.englishLabel.copyWith(
+                color: c.textCaption,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

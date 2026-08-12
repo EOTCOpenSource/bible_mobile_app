@@ -660,4 +660,29 @@ abstract class AppStrings {
 
   /// Shown when every candidate port was already taken.
   String get webReaderNoPort;
+
+  // ── Accessibility ────────────────────────────────────────────────────────
+  String get semanticsMenuBtn;
+  String get semanticsAudioBtn;
+  String semanticsChapterPickerBtn(String chapterLabel);
+  String get semanticsRefJumpBtn;
+  String get semanticsSearchBtn;
+  String get semanticsFontSettingsBtn;
+
+  String get semanticsBookmarkAdd;
+  String get semanticsBookmarkRemove;
+  String get semanticsNoteAdd;
+  String get semanticsNoteEdit;
+  String get semanticsHighlightAdd;
+  String get semanticsHighlightActive;
+  String get semanticsFootnotes;
+
+  String semanticsTabAnnouncement(String tabName, int index, int total);
+  String semanticsVerseLabel(String verseNum, String text);
+
+  String get semanticsDailyVerseShare;
+  String get semanticsDailyVerseCopy;
+  String semanticsContinueReading(String title);
+  String semanticsStartReading(String title);
+  String get semanticsStreakCard;
 }

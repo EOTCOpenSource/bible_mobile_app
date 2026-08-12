@@ -130,13 +130,17 @@ class _TopicCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.amharicLabel.copyWith(
-                      color: Colors.white,
-                      fontSize: 13,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.amharicLabel.copyWith(
+                        color: Colors.white,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),

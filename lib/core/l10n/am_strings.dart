@@ -1113,4 +1113,49 @@ class AmStrings extends AppStrings {
       'ከWiFi ጋር አልተገናኘም። መጀመሪያ ከአውታረ መረብ ጋር ተገናኝ።';
   @override
   String get webReaderNoPort => 'ወደቡ በሌላ መተግበሪያ ተይዟል።';
+
+  // ── Accessibility ────────────────────────────────────────────────────────
+  @override
+  String get semanticsMenuBtn => 'ምናሌ ክፈት';
+  @override
+  String get semanticsAudioBtn => 'ድምፅ አጫውት';
+  @override
+  String semanticsChapterPickerBtn(String chapterLabel) =>
+      'ምዕራፍ መምረጫ፣ አሁን $chapterLabel';
+  @override
+  String get semanticsRefJumpBtn => 'ወደ ጥቅስ ሂድ';
+  @override
+  String get semanticsSearchBtn => 'መጽሐፍ ውስጥ ፈልግ';
+  @override
+  String get semanticsFontSettingsBtn => 'የጽሑፍ ቅንብሮች';
+  @override
+  String get semanticsBookmarkAdd => 'ምልክት አድርግ';
+  @override
+  String get semanticsBookmarkRemove => 'ምልክት ተደርጓል፣ አስወግድ';
+  @override
+  String get semanticsNoteAdd => 'ማስታወሻ አክል';
+  @override
+  String get semanticsNoteEdit => 'ማስታወሻ አለ፣ አርም';
+  @override
+  String get semanticsHighlightAdd => 'ቀለም ቀባ';
+  @override
+  String get semanticsHighlightActive => 'ቀለም ተቀብቷል';
+  @override
+  String get semanticsFootnotes => 'ግርጌ ማስታወሻዎች እና ማጣቀሻዎች';
+  @override
+  String semanticsTabAnnouncement(String tabName, int index, int total) =>
+      '$tabName፣ ታብ $index ከ $total';
+  @override
+  String semanticsVerseLabel(String verseNum, String text) =>
+      'ቁጥር $verseNum፤ $text';
+  @override
+  String get semanticsDailyVerseShare => 'የዕለቱን ጥቅስ አጋራ';
+  @override
+  String get semanticsDailyVerseCopy => 'የዕለቱን ጥቅስ ገልብጥ';
+  @override
+  String semanticsContinueReading(String title) => '$title ማነብ ቀጥል';
+  @override
+  String semanticsStartReading(String title) => '$title ማነብ ጀምር';
+  @override
+  String get semanticsStreakCard => 'የንባብ ቀናት ስታቲስቲክስ';
 }

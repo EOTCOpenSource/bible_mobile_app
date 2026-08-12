@@ -1,5 +1,5 @@
 import 'package:bibleflutter/core/annotations/annotation_models.dart';
-import 'package:bibleflutter/core/l10n/en_strings.dart';
+import 'package:bibleflutter/core/l10n/l10n.dart';
 import 'package:bibleflutter/core/settings/app_settings.dart';
 import 'package:bibleflutter/core/theme/app_theme.dart';
 import 'package:bibleflutter/features/books/data/models/book.dart';
@@ -38,11 +38,17 @@ void main() {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    return Settings(
-      notifier: ValueNotifier(const AppSettings()),
-      child: MaterialApp(
-        theme: AppTheme.parchment,
-        home: Scaffold(body: child),
+    // The reader reads its parchment colors off the theme extension, so a bare
+    // MaterialApp is not enough to build it; the verse view also reaches for
+    // the settings and the localized strings it labels itself with.
+    return L10n(
+      initialLanguage: AppLanguage.english,
+      child: Settings(
+        notifier: ValueNotifier(const AppSettings()),
+        child: MaterialApp(
+          theme: AppTheme.parchment,
+          home: Scaffold(body: child),
+        ),
       ),
     );
   }

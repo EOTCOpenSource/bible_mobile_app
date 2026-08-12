@@ -154,48 +154,59 @@ class _BookTile extends StatelessWidget {
   final Widget footer;
   final VoidCallback onTap;
 
-  /// Height of the footer and the gap above it.
-  static const double _footerBlock = 26;
-
   /// A closed book is taller than it is wide; covers keep that ratio until the
   /// strip is too short for it, then they shrink rather than crop.
   static const double _coverAspect = 1.42;
 
   @override
   Widget build(BuildContext context) {
+    final s = L10n.of(context);
+    final isAm = s is AmStrings;
+    final title = isAm ? entry.bookNameAm : entry.bookNameEn;
+    final semanticLabel = subtitle.isNotEmpty
+        ? s.semanticsContinueReading('$title $subtitle')
+        : s.semanticsStartReading(title);
+
     return SizedBox(
       width: width,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // BookCover reserves 10dp past the face for its page edges, so
-              // the face is sized inside that rather than over it.
-              final maxFaceHeight = constraints.maxHeight - _footerBlock - 10;
-              final faceWidth = width - 10;
-              final faceHeight =
-                  math.min(faceWidth * _coverAspect, maxFaceHeight);
+      child: Semantics(
+        button: true,
+        label: semanticLabel,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onTap,
+            child: ExcludeSemantics(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // BookCover reserves 10dp past the face for its page edges, so
+                  // the face is sized inside that rather than over it.
+                  final maxFaceHeight =
+                      math.max(0.0, constraints.maxHeight - 42);
+                  final faceWidth = width - 10;
+                  final faceHeight =
+                      math.min(faceWidth * _coverAspect, maxFaceHeight);
 
-              if (faceHeight <= 0) return const SizedBox.shrink();
+                  if (faceHeight <= 0) return const SizedBox.shrink();
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _Cover(
-                    entry: entry,
-                    faceWidth: faceWidth,
-                    faceHeight: faceHeight,
-                    subtitle: subtitle,
-                  ),
-                  const Spacer(),
-                  footer,
-                ],
-              );
-            },
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Cover(
+                        entry: entry,
+                        faceWidth: faceWidth,
+                        faceHeight: faceHeight,
+                        subtitle: subtitle,
+                      ),
+                      const SizedBox(height: 4),
+                      footer,
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
