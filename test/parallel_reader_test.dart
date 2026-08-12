@@ -1,5 +1,4 @@
 import 'package:bibleflutter/core/annotations/annotation_models.dart';
-import 'package:bibleflutter/core/l10n/en_strings.dart';
 import 'package:bibleflutter/core/l10n/l10n.dart';
 import 'package:bibleflutter/core/settings/app_settings.dart';
 import 'package:bibleflutter/core/theme/app_theme.dart';
