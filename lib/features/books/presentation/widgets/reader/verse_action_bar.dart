@@ -138,6 +138,13 @@ class _ActionBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      // Without this the detector defers to its child, and a child made of a
+      // Padding, a SizedBox gap and a 22px icon leaves most of the button's
+      // visible area unhittable — the padding ring and the gap between icon
+      // and label swallow taps. That is what "I had to press it three times"
+      // is: the presses that landed in the gaps were never misses the button
+      // could see.
+      behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Column(
