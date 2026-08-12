@@ -92,7 +92,8 @@ class StreakPill extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.colors;
-    final useGeez = Settings.of(context).useGeezNumbers;
+    final settings = Settings.of(context);
+    final useGeez = settings.useGeezNumbers;
     final count = ref.watch(readingStreakStateProvider).value?.currentStreak ?? 0;
 
     return Material(
@@ -115,7 +116,7 @@ class StreakPill extends ConsumerWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🔥', style: TextStyle(fontSize: 15)),
+              Text(settings.streakEmoji, style: const TextStyle(fontSize: 15)),
               const SizedBox(width: 6),
               Text(
                 useGeez ? toGeez(count) : '$count',

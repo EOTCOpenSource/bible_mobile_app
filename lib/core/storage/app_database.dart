@@ -7,7 +7,7 @@ import '../../features/backup/data/backup_models.dart';
 
 class AppDatabase {
   static const _dbName = 'bibleapp.db';
-  static const _version = 12;
+  static const _version = 13;
 
   /// Every table that keys user data on a book.
   static const _bookKeyedTables = [
@@ -104,6 +104,36 @@ class AppDatabase {
     if (oldVersion < 12) {
       await _createCollectionsTables(db);
       await _addTagsColumnToAnnotations(db);
+    }
+    // v12→v13: the streak emoji.
+    //
+    // Version 12 was claimed twice in parallel: main reached it with
+    // collections and tags, the home screen widgets branch reached it with
+    // this column. So a database that says 12 has one half or the other, and
+    // the number cannot say which — which is why this step runs both halves
+    // and every part of it tolerates already being there.
+    if (oldVersion < 13) {
+      await _createCollectionsTables(db);
+      await _addTagsColumnToAnnotations(db);
+      // Anything older than v6 had `app_settings` created above by
+      // [_createSettingsTable], which already declares the column.
+      if (oldVersion >= 6) {
+        await _addStreakEmojiColumn(db);
+      }
+    }
+  }
+
+  /// Idempotent for the same reason [_addTagsColumnToAnnotations] is: a
+  /// database that reached v12 on the widgets branch already has this column,
+  /// and no version number is left that can tell it apart from one that
+  /// reached v12 on main.
+  Future<void> _addStreakEmojiColumn(Database db) async {
+    try {
+      await db.execute(
+        "ALTER TABLE app_settings ADD COLUMN streak_emoji TEXT NOT NULL DEFAULT '🔥'",
+      );
+    } catch (_) {
+      // Ignored if the column already exists.
     }
   }
 
@@ -1279,7 +1309,8 @@ class AppDatabase {
       line_height REAL NOT NULL DEFAULT 1.6,
       margin_scale REAL NOT NULL DEFAULT 1.0,
       text_align INTEGER NOT NULL DEFAULT 0,
-      keep_screen_on INTEGER NOT NULL DEFAULT 0
+      keep_screen_on INTEGER NOT NULL DEFAULT 0,
+      streak_emoji TEXT NOT NULL DEFAULT '🔥'
     )
   ''');
     await db.insert('app_settings', {
@@ -1314,6 +1345,7 @@ class AppDatabase {
     double marginScale = 1.0,
     int textAlign = 0,
     bool keepScreenOn = false,
+    String streakEmoji = '🔥',
   }) async {
     final db = await database;
     try {
@@ -1342,6 +1374,7 @@ class AppDatabase {
         'margin_scale': marginScale,
         'text_align': textAlign,
         'keep_screen_on': keepScreenOn ? 1 : 0,
+        'streak_emoji': streakEmoji,
       },
       where: 'id = ?',
       whereArgs: [1],

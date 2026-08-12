@@ -4,6 +4,7 @@ import 'package:kenat/kenat.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/audio/play_verses.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/l10n/verse_ref.dart';
 import '../../../../core/services/repository_provider.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -60,18 +61,9 @@ class _DailyVerseCardState extends ConsumerState<DailyVerseCard> {
 
   /// The small uppercase reference in the card's top-right, e.g. `JER 31:33`.
   ///
-  /// Always Latin digits: it is the compact counterpart to the Amharic
-  /// reference along the bottom, and Geez numerals there would collide with
-  /// the abbreviated book name in the space available.
-  String _shortRef(DailyVerseResult r) {
-    final book = r.bookNameEn.trim();
-    // "1 Corinthians" → "1 COR", "Jeremiah" → "JER".
-    final parts = book.split(RegExp(r'\s+'));
-    final word = parts.last;
-    final abbr = word.length <= 3 ? word : word.substring(0, 3);
-    final prefix = parts.length > 1 ? '${parts.first} ' : '';
-    return '$prefix${abbr.toUpperCase()} ${r.chapter}:${r.verse}';
-  }
+  /// Shared with the Android widget, which draws the same corner.
+  String _shortRef(DailyVerseResult r) =>
+      shortVerseRef(r.bookNameEn, r.chapter, r.verse);
 
   void _openInReader(BuildContext context, DailyVerseResult result) {
     Navigator.push(
