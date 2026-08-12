@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bibleflutter/core/deep_links/deep_link_uri.dart';
 import 'package:bibleflutter/core/home_widget/home_widget_service.dart';
+import 'package:bibleflutter/core/home_widget/widget_appearance.dart';
 import 'package:bibleflutter/core/l10n/am_strings.dart';
 import 'package:bibleflutter/core/l10n/en_strings.dart';
+import 'package:bibleflutter/core/l10n/verse_ref.dart';
 import 'package:bibleflutter/core/settings/app_settings.dart';
 import 'package:bibleflutter/features/books/data/models/book_index_entry.dart';
 import 'package:bibleflutter/features/books/data/reading_models.dart';
@@ -129,6 +131,9 @@ void main() {
       );
 
       expect(data.verseRef, 'ትንቢተ ኤርምያስ 29:11');
+      // The corner reference stays Latin whatever the app language is — it is
+      // the compact counterpart to the Amharic one, not a second copy of it.
+      expect(data.verseRefShort, 'JER 29:11');
       expect(data.continueBook, 'መጽሐፈ ነገሥት ቀዳማዊ');
       expect(data.continueRef, 'ምዕ. 8');
       expect(data.streakCountLabel, '12');
@@ -169,6 +174,10 @@ void main() {
       expect(data.continueRef, contains('፰'));
       // ...while the int stays Latin for the Kotlin side's empty-state check.
       expect(data.streakCount, 12);
+      // The corner reference is Latin by design and does not follow the
+      // numeral setting; Ge'ez digits there would collide with the
+      // abbreviated book name in the space the corner has.
+      expect(data.verseRefShort, 'JER 29:11');
     });
 
     test('the streak count and its suffix are separate fields', () {
@@ -235,6 +244,7 @@ void main() {
 
       expect(data.verseText, isEmpty);
       expect(data.verseRef, isEmpty);
+      expect(data.verseRefShort, isEmpty);
       expect(data.verseDeepLink, isEmpty);
       expect(data.continueBook, isEmpty);
       expect(data.continueDeepLink, isEmpty);
@@ -244,7 +254,9 @@ void main() {
     });
 
     test('long verses are cut on a word boundary, not mid-word', () {
-      final long = List.filled(80, 'ቃል').join(' ');
+      // Comfortably past the budget rather than just over it, so the test
+      // keeps testing the cut if the budget is retuned for a larger widget.
+      final long = List.filled(400, 'ቃል').join(' ');
       final data = buildHomeWidgetData(
         s: const AmStrings(),
         useGeezNumbers: false,
@@ -317,6 +329,7 @@ void main() {
         {
           'verse_text',
           'verse_ref',
+          'verse_ref_short',
           'verse_deeplink',
           'continue_book',
           'continue_ref',
@@ -350,6 +363,123 @@ void main() {
       for (final key in entries.keys
           .where((k) => k != 'continue_progress' && k != 'streak_count')) {
         expect(entries[key], isA<String>(), reason: '$key must be a String');
+      }
+    });
+  });
+
+  group('shortVerseRef', () {
+    test('abbreviates a one-word book to three letters', () {
+      expect(shortVerseRef('Jeremiah', 29, 11), 'JER 29:11');
+    });
+
+    // "1 Corinthians" must keep its ordinal, or 1 and 2 Corinthians become
+    // the same reference.
+    test('keeps the ordinal on a numbered book', () {
+      expect(shortVerseRef('1 Corinthians', 13, 4), '1 COR 13:4');
+    });
+
+    test('leaves a book already three letters or shorter alone', () {
+      expect(shortVerseRef('Job', 1, 21), 'JOB 1:21');
+    });
+  });
+
+  group('widget appearance', () {
+    test('the daily verse defaults to the brand card, the others to auto', () {
+      // The widget is meant to be the home screen's daily verse card, and
+      // that card is maroon. The other two have no on-screen counterpart to
+      // match, so they follow the launcher.
+      const appearance = HomeWidgetAppearance();
+      expect(appearance.dailyVerse.theme, WidgetTheme.brand);
+      expect(appearance.continueReading.theme, WidgetTheme.auto);
+      expect(appearance.streak.theme, WidgetTheme.auto);
+    });
+
+    test('withStyle replaces one widget and leaves the others alone', () {
+      const appearance = HomeWidgetAppearance();
+      final updated = appearance.withStyle(
+        HomeWidgetKind.streak,
+        const WidgetStyle(theme: WidgetTheme.dark),
+      );
+
+      expect(updated.streak.theme, WidgetTheme.dark);
+      expect(updated.dailyVerse, appearance.dailyVerse);
+      expect(updated.continueReading, appearance.continueReading);
+    });
+
+    // Zero is a setting, not a floor to defend against: only the card fades,
+    // so a fully transparent background leaves the text on the wallpaper.
+    test('opacity spans a fully transparent card to a solid one', () {
+      const style = WidgetStyle();
+      expect(style.copyWith(opacity: 0).opacity, 0);
+      expect(style.copyWith(opacity: 55).opacity, 55);
+      expect(style.copyWith(opacity: 100).opacity, 100);
+      expect(style.copyWith(opacity: -10).opacity, 0);
+      expect(style.copyWith(opacity: 300).opacity, 100);
+    });
+
+    // Every key here is read by name in WidgetStyle.kt, which builds it from
+    // the prefix plus the field name. A prefix renamed on one side alone is
+    // silent: the Kotlin getter falls back to its default and the widget
+    // ignores the setting forever.
+    test('writes exactly the style keys the Kotlin side reads', () {
+      final keys = const HomeWidgetAppearance().toWidgetEntries().keys.toSet();
+
+      expect(keys, {
+        for (final prefix in ['verse', 'continue', 'streak'])
+          for (final name in ['theme', 'scale', 'opacity', 'label', 'detail'])
+            '${prefix}_style_$name',
+      });
+    });
+
+    // The style keys share a preference file with the content keys. A prefix
+    // that collided with a content key would have one overwrite the other.
+    test('style keys cannot collide with content keys', () {
+      final content = buildHomeWidgetData(
+        s: const AmStrings(),
+        useGeezNumbers: false,
+        isAmharic: true,
+        streakEmoji: '🔥',
+        dailyVerse: _dailyVerse,
+        continueReading: _continue(),
+        streakCount: 12,
+      ).toWidgetEntries().keys.toSet();
+
+      expect(
+        const HomeWidgetAppearance()
+            .toWidgetEntries()
+            .keys
+            .toSet()
+            .intersection(content),
+        isEmpty,
+      );
+    });
+
+    // Kotlin reads the enums with `getString` and the toggles with `getInt`.
+    // A bool written where getInt is called throws ClassCastException inside
+    // the launcher, which surfaces as a widget that will not load.
+    test('enums go over as strings and toggles as ints', () {
+      final entries = const HomeWidgetAppearance().toWidgetEntries();
+
+      expect(entries['verse_style_theme'], 'brand');
+      expect(entries['verse_style_scale'], 'medium');
+      expect(entries['verse_style_opacity'], isA<int>());
+      expect(entries['verse_style_label'], 1);
+      expect(entries['verse_style_detail'], 1);
+    });
+
+    test('an unknown or missing wire name reads as the safe default', () {
+      expect(WidgetTheme.parse('chartreuse'), WidgetTheme.auto);
+      expect(WidgetTheme.parse(null), WidgetTheme.auto);
+      expect(WidgetTextScale.parse('enormous'), WidgetTextScale.medium);
+      expect(WidgetTextScale.parse(null), WidgetTextScale.medium);
+    });
+
+    test('every wire name round-trips', () {
+      for (final theme in WidgetTheme.values) {
+        expect(WidgetTheme.parse(theme.wireName), theme);
+      }
+      for (final scale in WidgetTextScale.values) {
+        expect(WidgetTextScale.parse(scale.wireName), scale);
       }
     });
   });

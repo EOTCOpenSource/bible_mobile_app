@@ -27,6 +27,31 @@ Future<void> refreshHomeWidgets(
 }) async {
   if (!HomeWidgetService.isSupported) return;
 
+  final data = await previewHomeWidgetData(
+    ref,
+    s: s,
+    isAmharic: isAmharic,
+    settings: settings,
+  );
+  if (data == null) return;
+  await HomeWidgetService.push(data);
+}
+
+/// The same payload [refreshHomeWidgets] pushes, built but not pushed.
+///
+/// The widget settings page draws its previews from this rather than from
+/// invented sample text: a preview showing today's real verse, book and streak
+/// is the only way to judge whether a font size or a theme actually works, and
+/// an Amharic verse of the real length is exactly what a made-up one is not.
+///
+/// Returns null when the state behind it cannot be read — the callers treat
+/// that as "leave what is already on the home screen alone".
+Future<HomeWidgetData?> previewHomeWidgetData(
+  WidgetRef ref, {
+  required AppStrings s,
+  required bool isAmharic,
+  required AppSettings settings,
+}) async {
   try {
     final repo = ref.read(bibleRepositoryProvider);
 
@@ -41,50 +66,23 @@ Future<void> refreshHomeWidgets(
 
     final streak = await ref.read(readingStreakStateProvider.future);
 
-    await HomeWidgetService.push(
-      buildHomeWidgetData(
-        s: s,
-        useGeezNumbers: settings.useGeezNumbers,
-        isAmharic: isAmharic,
-        streakEmoji: settings.streakEmoji,
-        dailyVerse: dailyVerse,
-        continueReading: latest == null
-            ? null
-            : (
-                entry: latest.entry,
-                position: latest.position,
-                progress: latest.progressPercent,
-              ),
-        streakCount: streak.currentStreak,
-      ),
-    );
-  } catch (e) {
-    debugPrint('[HomeWidget] refresh failed: $e');
-  }
-}
-
-/// A [HomeWidgetData] built from the same sources as [refreshHomeWidgets] but
-/// not pushed anywhere — the preview the settings page draws so the user can
-/// see their emoji choice on the real streak count.
-Future<HomeWidgetData?> previewHomeWidgetData(
-  WidgetRef ref, {
-  required AppStrings s,
-  required bool isAmharic,
-  required AppSettings settings,
-}) async {
-  try {
-    final streak = await ref.read(readingStreakStateProvider.future);
     return buildHomeWidgetData(
       s: s,
       useGeezNumbers: settings.useGeezNumbers,
       isAmharic: isAmharic,
       streakEmoji: settings.streakEmoji,
-      dailyVerse: null,
-      continueReading: null,
+      dailyVerse: dailyVerse,
+      continueReading: latest == null
+          ? null
+          : (
+              entry: latest.entry,
+              position: latest.position,
+              progress: latest.progressPercent,
+            ),
       streakCount: streak.currentStreak,
     );
   } catch (e) {
-    debugPrint('[HomeWidget] preview failed: $e');
+    debugPrint('[HomeWidget] build failed: $e');
     return null;
   }
 }

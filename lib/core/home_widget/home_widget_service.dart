@@ -7,7 +7,9 @@ import '../../features/books/data/reading_models.dart';
 import '../../features/books/data/repositories/bible_repository.dart';
 import '../deep_links/deep_link_uri.dart';
 import '../l10n/app_strings.dart';
+import '../l10n/verse_ref.dart';
 import 'home_widget_data.dart';
+import 'widget_appearance.dart';
 
 /// The Kotlin `AppWidgetProvider` each widget is updated through.
 ///
@@ -19,10 +21,14 @@ const _kDailyVerseProvider = '$_kAndroidPackage.widgets.DailyVerseWidget';
 const _kContinueProvider = '$_kAndroidPackage.widgets.ContinueReadingWidget';
 const _kStreakProvider = '$_kAndroidPackage.widgets.StreakWidget';
 
-/// How much verse text the medium (4×2) widget can show before the launcher
-/// clips it mid-word. Truncating here rather than in the layout keeps the
-/// ellipsis on a word boundary, which `android:ellipsize` cannot do.
-const _kVerseCharBudget = 180;
+/// How much verse text is sent to the widget at all.
+///
+/// Sized for the *largest* the daily verse widget can be resized to, not the
+/// default: the launcher decides how many lines fit and ellipsizes what does
+/// not, and a budget cut to the small size would leave a 4×4 widget half
+/// empty with no way to get the rest of the verse back. The cut is still made
+/// on a word boundary, which `android:ellipsize` cannot do.
+const _kVerseCharBudget = 320;
 
 /// Pushes app state into the Android home screen widgets.
 ///
@@ -43,21 +49,127 @@ class HomeWidgetService {
 
   /// Writes [data] to the shared preferences the widgets read, then asks each
   /// provider to redraw.
-  static Future<void> push(HomeWidgetData data) async {
+  static Future<void> push(HomeWidgetData data) => _write(
+        data.toWidgetEntries(),
+        what: 'content',
+      );
+
+  /// Writes how the widgets should look, then redraws them.
+  ///
+  /// Separate from [push] because it is written on a different clock: content
+  /// is refreshed on every resume, style only when the user changes it, and a
+  /// style change has to take effect on the home screen immediately rather
+  /// than at the next resume.
+  static Future<void> pushAppearance(HomeWidgetAppearance appearance) => _write(
+        appearance.toWidgetEntries(),
+        what: 'appearance',
+      );
+
+  /// Reads back what [pushAppearance] last wrote.
+  ///
+  /// The widget preferences are the single copy of this: they outlive the app's
+  /// process, the launcher reads them directly, and mirroring them into the
+  /// settings database would create a second copy that can disagree. Anything
+  /// never written — a fresh install, or a platform with no widgets — falls
+  /// back to the defaults in [HomeWidgetAppearance].
+  static Future<HomeWidgetAppearance> loadAppearance() async {
+    if (!isSupported) return const HomeWidgetAppearance();
+
+    const defaults = HomeWidgetAppearance();
+    try {
+      var appearance = defaults;
+      for (final kind in HomeWidgetKind.values) {
+        final fallback = defaults.styleFor(kind);
+        final p = kind.prefix;
+        appearance = appearance.withStyle(
+          kind,
+          WidgetStyle(
+            // The `??` is not redundant with `defaultValue`: the platform
+            // returns null rather than the default on a channel that is not
+            // there, and parsing null would quietly hand back `auto` — which
+            // is a different widget from the brand card the daily verse
+            // defaults to.
+            theme: WidgetTheme.parse(
+              await HomeWidget.getWidgetData<String>(
+                    '${p}_style_theme',
+                    defaultValue: fallback.theme.wireName,
+                  ) ??
+                  fallback.theme.wireName,
+            ),
+            textScale: WidgetTextScale.parse(
+              await HomeWidget.getWidgetData<String>(
+                    '${p}_style_scale',
+                    defaultValue: fallback.textScale.wireName,
+                  ) ??
+                  fallback.textScale.wireName,
+            ),
+            opacity: (await HomeWidget.getWidgetData<int>(
+                      '${p}_style_opacity',
+                      defaultValue: fallback.opacity,
+                    ) ??
+                    fallback.opacity)
+                .clamp(0, 100),
+            showLabel: await _flag('${p}_style_label', fallback.showLabel),
+            showDetail: await _flag('${p}_style_detail', fallback.showDetail),
+          ),
+        );
+      }
+      return appearance;
+    } catch (e) {
+      debugPrint('[HomeWidget] appearance read failed: $e');
+      return defaults;
+    }
+  }
+
+  /// Asks the launcher to add [kind] to the home screen.
+  ///
+  /// Only some launchers implement this, and only from API 26 — hence the
+  /// support check rather than a button that silently does nothing.
+  static Future<bool> requestPin(HomeWidgetKind kind) async {
+    if (!isSupported) return false;
+    try {
+      if (await HomeWidget.isRequestPinWidgetSupported() != true) return false;
+      await HomeWidget.requestPinWidget(
+        qualifiedAndroidName: _providerFor(kind),
+      );
+      return true;
+    } catch (e) {
+      debugPrint('[HomeWidget] pin request failed: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> _flag(String key, bool fallback) async {
+    final raw = await HomeWidget.getWidgetData<int>(
+      key,
+      defaultValue: fallback ? 1 : 0,
+    );
+    return (raw ?? (fallback ? 1 : 0)) != 0;
+  }
+
+  static Future<void> _write(
+    Map<String, Object> entries, {
+    required String what,
+  }) async {
     if (!isSupported) return;
     try {
-      for (final entry in data.toWidgetEntries().entries) {
+      for (final entry in entries.entries) {
         await HomeWidget.saveWidgetData(entry.key, entry.value);
       }
       await Future.wait([
-        HomeWidget.updateWidget(qualifiedAndroidName: _kDailyVerseProvider),
-        HomeWidget.updateWidget(qualifiedAndroidName: _kContinueProvider),
-        HomeWidget.updateWidget(qualifiedAndroidName: _kStreakProvider),
+        for (final kind in HomeWidgetKind.values)
+          HomeWidget.updateWidget(qualifiedAndroidName: _providerFor(kind)),
       ]);
     } catch (e) {
-      debugPrint('[HomeWidget] update failed: $e');
+      debugPrint('[HomeWidget] $what update failed: $e');
     }
   }
+
+  static String _providerFor(HomeWidgetKind kind) => switch (kind) {
+        HomeWidgetKind.dailyVerse => _kDailyVerseProvider,
+        HomeWidgetKind.continueReading => _kContinueProvider,
+        HomeWidgetKind.streak => _kStreakProvider,
+      };
 }
 
 /// Builds the widget payload from already-resolved app state.
@@ -88,6 +200,13 @@ HomeWidgetData buildHomeWidgetData({
       ? ''
       : '${isAmharic ? dailyVerse.bookNameAm : dailyVerse.bookNameEn} '
           '${num_(dailyVerse.chapter)}:${num_(dailyVerse.verse)}';
+  final verseRefShort = dailyVerse == null
+      ? ''
+      : shortVerseRef(
+          dailyVerse.bookNameEn,
+          dailyVerse.chapter,
+          dailyVerse.verse,
+        );
   final verseDeepLink = dailyVerse == null
       ? ''
       : verseDeepLinkUri(
@@ -119,6 +238,7 @@ HomeWidgetData buildHomeWidgetData({
   return HomeWidgetData(
     verseText: verseText,
     verseRef: verseRef,
+    verseRefShort: verseRefShort,
     verseDeepLink: verseDeepLink,
     continueBook: continueBook,
     continueRef: continueRef,

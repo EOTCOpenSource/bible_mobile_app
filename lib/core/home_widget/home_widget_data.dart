@@ -13,6 +13,7 @@ class HomeWidgetData {
   const HomeWidgetData({
     required this.verseText,
     required this.verseRef,
+    required this.verseRefShort,
     required this.verseDeepLink,
     required this.continueBook,
     required this.continueRef,
@@ -30,6 +31,11 @@ class HomeWidgetData {
 
   /// Localised reference, e.g. `ኤር 29:11`.
   final String verseRef;
+
+  /// The compact Latin form for the card's corner, e.g. `JER 29:11` — the
+  /// same abbreviation the home screen's daily verse card prints, from the
+  /// same formatter.
+  final String verseRefShort;
 
   /// `eotcbible://openinapp/jer29_11` — the verse itself, so tapping the
   /// widget lands on the words it was showing.
@@ -78,6 +84,7 @@ class HomeWidgetData {
   Map<String, Object> toWidgetEntries() => {
         'verse_text': verseText,
         'verse_ref': verseRef,
+        'verse_ref_short': verseRefShort,
         'verse_deeplink': verseDeepLink,
         'continue_book': continueBook,
         'continue_ref': continueRef,
@@ -96,6 +103,7 @@ class HomeWidgetData {
       other is HomeWidgetData &&
           other.verseText == verseText &&
           other.verseRef == verseRef &&
+          other.verseRefShort == verseRefShort &&
           other.verseDeepLink == verseDeepLink &&
           other.continueBook == continueBook &&
           other.continueRef == continueRef &&
@@ -111,6 +119,7 @@ class HomeWidgetData {
   int get hashCode => Object.hashAll([
         verseText,
         verseRef,
+        verseRefShort,
         verseDeepLink,
         continueBook,
         continueRef,
