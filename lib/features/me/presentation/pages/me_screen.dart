@@ -22,8 +22,8 @@ import '../../../backup/data/backup_models.dart';
 import '../../../backup/providers/backup_providers.dart';
 import '../widgets/web_reader_card.dart';
 import 'reading_settings_page.dart';
-import 'streak_emoji_page.dart';
 import 'voice_settings_page.dart';
+import 'widgets_settings_page.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
@@ -102,19 +102,6 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     settings.copyWith(isDarkReader: v),
                   ),
                 ),
-                // The current emoji is the row's value, so the choice is
-                // readable without opening the page.
-                _ArrowRow(
-                  label: s.streakEmojiTitle,
-                  value: settings.streakEmoji,
-                  hint: s.streakEmojiHint,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const StreakEmojiPage(),
-                    ),
-                  ),
-                ),
                 // Audio reading is set up before it is used: the user's own
                 // Addis AI key, then the voice that reads to them. The row
                 // shows the voice actually in effect, so "which voice is this
@@ -130,6 +117,29 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const VoiceSettingsPage(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+          // ── Widgets ──────────────────────────────────────────────────────
+          // Its own section rather than a row under Reading: the page behind
+          // it customises three widgets, only one of which is about reading.
+          SliverToBoxAdapter(
+            child: _SettingsSection(
+              amLabel: s.sectionWidgets,
+              enLabel: 'WIDGETS',
+              rows: [
+                _ArrowRow(
+                  label: s.widgetsTitle,
+                  hint: s.widgetsHint,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const WidgetsSettingsPage(),
                     ),
                   ),
                 ),
