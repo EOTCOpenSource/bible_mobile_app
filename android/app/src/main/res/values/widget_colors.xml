@@ -1,21 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Home screen widget palette, light.
+  Home screen widget palettes.
 
-  Hand-mirrored from AppColorScheme.light in
-  lib/core/theme/app_color_scheme.dart. The launcher renders widgets in its own
-  process with no Flutter engine, so these cannot be read from Dart at draw
-  time and have to be duplicated here. Keep the two in step — a widget in last
-  season's maroon next to an app in this season's is more jarring than a widget
-  that is plainly its own thing.
+  Hand-mirrored from AppColorScheme in lib/core/theme/app_color_scheme.dart.
+  The launcher renders widgets in its own process with no Flutter engine, so
+  these cannot be read from Dart at draw time and have to be duplicated here.
+  Keep the two in step — a widget in last season's maroon next to an app in
+  this season's is more jarring than a widget that is plainly its own thing.
+
+  Three complete palettes, each hex written exactly once:
+
+  - light / dark  are the app's own light and dark schemes
+  - brand         is the maroon card the home screen's daily verse sits on
+
+  The user picks one per widget, so a fixed light or dark palette has to be
+  resolvable regardless of what the launcher's night mode says. That is why
+  every role is spelled out here rather than left to a values-night override —
+  the override still exists, but only to answer "auto", and it does so by
+  pointing at these same names (see values-night/widget_colors.xml).
 -->
 <resources>
-    <color name="widget_primary">#FF6B1F2A</color>
-    <color name="widget_accent">#FFD4A853</color>
-    <color name="widget_background">#FFFFFFFF</color>
-    <color name="widget_surface_dim">#FFF8F5F0</color>
-    <color name="widget_text">#FF2C1810</color>
-    <color name="widget_text_muted">#FF7A6458</color>
-    <color name="widget_border">#FFE8D9C4</color>
-    <color name="widget_track">#FFE0D8CC</color>
+    <!-- ── Light ──────────────────────────────────────────────────────────── -->
+    <color name="widget_light_bg">#FFFFFFFF</color>
+    <color name="widget_light_text">#FF2C1810</color>
+    <color name="widget_light_muted">#FF7A6458</color>
+    <color name="widget_light_accent">#FF6B1F2A</color>
+    <color name="widget_light_border">#FFE8D9C4</color>
+    <color name="widget_light_track">#FFE0D8CC</color>
+
+    <!-- ── Dark ───────────────────────────────────────────────────────────── -->
+    <color name="widget_dark_bg">#FF1E1A16</color>
+    <color name="widget_dark_text">#FFEEE4D4</color>
+    <color name="widget_dark_muted">#FF9A8878</color>
+    <color name="widget_dark_accent">#FFD4A853</color>
+    <color name="widget_dark_border">#FF2E2420</color>
+    <color name="widget_dark_track">#FF3A2E24</color>
+
+    <!--
+      ── Brand ───────────────────────────────────────────────────────────────
+      AppColorScheme.light.primary with textOnDark on it, exactly as
+      daily_verse_card.dart draws the card this mirrors. The muted and border
+      roles are the gold at reduced alpha rather than a separate colour, which
+      is also what the card does.
+    -->
+    <color name="widget_brand_bg">#FF6B1F2A</color>
+    <color name="widget_brand_text">#FFFFF8F0</color>
+    <color name="widget_brand_muted">#B3F4D38A</color>
+    <color name="widget_brand_accent">#FFF4D38A</color>
+    <color name="widget_brand_border">#33F4D38A</color>
+    <!--
+      Opaque on purpose, unlike the border above it. The track is drawn by
+      tinting a white bar, and tinting with a translucent colour blends toward
+      white instead of dimming — so the progress track is AppColorScheme's
+      primaryLight rather than cream at low alpha.
+    -->
+    <color name="widget_brand_track">#FF8B3A47</color>
+
+    <!--
+      The decorative disc bleeding off the brand card's top-right corner, at
+      the same 5% white the home screen uses.
+    -->
+    <color name="widget_brand_disc">#0DFFFFFF</color>
+
+    <!--
+      ── Auto ────────────────────────────────────────────────────────────────
+      What the layout XML references, so the widget picker's preview follows
+      the launcher's night mode before any style has been chosen. Aliases, not
+      values: values-night/ repoints the same names at the dark palette.
+    -->
+    <color name="widget_background">@color/widget_light_bg</color>
+    <color name="widget_text">@color/widget_light_text</color>
+    <color name="widget_text_muted">@color/widget_light_muted</color>
+    <color name="widget_primary">@color/widget_light_accent</color>
+    <color name="widget_border">@color/widget_light_border</color>
+    <color name="widget_track">@color/widget_light_track</color>
 </resources>

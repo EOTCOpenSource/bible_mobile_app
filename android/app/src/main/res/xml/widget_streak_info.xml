@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  See widget_daily_verse_info.xml for why all four size pairs are set.
+
+  The resize floor here is a single cell: at that size the widget drops the
+  emoji and the "days" label and shows only the count, which is still the one
+  number the widget exists for.
+-->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="110dp"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:maxResizeWidth="250dp"
+    android:maxResizeHeight="250dp"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:initialLayout="@layout/widget_streak"

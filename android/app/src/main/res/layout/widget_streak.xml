@@ -1,50 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Reading streak, 2×2.
+  Reading streak, 1×1 up to 3×3.
 
   The emoji has no android:fontFamily. It must fall through to the system
   emoji font — pointing it at the Ethiopic face would render 🔥 as a blank
   box, since that font has no emoji glyphs.
+
+  See widget_daily_verse.xml for why the background is an ImageView and why
+  there is one layout rather than one per size.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:background="@drawable/widget_background"
-    android:padding="12dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/streak_emoji"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:includeFontPadding="false"
-        android:textSize="34sp"
-        tools:text="🔥" />
-
-    <TextView
-        android:id="@+id/streak_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:maxLines="1"
-        android:fontFamily="@font/ethiopic_bold"
-        android:textColor="@color/widget_text"
-        android:textSize="26sp"
-        tools:text="12" />
-
-    <TextView
-        android:id="@+id/streak_label"
+    <ImageView
+        android:id="@+id/widget_bg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:fontFamily="@font/ethiopic_body"
-        android:textColor="@color/widget_text_muted"
-        android:textSize="12sp"
-        tools:text="ቀናት" />
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:contentDescription="@null"
+        android:src="@drawable/widget_card_light" />
 
-</LinearLayout>
+    <ImageView
+        android:id="@+id/widget_disc"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-64dp"
+        android:layout_marginEnd="-48dp"
+        android:visibility="gone"
+        android:contentDescription="@null"
+        android:src="@drawable/widget_disc" />
+
+    <LinearLayout
+        android:id="@+id/streak_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/streak_emoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:textSize="30sp"
+            tools:text="🔥" />
+
+        <TextView
+            android:id="@+id/streak_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:fontFamily="@font/ethiopic_bold"
+            android:textColor="@color/widget_text"
+            android:textSize="26sp"
+            tools:text="12" />
+
+        <TextView
+            android:id="@+id/streak_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/ethiopic_body"
+            android:textColor="@color/widget_text_muted"
+            android:textSize="12sp"
+            tools:text="ቀናት" />
+
+    </LinearLayout>
+
+</FrameLayout>

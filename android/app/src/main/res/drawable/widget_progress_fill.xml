@@ -2,6 +2,11 @@
 <!--
   Filled part of the continue-reading progress bar.
 
+  White, and tinted at runtime with `setColorFilter` so one drawable serves all
+  three palettes — the same trick the card cannot use, because a colour filter
+  applies to an ImageView's image and the card is behind text that must not be
+  tinted with it.
+
   A clip drawable rather than a ProgressBar: RemoteViews can set a
   ProgressBar's progress, but cannot tint it per-theme on older API levels,
   and a two-view clip is the one shape that behaves identically everywhere.
@@ -10,7 +15,7 @@
     android:clipOrientation="horizontal"
     android:gravity="left">
     <shape android:shape="rectangle">
-        <solid android:color="@color/widget_primary" />
+        <solid android:color="#FFFFFFFF" />
         <corners android:radius="3dp" />
     </shape>
 </clip>

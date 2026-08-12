@@ -18,6 +18,7 @@ import android.widget.RemoteViews
 internal object WidgetKeys {
     const val VERSE_TEXT = "verse_text"
     const val VERSE_REF = "verse_ref"
+    const val VERSE_REF_SHORT = "verse_ref_short"
     const val VERSE_DEEPLINK = "verse_deeplink"
 
     const val CONTINUE_BOOK = "continue_book"
@@ -30,6 +31,18 @@ internal object WidgetKeys {
     const val STREAK_EMOJI = "streak_emoji"
     const val STREAK_SUFFIX = "streak_suffix"
     const val STREAK_DEEPLINK = "streak_deeplink"
+
+    /**
+     * The prefixes each widget's *style* keys are built from — see
+     * [widgetStyle] and `HomeWidgetKind` in `widget_appearance.dart`.
+     *
+     * Style lives under its own prefixes rather than beside the content keys
+     * above because it is written on a different clock: content on every app
+     * resume, style only when the user changes it.
+     */
+    const val VERSE_STYLE_PREFIX = "verse"
+    const val CONTINUE_STYLE_PREFIX = "continue"
+    const val STREAK_STYLE_PREFIX = "streak"
 }
 
 /**

@@ -1,73 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Daily verse, 2×2 up to 4×2.
+  Daily verse, 2×1 up to 5×4.
 
-  One layout for both sizes rather than two: the only difference is how many
-  lines of verse fit, and `layout_weight` on the verse plus maxLines=6 lets the
-  same tree collapse gracefully. A second layout would double the places the
-  Ethiopic font has to be remembered.
+  The same card daily_verse_card.dart draws on the home screen: gold tag on the
+  left of the header, the compact Latin reference on the right, the verse in
+  cream below it, and the full localised reference along the bottom. A widget
+  that mirrors a screen should look like that screen, not like a generic text
+  box that happens to hold the same words.
+
+  One layout for every size. Text sizes, padding, line count and which rows are
+  visible are all set from DailyVerseWidget.kt against the cells the launcher
+  actually gave the widget — see WidgetStyle.kt. A second layout per size would
+  double the places the Ethiopic font, the ids and the empty state have to be
+  remembered, and the launcher only tells us the size at runtime anyway.
+
+  The background is an ImageView rather than the root's `android:background`
+  because only an ImageView can be faded (`setImageAlpha`) and re-pointed at
+  another drawable (`setImageViewResource`) from RemoteViews. That is what
+  makes the theme and opacity settings possible at all.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_background"
-    android:padding="14dp">
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:contentDescription="@null"
+        android:src="@drawable/widget_card_brand" />
+
+    <!-- Clipped to the card by FrameLayout's own bounds, so it bleeds off the
+         corner exactly as the disc on the home screen card does. -->
+    <ImageView
+        android:id="@+id/widget_disc"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-64dp"
+        android:layout_marginEnd="-48dp"
+        android:contentDescription="@null"
+        android:src="@drawable/widget_disc" />
 
     <LinearLayout
+        android:id="@+id/verse_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:id="@+id/verse_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/verse_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/ethiopic_bold"
+                android:textColor="@color/widget_brand_accent"
+                android:textSize="11sp"
+                android:text="@string/widget_daily_verse_badge" />
+
+            <TextView
+                android:id="@+id/verse_ref_short"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:letterSpacing="0.1"
+                android:textColor="@color/widget_brand_muted"
+                android:textSize="9sp"
+                tools:text="JER 29:11" />
+        </LinearLayout>
+
+        <!--
+          The verse takes whatever height is left over and sits in the middle
+          of it. Without the gravity a short verse hugs the tag row and leaves
+          a gap above the reference, so the same card looks balanced at two
+          cells and top-heavy at four — and the height left over is exactly
+          what changes when the widget is resized.
+        -->
+        <TextView
+            android:id="@+id/verse_text"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:maxLines="4"
+            android:ellipsize="end"
+            android:lineSpacingMultiplier="1.35"
+            android:fontFamily="@font/ethiopic_body"
+            android:textColor="@color/widget_brand_text"
+            android:textSize="14sp"
+            tools:text="እኔ ስለ እናንተ የማስበውን አሳብ አውቃለሁና" />
 
         <TextView
             android:id="@+id/verse_ref"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginTop="8dp"
             android:maxLines="1"
             android:ellipsize="end"
             android:fontFamily="@font/ethiopic_bold"
-            android:textColor="@color/widget_primary"
-            android:textSize="13sp"
-            tools:text="ኤር 29:11" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="@string/widget_daily_verse_badge"
-            android:textColor="@color/widget_text_muted"
-            android:textSize="10sp" />
+            android:textColor="@color/widget_brand_accent"
+            android:textSize="12sp"
+            tools:text="ትንቢተ ኤርምያስ 29:11" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/verse_text"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"
-        android:maxLines="6"
-        android:ellipsize="end"
-        android:lineSpacingMultiplier="1.25"
-        android:fontFamily="@font/ethiopic_body"
-        android:textColor="@color/widget_text"
-        android:textSize="14sp"
-        tools:text="እኔ ስለ እናንተ የማስበውን አሳብ አውቃለሁና" />
-
+    <!--
+      Shown instead of the whole card body before the app has ever run, or when
+      the verse failed to resolve. An overlay rather than a fourth row so the
+      prompt is centred in the card at every size.
+    -->
     <TextView
         android:id="@+id/verse_empty"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"
+        android:layout_height="match_parent"
         android:gravity="center"
+        android:padding="14dp"
         android:visibility="gone"
         android:fontFamily="@font/ethiopic_body"
         android:text="@string/widget_open_app"
-        android:textColor="@color/widget_text_muted"
+        android:textColor="@color/widget_brand_muted"
         android:textSize="13sp" />
 
-</LinearLayout>
+</FrameLayout>
