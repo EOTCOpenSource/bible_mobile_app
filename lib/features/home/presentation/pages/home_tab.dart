@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kenat/kenat.dart';
 import '../../../../core/settings/app_settings.dart';
+import '../../../fasting/presentation/widgets/fasting_home_card.dart';
 import '../widgets/home_header.dart';
 import '../widgets/daily_verse_card.dart';
 import '../widgets/continue_reading_section.dart';
@@ -12,13 +13,7 @@ class HomeTab extends StatelessWidget {
   final VoidCallback onSwitchToBooks;
 
   /// The shortest viewport the one-screen layout can honestly occupy.
-  ///
-  /// Below this the strips are squeezed past the point where their own titles
-  /// fit and the column overflows, so the page scrolls at this height instead
-  /// of clipping. Measured against the tightest phone plus real chrome — a
-  /// status bar, a gesture inset and the 64dp bottom nav all come off the
-  /// screen before Home sees it.
-  static const double minLayoutHeight = 580;
+  static const double minLayoutHeight = 660;
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +23,6 @@ class HomeTab extends StatelessWidget {
         ? '${today.getWeekdayName()} · ${today.formatInGeez()}'
         : '${today.getWeekdayName()} · ${today.formatStandard()}';
 
-    // Home is one screen, not a scroll. The header and the verse card are
-    // fixed, and the two strips below split whatever is left — which is what
-    // keeps this honest from a 640dp phone to a 915dp one without a scrollbar
-    // and without tuning heights per device. Reading plans is its own tab now,
-    // so it no longer competes for the space.
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -42,7 +32,11 @@ class HomeTab extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const DailyVerseCard(),
+        const SizedBox(height: 10),
+        const FastingHomeCard(),
         const SizedBox(height: 14),
+
+
         // Continue reading gets the larger share: its card carries progress
         // and a call to action, where a topic is just a picture and a word.
         Expanded(
