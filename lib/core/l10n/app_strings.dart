@@ -660,4 +660,22 @@ abstract class AppStrings {
 
   /// Shown when every candidate port was already taken.
   String get webReaderNoPort;
+
+  // ── Fasting Calendar ───────────────────────────────────────────────────────
+  String get fastingCalendarTitle;
+  String get fastingIsFast;
+  String get fastingNotFast;
+  String get fastingNextFast;
+  String get fastingLegendTitle;
+  String fastingDaysRemaining(String days);
+  String fastingStartsIn(String days);
+
+  String get fastNameNebiyat;
+  String get fastNameGahad;
+  String get fastNameNenewe;
+  String get fastNameAbiyTsom;
+  String get fastNameHawariyat;
+  String get fastNameFilseta;
+  String get fastNameDihnet;
 }
+

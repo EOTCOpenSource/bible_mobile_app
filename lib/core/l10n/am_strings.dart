@@ -1113,4 +1113,36 @@ class AmStrings extends AppStrings {
       'ከWiFi ጋር አልተገናኘም። መጀመሪያ ከአውታረ መረብ ጋር ተገናኝ።';
   @override
   String get webReaderNoPort => 'ወደቡ በሌላ መተግበሪያ ተይዟል።';
+
+  // ── Fasting Calendar ───────────────────────────────────────────────────────
+  @override
+  String get fastingCalendarTitle => 'የጾም ወቅቶች';
+  @override
+  String get fastingIsFast => 'ጾም ነው';
+  @override
+  String get fastingNotFast => 'ጾም አይደለም';
+  @override
+  String get fastingNextFast => 'የሚቀጥለው ጾም';
+  @override
+  String get fastingLegendTitle => 'የጾም ዓይነቶች';
+  @override
+  String fastingDaysRemaining(String days) => '$days ቀን ቀረው';
+  @override
+  String fastingStartsIn(String days) => 'በ$days ቀን ውስጥ';
+
+  @override
+  String get fastNameNebiyat => 'ጾመ ነቢያት';
+  @override
+  String get fastNameGahad => 'ጾመ ገሃድ';
+  @override
+  String get fastNameNenewe => 'ጾመ ነነዌ';
+  @override
+  String get fastNameAbiyTsom => 'ዐቢይ ጾም';
+  @override
+  String get fastNameHawariyat => 'ጾመ ሐዋርያት';
+  @override
+  String get fastNameFilseta => 'ጾመ ፍልሰታ';
+  @override
+  String get fastNameDihnet => 'ጾመ ድህነት';
 }
+

@@ -1127,4 +1127,36 @@ class EnStrings extends AppStrings {
       'Not connected to WiFi — join a network first.';
   @override
   String get webReaderNoPort => 'The port is in use by another app.';
+
+  // ── Fasting Calendar ───────────────────────────────────────────────────────
+  @override
+  String get fastingCalendarTitle => 'Fasting Calendar';
+  @override
+  String get fastingIsFast => 'Fast Day';
+  @override
+  String get fastingNotFast => 'Not a Fast Day';
+  @override
+  String get fastingNextFast => 'Next Fast';
+  @override
+  String get fastingLegendTitle => 'Fasting Types';
+  @override
+  String fastingDaysRemaining(String days) => '$days day${days == '1' || days == '፩' ? '' : 's'} remaining';
+  @override
+  String fastingStartsIn(String days) => 'in $days day${days == '1' || days == '፩' ? '' : 's'}';
+
+  @override
+  String get fastNameNebiyat => 'Fast of the Prophets';
+  @override
+  String get fastNameGahad => 'Fast of Gahad';
+  @override
+  String get fastNameNenewe => 'Fast of Nineveh';
+  @override
+  String get fastNameAbiyTsom => 'Great Lent';
+  @override
+  String get fastNameHawariyat => 'Fast of the Apostles';
+  @override
+  String get fastNameFilseta => 'Fast of the Assumption';
+  @override
+  String get fastNameDihnet => 'Fast of Salvation';
 }
+
