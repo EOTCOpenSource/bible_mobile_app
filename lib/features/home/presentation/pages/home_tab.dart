@@ -6,6 +6,7 @@ import '../widgets/home_header.dart';
 import '../widgets/daily_verse_card.dart';
 import '../widgets/continue_reading_section.dart';
 import '../../../topics/presentation/widgets/topics_section.dart';
+import 'streak_screen.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key, required this.onSwitchToBooks});
@@ -33,8 +34,20 @@ class HomeTab extends StatelessWidget {
         const SizedBox(height: 12),
         const DailyVerseCard(),
         const SizedBox(height: 10),
-        const FastingHomeCard(),
+        FastingHomeCard(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => StreakScreen(
+                  onReadToday: onSwitchToBooks,
+                  initialShowFastingDetails: true,
+                ),
+              ),
+            );
+          },
+        ),
         const SizedBox(height: 14),
+
 
 
         // Continue reading gets the larger share: its card carries progress
