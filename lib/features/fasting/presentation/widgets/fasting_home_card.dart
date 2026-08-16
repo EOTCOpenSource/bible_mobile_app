@@ -10,7 +10,9 @@ import '../pages/fasting_calendar_screen.dart';
 
 /// Compact card displayed on [HomeTab] showing today's Ethiopian fasting status.
 class FastingHomeCard extends StatelessWidget {
-  const FastingHomeCard({super.key});
+  const FastingHomeCard({super.key, this.onTap});
+
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +29,6 @@ class FastingHomeCard extends StatelessWidget {
 
     final String statusTitle;
     final String statusSubtitle;
-    final Color badgeBg;
-    final Color badgeFg;
 
     if (status.isFasting) {
       final primary = status.active.firstWhere(
@@ -39,8 +39,6 @@ class FastingHomeCard extends StatelessWidget {
       statusTitle = s.fastingIsFast;
       final remainingStr = s.fastingDaysRemaining(numStr(status.daysRemaining ?? 1));
       statusSubtitle = '$fastName ($remainingStr)';
-      badgeBg = c.accent.withValues(alpha: 0.15);
-      badgeFg = c.accent;
     } else {
       statusTitle = s.fastingNotFast;
       if (status.next != null && status.daysRemaining != null) {
@@ -50,8 +48,6 @@ class FastingHomeCard extends StatelessWidget {
       } else {
         statusSubtitle = '';
       }
-      badgeBg = c.borderSubtle.withValues(alpha: 0.3);
-      badgeFg = c.textMuted;
     }
 
     return Padding(
@@ -61,13 +57,15 @@ class FastingHomeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const FastingCalendarScreen(),
-              ),
-            );
-          },
+          onTap: onTap ??
+              () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const FastingCalendarScreen(),
+                  ),
+                );
+              },
+
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -76,21 +74,6 @@ class FastingHomeCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    status.isFasting ? Icons.restaurant : Icons.calendar_today_rounded,
-                    color: badgeFg,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
