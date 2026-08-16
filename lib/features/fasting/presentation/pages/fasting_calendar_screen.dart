@@ -123,8 +123,7 @@ class _FastingCalendarScreenState extends State<FastingCalendarScreen> {
     final today = EthiopianDate.now();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-
+      backgroundColor: c.parchment,
       appBar: AppBar(
         title: Text(
           s.fastingCalendarTitle,
@@ -135,6 +134,7 @@ class _FastingCalendarScreenState extends State<FastingCalendarScreen> {
         ),
         backgroundColor: c.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: c.textOnParchment),
       ),
       body: SingleChildScrollView(
@@ -366,24 +366,45 @@ class _FastingCalendarScreenState extends State<FastingCalendarScreen> {
             ...status.active.map((p) {
               final color = _fastTypeColor(p.type, c);
               final name = isAmharic ? p.nameAmharic : p.nameEnglish;
+              final desc = isAmharic ? p.type.descriptionAmharic : p.type.descriptionEnglish;
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: AppTypography.amharicSubheading.copyWith(
+                              color: c.textOnParchment,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      name,
-                      style: AppTypography.amharicSubheading.copyWith(
-                        color: c.textOnParchment,
-                        fontSize: 14,
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        desc,
+                        style: AppTypography.amharicCaption.copyWith(
+                          color: c.textMuted,
+                          fontSize: 12,
+                          height: 1.35,
+                        ),
                       ),
                     ),
                   ],
