@@ -117,6 +117,39 @@ extension FastTypeX on FastType {
         FastType.tsomeFilseta => 'Fast of the Assumption',
         FastType.tsomeDihnet => 'Fast of Salvation',
       };
+
+  String get descriptionAmharic => switch (this) {
+        FastType.tsomeNebiyat =>
+          'ነቢያት የመሲሑን መወለድ እየተናፈቁ የጾሙት የገና ጾም (ከሕዳር 15 እስከ ታኅሣሥ 28/27)።',
+        FastType.tsomeGahad =>
+          'የገና እና የጥምቀት ዋዜማ ጾም፤ በበዓላት ዋዜማ የሚደረግ የትዕግሥት እና የጸሎት ጾም::',
+        FastType.tsomeNenewe => 'የነነዌ ሰዎች ንስሐ የገቡበት የ3 ቀን ታላቅ የንስሐ ጾም::',
+        FastType.abiyTsom =>
+          'ጌታችን ኢየሱስ ክርስቶስ በገዳመ ቆሮንቶስ የጾመው የ55 ቀን ታላቅ የጾም እና የጸሎት ጊዜ::',
+        FastType.tsomeHawariyat =>
+          'ቅዱሳን ሐዋርያት መንፈስ ቅዱስን ከተቀበሉ በኋላ ለወንጌል አገልግሎት የተጉበት ጾም::',
+        FastType.tsomeFilseta =>
+          'የእመቤታችን ቅድስት ድንግል ማርያም የዕርገቷ እና የዕረፍቷ ጾም (ከነሐሴ 1 እስከ 16)::',
+        FastType.tsomeDihnet =>
+          'የረቡዕና የዓርብ ሳምንታዊ ጾም፤ የጌታችን ምክር እና ስቅለት የሚታሰብበት::',
+      };
+
+  String get descriptionEnglish => switch (this) {
+        FastType.tsomeNebiyat =>
+          'Advent fast commemorating the Prophets who foretold the Nativity of Christ (43 days).',
+        FastType.tsomeGahad =>
+          'Eve of Christmas and Epiphany fast observed with prayer and abstinence.',
+        FastType.tsomeNenewe =>
+          'Three-day fast commemorating the repentance of Nineveh.',
+        FastType.abiyTsom =>
+          'Great Lent observed for 55 days in preparation for the Holy Resurrection (Fasika).',
+        FastType.tsomeHawariyat =>
+          'Fast of the Apostles observed following the feast of Pentecost.',
+        FastType.tsomeFilseta =>
+          'Fast of the Assumption of the Blessed Virgin Mary (Nehase 1-16).',
+        FastType.tsomeDihnet =>
+          'Weekly Wednesday and Friday fast commemorating the betrayal and crucifixion of Christ.',
+      };
 }
 
 /// A specific period during which a fast is observed.
