@@ -9,16 +9,23 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../books/data/reading_date.dart';
 import '../../../books/providers/reading_progress_providers.dart';
+import '../../../fasting/data/fasts.dart';
 import '../../data/streak_month.dart';
+
 
 /// The full reading-streak view: current run, this week, lifetime totals, the
 /// Ethiopian month calendar and the rest-day balance.
 class StreakScreen extends ConsumerStatefulWidget {
-  const StreakScreen({super.key, required this.onReadToday});
+  const StreakScreen({
+    super.key,
+    required this.onReadToday,
+    this.initialShowFastingDetails = false,
+  });
 
   /// Sends the user to the books tab. The screen pops itself first, so the
   /// callback never fires against a route that is about to go away.
   final VoidCallback onReadToday;
+  final bool initialShowFastingDetails;
 
   @override
   ConsumerState<StreakScreen> createState() => _StreakScreenState();
@@ -29,6 +36,20 @@ class _StreakScreenState extends ConsumerState<StreakScreen> {
   /// so past streaks stay reachable without leaving the page.
   int? _year;
   int? _month;
+  EthiopianDate? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = EthiopianDate.now();
+    if (widget.initialShowFastingDetails) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedDate != null) {
+          _showFastingDetailsSheet(context, _selectedDate!);
+        }
+      });
+    }
+  }
 
   void _step(({int year, int month}) to) =>
       setState(() {
@@ -128,14 +149,34 @@ class _StreakScreenState extends ConsumerState<StreakScreen> {
                       month: shownMonth,
                       format: fmt,
                       colors: c,
+                      selectedDate: _selectedDate,
+                      onSelectDate: (date) {
+                        setState(() {
+                          _selectedDate = date;
+                        });
+                        _showFastingDetailsSheet(context, date);
+                      },
                       onPrevious: () => _step(shownMonth.previous),
                       onNext: shownMonth.isCurrentMonth
                           ? null
                           : () => _step(shownMonth.next),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  _FastingInfoBar(
+                    amharic: amharic,
+                    colors: c,
+                    date: _selectedDate ?? EthiopianDate.now(),
+                    onTap: () {
+                      _showFastingDetailsSheet(
+                        context,
+                        _selectedDate ?? EthiopianDate.now(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
                   _FreezeCard(credits: streak?.freezeCredits ?? 0, colors: c),
+
                   const SizedBox(height: 12),
                   _ReadTodayButton(
                     alreadyRead:
@@ -153,6 +194,174 @@ class _StreakScreenState extends ConsumerState<StreakScreen> {
         ],
       ),
     );
+  }
+
+  void _showFastingDetailsSheet(BuildContext context, EthiopianDate date) {
+    final c = context.colors;
+    final s = L10n.of(context);
+    final isAmharic = s is AmStrings;
+    final useGeez = Settings.of(context).useGeezNumbers;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final status = fastStatusFor(date);
+        String numStr(int n) => useGeez ? toGeez(n) : '$n';
+        final monthNames = isAmharic
+            ? const [
+                'መስከረም', 'ጥቅምት', 'ኅዳር', 'ታኅሣሥ', 'ጥር', 'የካቲት',
+                'መጋቢት', 'ሚያዝያ', 'ግንቦት', 'ሰኔ', 'ሐምሌ', 'ነሐሴ', 'ጳጉሜን'
+              ]
+            : const [
+                'Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit',
+                'Megabit', 'Miazia', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'
+              ];
+        final monthName = monthNames[date.month - 1];
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: c.borderSubtle,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(
+                      status.isFasting ? Icons.restaurant : Icons.wb_sunny_outlined,
+                      color: status.isFasting ? c.accent : c.textMuted,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$monthName ${numStr(date.day)}፣ ${numStr(date.year)}',
+                        style: AppTypography.amharicHeading.copyWith(
+                          color: c.textOnParchment,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: status.isFasting
+                            ? c.accent.withValues(alpha: 0.15)
+                            : c.borderSubtle.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        status.isFasting ? s.fastingIsFast : s.fastingNotFast,
+                        style: TextStyle(
+                          color: status.isFasting ? c.accent : c.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Divider(),
+                const SizedBox(height: 8),
+                if (status.isFasting) ...[
+                  ...status.active.map((p) {
+                    final color = _fastTypeColor(p.type);
+                    final name = isAmharic ? p.nameAmharic : p.nameEnglish;
+                    final desc = isAmharic
+                        ? p.type.descriptionAmharic
+                        : p.type.descriptionEnglish;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  name,
+                                  style: AppTypography.amharicSubheading.copyWith(
+                                    color: c.textOnParchment,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: Text(
+                              desc,
+                              style: AppTypography.amharicCaption.copyWith(
+                                color: c.textMuted,
+                                fontSize: 13,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ] else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      isAmharic
+                          ? 'በዚህ ቀን ምንም ዓይነት የታወጀ አጽዋም የለም።'
+                          : 'No fast is observed on this date.',
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: c.textMuted,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Color _fastTypeColor(FastType type) {
+    return switch (type) {
+      FastType.abiyTsom => const Color(0xFF7B1FA2),
+      FastType.tsomeNebiyat => const Color(0xFF1976D2),
+      FastType.tsomeFilseta => const Color(0xFFF57C00),
+      FastType.tsomeHawariyat => const Color(0xFF388E3C),
+      FastType.tsomeNenewe => const Color(0xFFC2185B),
+      FastType.tsomeGahad => const Color(0xFFD32F2F),
+      FastType.tsomeDihnet => const Color(0xFF0097A7),
+    };
   }
 }
 
@@ -451,6 +660,8 @@ class _MonthCalendar extends StatelessWidget {
     required this.colors,
     required this.onPrevious,
     required this.onNext,
+    required this.selectedDate,
+    required this.onSelectDate,
   });
 
   final StreakMonth month;
@@ -460,6 +671,8 @@ class _MonthCalendar extends StatelessWidget {
 
   /// Null on the current month — there is nothing ahead to look at.
   final VoidCallback? onNext;
+  final EthiopianDate? selectedDate;
+  final ValueChanged<EthiopianDate> onSelectDate;
 
   @override
   Widget build(BuildContext context) {
@@ -554,10 +767,17 @@ class _MonthCalendar extends StatelessWidget {
                 itemBuilder: (_, i) {
                   // Blanks hold day 1 under its real weekday column.
                   if (i < month.leadingBlanks) return const SizedBox.shrink();
+                  final day = month.days[i - month.leadingBlanks];
+                  final cellDate = EthiopianDate(month.year, month.month, day.day);
+                  final isSelected = selectedDate == cellDate;
                   return _DayCell(
-                    day: month.days[i - month.leadingBlanks],
+                    day: day,
+                    year: month.year,
+                    month: month.month,
+                    isSelected: isSelected,
                     format: format,
                     colors: c,
+                    onTap: () => onSelectDate(cellDate),
                   );
                 },
               );
@@ -611,17 +831,48 @@ class _MonthArrow extends StatelessWidget {
 class _DayCell extends StatelessWidget {
   const _DayCell({
     required this.day,
+    required this.year,
+    required this.month,
+    required this.isSelected,
     required this.format,
     required this.colors,
+    required this.onTap,
   });
 
   final StreakDay day;
+  final int year;
+  final int month;
+  final bool isSelected;
   final String Function(int) format;
   final AppColorScheme colors;
+  final VoidCallback onTap;
+
+  Color _fastTypeColor(FastType type) {
+    return switch (type) {
+      FastType.abiyTsom => const Color(0xFF7B1FA2),
+      FastType.tsomeNebiyat => const Color(0xFF1976D2),
+      FastType.tsomeFilseta => const Color(0xFFF57C00),
+      FastType.tsomeHawariyat => const Color(0xFF388E3C),
+      FastType.tsomeNenewe => const Color(0xFFC2185B),
+      FastType.tsomeGahad => const Color(0xFFD32F2F),
+      FastType.tsomeDihnet => const Color(0xFF0097A7),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = colors;
+
+    final etDate = EthiopianDate(year, month, day.day);
+    final status = fastStatusFor(etDate);
+    Color? fastDotColor;
+    if (status.isFasting && status.active.isNotEmpty) {
+      final primary = status.active.firstWhere(
+        (p) => !p.isWeekly,
+        orElse: () => status.active.first,
+      );
+      fastDotColor = _fastTypeColor(primary.type);
+    }
 
     final (Color bg, Color fg, FontWeight weight) = switch (day) {
       _ when day.isToday => (c.primary, c.accent, FontWeight.w700),
@@ -638,32 +889,142 @@ class _DayCell extends StatelessWidget {
       _ => (Colors.transparent, c.textMuted, FontWeight.w400),
     };
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-        border: bg == Colors.transparent
-            ? Border.all(color: c.borderSubtle.withValues(alpha: 0.6))
-            : null,
-      ),
-      alignment: Alignment.center,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            format(day.day),
-            style: AppTypography.amharicCaption.copyWith(
-              color: fg,
-              fontSize: 13,
-              fontWeight: weight,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: isSelected
+              ? Border.all(color: c.accent, width: 2)
+              : (bg == Colors.transparent
+                  ? Border.all(color: c.borderSubtle.withValues(alpha: 0.6))
+                  : null),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  format(day.day),
+                  style: AppTypography.amharicCaption.copyWith(
+                    color: fg,
+                    fontSize: 13,
+                    fontWeight: weight,
+                  ),
+                ),
+              ),
             ),
+            if (fastDotColor != null)
+              Positioned(
+                bottom: 3,
+                child: Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: day.isRead ? c.primary : fastDotColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FastingInfoBar extends StatelessWidget {
+  const _FastingInfoBar({
+    required this.amharic,
+    required this.colors,
+    required this.date,
+    required this.onTap,
+  });
+
+  final bool amharic;
+  final AppColorScheme colors;
+  final EthiopianDate date;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    final s = L10n.of(context);
+    final status = fastStatusFor(date);
+
+    final String label;
+    final Color badgeColor;
+
+    if (status.isFasting) {
+      final primary = status.active.firstWhere(
+        (p) => !p.isWeekly,
+        orElse: () => status.active.first,
+      );
+      final name = amharic ? primary.nameAmharic : primary.nameEnglish;
+      final remaining = status.daysRemaining != null
+          ? s.fastingDaysRemaining('${status.daysRemaining}')
+          : '';
+      label = '$name ($remaining)';
+      badgeColor = c.accent;
+    } else if (status.next != null && status.daysRemaining != null) {
+      final nextName = amharic ? status.next!.nameAmharic : status.next!.nameEnglish;
+      final startsIn = s.fastingStartsIn('${status.daysRemaining}');
+      label = '${s.fastingNextFast}: $nextName $startsIn';
+      badgeColor = c.textMuted;
+    } else {
+      label = s.fastingNotFast;
+      badgeColor = c.textMuted;
+    }
+
+    return Material(
+      color: c.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.borderSubtle),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                status.isFasting ? Icons.restaurant : Icons.calendar_today_rounded,
+                size: 16,
+                color: badgeColor,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTypography.amharicCaption.copyWith(
+                    color: c.textOnParchment,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: c.textMuted,
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
+
 
 // ── Freeze card ──────────────────────────────────────────────────────────────
 
