@@ -2,7 +2,7 @@ name: bibleflutter
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -35,7 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   google_fonts: ^8.1.0
-  kenat: ^1.0.1
+  kenat: ^2.0.0
   flutter_local_notifications: ^21.0.0
   flutter_timezone: ^5.0.2
   timezone: ^0.11.0
@@ -45,8 +45,8 @@ dependencies:
   shared_preferences: ^2.5.5
   path: ^1.9.0
   app_links: ^6.0.0
-  share_plus: ^13.1.0
-  http: ^1.2.0
+  share_plus: ^12.0.2
+  http: ^1.6.0
   flutter_secure_storage: ^10.2.0
   google_sign_in: ^6.0.0
   flutter_svg: ^2.0.0
@@ -54,6 +54,26 @@ dependencies:
   screenshot: ^3.0.0
   image_gallery_saver_plus: ^4.0.1
   path_provider: ^2.1.2
+  just_audio: ^0.10.6
+  file_picker: ^8.0.0
+  wakelock_plus: ^1.2.8
+  home_widget: ^0.9.0
+
+  # Bible editions ship as SQLite databases (80-weahadu). sqlite3_flutter_libs
+  # is required, not optional: verse_fts uses the `trigram` tokenizer, which
+  # needs SQLite >= 3.34, and Android's system library is older on older
+  # releases. sqflite (used by app_database) keeps using the system library.
+  sqlite3: ^3.3.1
+  sqlite3_flutter_libs: ^0.5.42
+  crypto: ^3.0.3
+
+  # Local Web Reader: an HTTP server the app runs on the device so a browser on
+  # the same WiFi can read scripture and edit annotations. Both are pure Dart —
+  # the LAN address comes from `dart:io`'s NetworkInterface, so no native
+  # plugin and no extra Android permission are needed to find it.
+  shelf: ^1.4.0
+  shelf_router: ^1.1.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -71,17 +91,25 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
 
   assets:
-    - assets/bibledata/
+    # Default edition + catalog, gunzipped into app support on first launch.
+    - assets/bibles/am-2000.db.gz
+    - assets/bibles/catalog.db.gz
+    - assets/bibles/crossrefs.db.gz
+    # Curated daily-verse references (not scripture text).
+    - assets/bibledata/ethiopian_daily_verses.json
+    - assets/bibledata/introductions.json
     - assets/signin/
+    - assets/topics/
+    - assets/topics/images/
     - assets/eotc.jpg
-  
+    # The browser-side reader the Local Web Reader serves at `/`.
+    - assets/web_reader/index.html
 
   fonts:
     - family: Shiromeda

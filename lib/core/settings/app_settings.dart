@@ -1,6 +1,36 @@
 import 'package:flutter/material.dart';
 import '../storage/app_database.dart';
 
+/// The streak flame everyone starts with.
+///
+/// Also the fallback whenever a stored value is empty or unrecognised — the
+/// streak surfaces read this directly rather than each picking their own
+/// default, so a corrupted row can never leave one screen showing 🔥 and
+/// another showing nothing.
+const String kDefaultStreakEmoji = '🔥';
+
+/// The emoji offered on the customisation page, in display order.
+///
+/// A closed set rather than free text: the value is rendered by an Android
+/// `TextView` in the launcher's process, which has no access to the app's
+/// bundled fonts and falls back to the system emoji font. Everything here is
+/// in the base emoji set that every supported Android version can draw, so a
+/// choice can never come out as a blank box on the home screen.
+const List<String> kStreakEmojiChoices = [
+  '🔥',
+  '⚡',
+  '✨',
+  '🌟',
+  '⭐',
+  '📖',
+  '🕯️',
+  '🙏',
+  '👑',
+  '🌱',
+  '☀️',
+  '💎',
+];
+
 class AppSettings {
   const AppSettings({
     this.useGeezNumbers = false,
@@ -19,6 +49,16 @@ class AppSettings {
     this.readingTimeNotificationEnabled = false,
     this.dailyVerseNotificationTime,
     this.readingTimeNotificationTime,
+    this.hasSeenOnboarding = false,
+    this.hasSeenReaderHint = false,
+    this.collectionHintViews = 0,
+    this.hasDismissedCollectionHint = false,
+    this.lineHeight = 1.6,
+    this.marginScale = 1.0,
+    this.textAlign = 0,
+    this.keepScreenOn = false,
+    this.showCrossRefMarkers = false,
+    this.streakEmoji = kDefaultStreakEmoji,
   });
 
   final bool useGeezNumbers;
@@ -58,6 +98,31 @@ class AppSettings {
   /// Preferred time for the reading time reminder (nullable, defaults to 8:00 PM if null).
   final TimeOfDay? readingTimeNotificationTime;
 
+  /// Whether the user has completed or skipped the first-run onboarding.
+  final bool hasSeenOnboarding;
+
+  /// Whether the user has seen the contextual reader action hint.
+  final bool hasSeenReaderHint;
+
+  /// Number of times the collection feature hint has been shown.
+  final int collectionHintViews;
+
+  /// Whether the user has interacted with or dismissed the collection hint.
+  final bool hasDismissedCollectionHint;
+
+  /// Reader typography preferences
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
+  final bool keepScreenOn;
+
+  /// Whether inline cross-reference markers are displayed in the reader text.
+  final bool showCrossRefMarkers;
+  /// The emoji shown beside the reading streak, on the streak page, the home
+  /// header and the Android streak widget. Always one of
+  /// [kStreakEmojiChoices]; [copyWith] rejects anything else.
+  final String streakEmoji;
+
   AppSettings copyWith({
     bool? useGeezNumbers,
     int? bodyFontIndex,
@@ -75,6 +140,16 @@ class AppSettings {
     bool? readingTimeNotificationEnabled,
     TimeOfDay? dailyVerseNotificationTime,
     TimeOfDay? readingTimeNotificationTime,
+    bool? hasSeenOnboarding,
+    bool? hasSeenReaderHint,
+    int? collectionHintViews,
+    bool? hasDismissedCollectionHint,
+    double? lineHeight,
+    double? marginScale,
+    int? textAlign,
+    bool? keepScreenOn,
+    bool? showCrossRefMarkers,
+    String? streakEmoji,
   }) =>
       AppSettings(
         useGeezNumbers: useGeezNumbers ?? this.useGeezNumbers,
@@ -97,6 +172,87 @@ class AppSettings {
             dailyVerseNotificationTime ?? this.dailyVerseNotificationTime,
         readingTimeNotificationTime:
             readingTimeNotificationTime ?? this.readingTimeNotificationTime,
+        hasSeenOnboarding: hasSeenOnboarding ?? this.hasSeenOnboarding,
+        hasSeenReaderHint: hasSeenReaderHint ?? this.hasSeenReaderHint,
+        collectionHintViews: collectionHintViews ?? this.collectionHintViews,
+        hasDismissedCollectionHint:
+            hasDismissedCollectionHint ?? this.hasDismissedCollectionHint,
+        lineHeight: (lineHeight ?? this.lineHeight).clamp(1.2, 2.2),
+        marginScale: (marginScale ?? this.marginScale).clamp(0.6, 1.6),
+        textAlign: textAlign ?? this.textAlign,
+        keepScreenOn: keepScreenOn ?? this.keepScreenOn,
+        showCrossRefMarkers: showCrossRefMarkers ?? this.showCrossRefMarkers,
+        streakEmoji: sanitizeStreakEmoji(streakEmoji ?? this.streakEmoji),
+      );
+
+  /// Coerces [value] to a supported emoji, falling back to
+  /// [kDefaultStreakEmoji].
+  ///
+  /// Applied on the way in from both `copyWith` and the database so no other
+  /// surface has to defend against an emoji that a future build dropped from
+  /// [kStreakEmojiChoices].
+  static String sanitizeStreakEmoji(String? value) =>
+      (value != null && kStreakEmojiChoices.contains(value))
+          ? value
+          : kDefaultStreakEmoji;
+
+  Map<String, dynamic> toMap() => {
+        'useGeezNumbers': useGeezNumbers,
+        'bodyFontIndex': bodyFontIndex,
+        'titleFontIndex': titleFontIndex,
+        'fontSize': fontSize,
+        'isDarkReader': isDarkReader,
+        'continuousReading': continuousReading,
+        'cardBgType': cardBgType,
+        'cardSolidColorIndex': cardSolidColorIndex,
+        'cardGradientIndex': cardGradientIndex,
+        'cardFrameStyleIndex': cardFrameStyleIndex,
+        'cardFontIndex': cardFontIndex,
+        'cardAspectRatio': cardAspectRatio,
+        'dailyVerseNotificationEnabled': dailyVerseNotificationEnabled,
+        'readingTimeNotificationEnabled': readingTimeNotificationEnabled,
+        'hasSeenOnboarding': hasSeenOnboarding,
+        'hasSeenReaderHint': hasSeenReaderHint,
+        'collectionHintViews': collectionHintViews,
+        'hasDismissedCollectionHint': hasDismissedCollectionHint,
+        'lineHeight': lineHeight,
+        'marginScale': marginScale,
+        'textAlign': textAlign,
+        'keepScreenOn': keepScreenOn,
+        'showCrossRefMarkers': showCrossRefMarkers,
+        'streakEmoji': streakEmoji,
+      };
+
+  factory AppSettings.fromMap(Map<String, dynamic> map) => AppSettings(
+        useGeezNumbers: map['useGeezNumbers'] as bool? ?? false,
+        bodyFontIndex: map['bodyFontIndex'] as int? ?? 0,
+        titleFontIndex: map['titleFontIndex'] as int? ?? 0,
+        fontSize: (map['fontSize'] as num?)?.toDouble() ?? 17.0,
+        isDarkReader: map['isDarkReader'] as bool? ?? false,
+        continuousReading: map['continuousReading'] as bool? ?? false,
+        cardBgType: map['cardBgType'] as int? ?? 0,
+        cardSolidColorIndex: map['cardSolidColorIndex'] as int? ?? 0,
+        cardGradientIndex: map['cardGradientIndex'] as int? ?? 0,
+        cardFrameStyleIndex: map['cardFrameStyleIndex'] as int? ?? 0,
+        cardFontIndex: map['cardFontIndex'] as int? ?? 0,
+        cardAspectRatio: map['cardAspectRatio'] as int? ?? 0,
+        dailyVerseNotificationEnabled:
+            map['dailyVerseNotificationEnabled'] as bool? ?? false,
+        readingTimeNotificationEnabled:
+            map['readingTimeNotificationEnabled'] as bool? ?? false,
+        hasSeenOnboarding: map['hasSeenOnboarding'] as bool? ?? false,
+        hasSeenReaderHint: map['hasSeenReaderHint'] as bool? ?? false,
+        collectionHintViews: map['collectionHintViews'] as int? ??
+            (map['collection_hint_views'] as int? ?? 0),
+        hasDismissedCollectionHint:
+            map['hasDismissedCollectionHint'] as bool? ??
+                ((map['has_dismissed_collection_hint'] as int? ?? 0) == 1),
+        lineHeight: ((map['lineHeight'] as num?)?.toDouble() ?? 1.6).clamp(1.2, 2.2),
+        marginScale: ((map['marginScale'] as num?)?.toDouble() ?? 1.0).clamp(0.6, 1.6),
+        textAlign: map['textAlign'] as int? ?? 0,
+        keepScreenOn: map['keepScreenOn'] as bool? ?? false,
+        showCrossRefMarkers: map['showCrossRefMarkers'] as bool? ?? false,
+        streakEmoji: sanitizeStreakEmoji(map['streakEmoji'] as String?),
       );
 
   @override
@@ -117,10 +273,20 @@ class AppSettings {
       other.dailyVerseNotificationEnabled == dailyVerseNotificationEnabled &&
       other.readingTimeNotificationEnabled == readingTimeNotificationEnabled &&
       other.dailyVerseNotificationTime == dailyVerseNotificationTime &&
-      other.readingTimeNotificationTime == readingTimeNotificationTime;
+      other.readingTimeNotificationTime == readingTimeNotificationTime &&
+      other.hasSeenOnboarding == hasSeenOnboarding &&
+      other.hasSeenReaderHint == hasSeenReaderHint &&
+      other.collectionHintViews == collectionHintViews &&
+      other.hasDismissedCollectionHint == hasDismissedCollectionHint &&
+      other.lineHeight == lineHeight &&
+      other.marginScale == marginScale &&
+      other.textAlign == textAlign &&
+      other.keepScreenOn == keepScreenOn &&
+      other.showCrossRefMarkers == showCrossRefMarkers &&
+      other.streakEmoji == streakEmoji;
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         useGeezNumbers,
         bodyFontIndex,
         titleFontIndex,
@@ -137,7 +303,17 @@ class AppSettings {
         readingTimeNotificationEnabled,
         dailyVerseNotificationTime,
         readingTimeNotificationTime,
-      );
+        hasSeenOnboarding,
+        hasSeenReaderHint,
+        collectionHintViews,
+        hasDismissedCollectionHint,
+        lineHeight,
+        marginScale,
+        textAlign,
+        keepScreenOn,
+        showCrossRefMarkers,
+        streakEmoji,
+      ]);
 }
 
 class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
@@ -156,9 +332,7 @@ class Settings extends InheritedNotifier<ValueNotifier<AppSettings>> {
     return s!.notifier!.value;
   }
 
-
-
-static void update(BuildContext context, AppSettings updated) {
+  static void update(BuildContext context, AppSettings updated) {
     final s = context.getInheritedWidgetOfExactType<Settings>();
     assert(s != null, 'No Settings found in widget tree.');
     s!.notifier!.value = updated;
@@ -171,6 +345,16 @@ static void update(BuildContext context, AppSettings updated) {
       dailyVerseMinute: updated.dailyVerseNotificationTime?.minute,
       readingTimeHour: updated.readingTimeNotificationTime?.hour,
       readingTimeMinute: updated.readingTimeNotificationTime?.minute,
+      hasSeenOnboarding: updated.hasSeenOnboarding,
+      hasSeenReaderHint: updated.hasSeenReaderHint,
+      collectionHintViews: updated.collectionHintViews,
+      hasDismissedCollectionHint: updated.hasDismissedCollectionHint,
+      lineHeight: updated.lineHeight,
+      marginScale: updated.marginScale,
+      textAlign: updated.textAlign,
+      keepScreenOn: updated.keepScreenOn,
+      showCrossRefMarkers: updated.showCrossRefMarkers,
+      streakEmoji: updated.streakEmoji,
     );
   }
 

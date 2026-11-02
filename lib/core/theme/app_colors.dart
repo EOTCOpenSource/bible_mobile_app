@@ -10,8 +10,8 @@ abstract final class AppColors {
 
   // ── Accent – Gold / Sand ─────────────────────────────────────────────────
   static const Color accent      = Color(0xFFF4D38A);
-  static const Color accentDark  = Color(0xFFD4A853); // readable on light bg
-  static const Color accentDeep  = Color(0xFFAA8230); // icons / hairlines
+  static const Color accentDark  = Color(0xFF855B0B); // readable on light bg (>= 4.5:1)
+  static const Color accentDeep  = Color(0xFF7A520B); // icons / hairlines (>= 4.5:1)
 
   // ── Backgrounds ──────────────────────────────────────────────────────────
   static const Color parchment     = Color(0xFFEFE9DF); // reading mode
@@ -23,8 +23,8 @@ abstract final class AppColors {
   static const Color textOnDark      = Color(0xFFFFF8F0); // on primary bg
   static const Color textOnParchment = Color(0xFF2C1810); // on parchment bg
   static const Color textBody        = Color(0xFF3D2314);
-  static const Color textMuted       = Color(0xFF7A6458);
-  static const Color textCaption     = Color(0xFF9E8878);
+  static const Color textMuted       = Color(0xFF544438); // WCAG AA compliant (>= 4.5:1)
+  static const Color textCaption     = Color(0xFF5C4A3E); // WCAG AA compliant (>= 4.5:1)
 
   // ── Borders & Dividers ───────────────────────────────────────────────────
   static const Color divider      = Color(0xFFD4B896);

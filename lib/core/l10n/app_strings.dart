@@ -8,6 +8,7 @@ abstract class AppStrings {
   String get navHome;
   String get navBooks;
   String get navSearch;
+  String get navPlans;
   String get navSaved;
   String get navMe;
 
@@ -20,11 +21,83 @@ abstract class AppStrings {
   String get streakReadTodayHint;
   String get streakReadTodayBtn;
 
+  // ── Streak emoji customisation ────────────────────────────────────────────
+  String get streakEmojiTitle;
+  String get streakEmojiHint;
+  String get streakEmojiSectionChoose;
+  String get streakEmojiPreviewLabel;
+  String get streakEmojiWidgetNote;
+
+  // ── Home screen widgets ───────────────────────────────────────────────────
+  String get sectionWidgets;
+  String get widgetsTitle;
+  String get widgetsHint;
+  String get widgetsChooseLabel;
+
+  String get widgetNameDailyVerse;
+  String get widgetNameContinue;
+  String get widgetNameStreak;
+
+  String get widgetSectionTheme;
+  String get widgetThemeAuto;
+  String get widgetThemeLight;
+  String get widgetThemeDark;
+  String get widgetThemeBrand;
+
+  String get widgetSectionTextSize;
+  String get widgetTextSmall;
+  String get widgetTextMedium;
+  String get widgetTextLarge;
+
+  String get widgetSectionOpacity;
+  String get widgetSectionOptions;
+
+  /// Toggle labels. Two per widget, in the order they appear on the card.
+  String get widgetToggleVerseTag;
+  String get widgetToggleVerseRef;
+  String get widgetToggleContinueLabel;
+  String get widgetToggleProgressBar;
+  String get widgetToggleStreakDays;
+  String get widgetToggleStreakEmoji;
+
+  /// What the preview shows when there is no verse or no reading history yet.
+  String get widgetEmptyVerse;
+  String get widgetEmptyContinue;
+
+  String get widgetAddToHome;
+  String get widgetAddUnsupported;
+  String get widgetResizeHint;
+  String get widgetsAndroidOnly;
+
+  // ── Streak page ───────────────────────────────────────────────────────────
+  String get streakPageTitle;
+  String get streakDayStreakLabel;
+  String get streakStatLongest;
+  String get streakStatTotalDays;
+  String get streakStatChapters;
+
+  /// e.g. "18 / 30 days" under the month name.
+  String streakMonthProgress(String read, String total);
+
+  /// e.g. "2 rest days available".
+  String streakFreezeTitle(String count);
+  String get streakFreezeSubtitle;
+  String get streakFreezeEmptyTitle;
+  String get streakFreezeEmptySubtitle;
+  String get streakTodayDone;
+
   // ── Daily verse ───────────────────────────────────────────────────────────
   String get dailyVerseTag;
+  String get dailyVerseUnavailable;
 
   // ── Continue reading ──────────────────────────────────────────────────────
   String get continueReadingTitle;
+
+  /// Heading for the shelf shown before anything has been read.
+  String get startReadingTitle;
+
+  /// The call to action on a suggested book.
+  String get startReadingAction;
   String completedPercent(int pct);
 
   // ── Reading plans ─────────────────────────────────────────────────────────
@@ -73,6 +146,10 @@ abstract class AppStrings {
   String get booksTitle;
   String get booksOldTestament;
   String get booksNewTestament;
+
+  /// The deuterocanon — the books the 81-book EOTC canon has and the
+  /// protestant 66 does not.
+  String get booksDeuterocanonical;
   String booksSubtitle(String countStr);
   String get booksFilterAll;
   String get booksFilterLaw; // Pentateuch — books 1–5
@@ -86,6 +163,15 @@ abstract class AppStrings {
   String get booksFilterGeneral; // General Epistles — books 66–72
   String get booksFilterRevelation; // Revelation & Apocalyptic — books 73+
   String get booksChapterSuffix; // e.g. "ምዕ." / "chs."
+
+  // ── Book Introductions ──────────────────────────────────────────────────
+  String get aboutThisBook;
+  String get author;
+  String get period;
+  String get themes;
+  String get readMore;
+  String get showLess;
+  String get outline;
 
   // ── Chapter selector ──────────────────────────────────────────────────────
   String get chapSelectorLastRead; // "የቀደሙቦ ቦታ" / "Where you left off"
@@ -108,6 +194,14 @@ abstract class AppStrings {
   String get readingSettingsPreview;
   String get readingSettingsReset;
   String get readingSettingsContinuous;
+  String get readingSettingsLineHeight;
+  String get readingSettingsMarginScale;
+  String get readingSettingsTextAlign;
+  String get readingSettingsAlignStart;
+  String get readingSettingsAlignJustify;
+  String get readingSettingsKeepScreenOn;
+  String get readingSettingsShowCrossRefMarkers;
+  String get readingSettingsShowCrossRefMarkersHint;
 
   // ── Search ───────────────────────────────────────────────────────────────
   String get searchHint;
@@ -125,6 +219,7 @@ abstract class AppStrings {
   // ── Saved / Collection ───────────────────────────────────────────────────
   String get savedEyebrow;
   String get savedTitle;
+  String get savedHistory;
   String get savedHighlights;
   String get savedBookmarks;
   String get savedNotes;
@@ -146,6 +241,9 @@ abstract class AppStrings {
   String get savedEmptyBookmarksHint;
   String get savedEmptyNotesTitle;
   String get savedEmptyNotesHint;
+  String get savedClearHistory;
+  String get savedClearHistoryTitle;
+  String get savedClearHistoryMessage;
   String get savedEdit;
   String get savedDelete;
   String get savedDeleteNoteTitle;
@@ -158,6 +256,35 @@ abstract class AppStrings {
   String get savedNoteDeleted;
   String get savedBookmarkDeleted;
   String get savedHighlightDeleted;
+  String get timeMorning;
+  String get timeAfternoon;
+  String get historyEmptyHint;
+  String get loadMore;
+  String get savedDeleteHistoryTitle;
+  String get collections;
+  String get newCollection;
+  String get addToCollection;
+  String get collectionSubtitle;
+  String get collectionSearchHint;
+  String createNamedCollection(String name);
+  String get recentCollections;
+  String get allCollections;
+  String get noCollectionsEmptyHint;
+  String get noCollectionsFound;
+  String get tags;
+  String get addTags;
+  String get all;
+  String get noCollections;
+  String get addTagHint;
+  String get collectionNameHint;
+  String get collectionColorLabel;
+  String get collectionCreateAction;
+  String get savedOk;
+  String get collectionDeleteTitle;
+  String get collectionDeleteMessage; // reassures that annotations survive
+  String selectedCount(int count);
+  String get deleteSelectedTitle;
+  String deleteSelectedMessage(int count);
 
   // ── Reader ────────────────────────────────────────────────────────────────
   String get chapterAbbr; // short label for chapter, e.g. "ምዕ" / "Ch"
@@ -166,7 +293,23 @@ abstract class AppStrings {
   String get verseNote;
   String get verseCopy;
   String get verseShare;
-  String get verseCrossRef;
+
+  /// Title of the sheet listing a verse's parallel passages.
+  String get verseCrossReferences;
+
+  /// The label on an inline apparatus line under a verse — "ማጣቀሻ: 1፥1 → …".
+  /// Deliberately the short form: it is a prefix, not a heading.
+  String get verseReference;
+
+  String get crossRefTitle;
+
+  /// e.g. "57 references" under the sheet's source reference.
+  String crossRefCount(int n);
+  String get crossRefNoResults;
+  String crossRefBackTo(String reference);
+
+  /// Title of the sheet listing a verse's translator footnotes.
+  String get verseFootnotes;
   String get comingSoon;
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
@@ -249,6 +392,7 @@ abstract class AppStrings {
 
   // ── Profile screen ────────────────────────────────────────────────────────
   String get profileTitle;
+  String get profileSignedOut;
   String get profileMemberBadge;
   String get profileLogout;
   String get profileDeleteAccount;
@@ -288,13 +432,12 @@ abstract class AppStrings {
   String get profileUpdateFailed;
   // ── Notifications ─────────────────────────────────────────────────────────
   String get notificationPermissionDenied;
-String dailyVerseSet(String time);
-String get dailyVerseOff;
-String dailyVerseUpdated(String time);
-String get readingReminderOff;
-String readingReminderSet(String time);
-String readingReminderUpdated(String time);
-
+  String dailyVerseSet(String time);
+  String get dailyVerseOff;
+  String dailyVerseUpdated(String time);
+  String get readingReminderOff;
+  String readingReminderSet(String time);
+  String readingReminderUpdated(String time);
 
   // ── Verse card sheet ──────────────────────────────────────────────────────
   String get cardSheetTitle;
@@ -339,4 +482,207 @@ String readingReminderUpdated(String time);
   // background_picker snackbar
   String get cardImagePickFailed;
   String get cardShareAsText;
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  String get onboardingSkip;
+  String get onboardingNext;
+  String get onboardingDone;
+
+  // Screen 1: Welcome
+  String get onboardingWelcomeTitle;
+  String get onboardingWelcomeCanonNote;
+
+  // Screen 2: Preferences
+  String get onboardingPrefsTitle;
+  String get onboardingPrefsSubtitle;
+  String get onboardingPreviewVerseText;
+
+  // Screen 3: Verse actions
+  String get onboardingActionsTitle;
+  String get onboardingActionsSubtitle;
+
+  // Screen 4: Sign-in
+  String get onboardingSignInTitle;
+  String get onboardingSignInSubtitle;
+  String get onboardingSignInBtn;
+  String get onboardingNotNowBtn;
+
+  // MeScreen introduction row
+  String get meShowIntroduction;
+
+  // Reader coach mark
+  String get readerVerseActionHint;
+  // ── Bible editions ────────────────────────────────────────────────────────
+  /// Title of the edition picker / download screen.
+  String get editionsTitle;
+  String get editionsSubtitle;
+
+  /// Section headers: what is on the device vs what can be fetched.
+  String get editionsInstalled;
+  String get editionsAvailable;
+
+  String get editionDownload;
+  String get editionUpdate;
+  String get editionRemove;
+  String get editionUse;
+  String get editionActive;
+
+  /// Shown on am-2000, which ships inside the app and cannot be removed.
+  String get editionBuiltIn;
+
+  String get editionDownloading;
+  String get editionRemoveTitle;
+  String editionRemoveBody(String title);
+  String get editionRemoveConfirm;
+  String get editionCancel;
+  String editionUpdated(String title);
+  String editionUpToDate(String title);
+
+  /// Copyright line naming the edition's publisher.
+  String editionPublishedBy(String publisher);
+  String get editionPublicDomain;
+
+  // ── Edition chooser ───────────────────────────────────────────────────────
+  /// Sheet opened from the book list, the chapter grid and the reader.
+  String get editionSwitchTitle;
+  String get editionSwitchSubtitle;
+
+  /// Row at the foot of the sheet that opens the full editions screen.
+  String get editionManage;
+  String editionMoreAvailable(int count);
+  String editionSwitched(String title);
+
+  /// Shown when the edition just switched to does not carry the open book —
+  /// the protestant canons have no deuterocanon, so this is expected.
+  String editionBookMissing(String title);
+
+  String get editionUpdateAvailable;
+  String get editionsFilterAll;
+  String get editionsNoneForFilter;
+  String get editionsCheckUpdates;
+
+  /// Label over the hero card on the editions screen.
+  String get editionsActiveLabel;
+  String editionsOnDeviceCount(int installed, int total);
+
+  String editionMetaBooks(String count);
+  String editionMetaChapters(String count);
+  String editionMetaVerses(String count);
+
+  // Audio reading — voice chooser and the user's own Addis AI key
+  String get voiceSettingsTitle;
+  String get voiceSectionKey;
+  String get voiceSectionVoices;
+  String get voiceKeyIntro;
+  String get voiceKeyGetOne;
+  String get voiceKeyLinkCopied;
+  String get voiceKeyFieldHint;
+  String get voiceKeySave;
+  String get voiceKeySaved;
+  String get voiceKeyChange;
+  String get voiceKeyRemove;
+  String get voiceKeyRemoved;
+  String get voiceKeyRejected;
+  String get voiceKeyRequired;
+  String get voiceLoadFailed;
+  String get voiceListEmpty;
+  String get voiceRetry;
+  String get voicePreview;
+  String get voiceSelectedBadge;
+  String get voiceDefaultBadge;
+  String get voiceGenderMale;
+  String get voiceGenderFemale;
+  String voiceSelectedToast(String name);
+
+  // ── Parallel reading ──────────────────────────────────────────────────────
+  /// Header over the parallel-column part of the edition chooser.
+  String get parallelSectionTitle;
+  String get parallelSectionSubtitle;
+
+  /// Per-row toggle that puts an edition in the reader's second column.
+  String get parallelShowAlongside;
+
+  /// Settings row and its value when no second column is chosen.
+  String get parallelSettingLabel;
+  String get parallelOff;
+
+  String parallelEnabled(String title);
+  String get parallelDisabled;
+
+  /// Shown in place of the second column when the parallel edition's canon
+  /// does not carry the open book.
+  String parallelBookMissing(String title);
+  String get onboardingSampleVerseNumber;
+  String get onboardingSampleVerseText;
+
+  // ── Backup & Restore ──────────────────────────────────────────────────────
+  String get sectionBackup;
+  String get backupExportJson;
+  String get backupExportJsonHint;
+  String get backupExportMarkdown;
+  String get backupExportMarkdownHint;
+  String get backupImport;
+  String get backupImportHint;
+  String get backupMarkdownDisclaimer;
+  String get backupMarkdownBody;
+  String get backupConfirmExport;
+  String get backupConflictSkip;
+  String get backupConflictMerge;
+  String get backupConflictReplace;
+  String get backupConflictTitle;
+  String get backupCancel;
+  String get backupConfirmImport;
+  String backupPreviewText(int b, int h, int n, int existing);
+  String get backupImportSuccess;
+  String get backupImportFailed;
+  String get backupExportSuccess;
+  String get backupNoFilePicked;
+
+  // ── Local Web Reader ──────────────────────────────────────────────────────
+  String get sectionDevice;
+  String get webReaderTitle;
+  String get webReaderHint;
+  String get webReaderStart;
+  String get webReaderStop;
+  String get webReaderStarting;
+  String get webReaderRunningHint;
+
+  /// Reassures the user that leaving the app will not stop the server.
+  String get webReaderBackgroundHint;
+  String get webReaderCopy;
+  String get webReaderCopied;
+  String get webReaderScanHint;
+  String get webReaderQrTitle;
+  String get webReaderClose;
+
+  /// Shown when the device has no LAN address to serve on.
+  String get webReaderNoNetwork;
+
+  /// Shown when every candidate port was already taken.
+  String get webReaderNoPort;
+
+  // ── Accessibility ────────────────────────────────────────────────────────
+  String get semanticsMenuBtn;
+  String get semanticsAudioBtn;
+  String semanticsChapterPickerBtn(String chapterLabel);
+  String get semanticsRefJumpBtn;
+  String get semanticsSearchBtn;
+  String get semanticsFontSettingsBtn;
+
+  String get semanticsBookmarkAdd;
+  String get semanticsBookmarkRemove;
+  String get semanticsNoteAdd;
+  String get semanticsNoteEdit;
+  String get semanticsHighlightAdd;
+  String get semanticsHighlightActive;
+  String get semanticsFootnotes;
+
+  String semanticsTabAnnouncement(String tabName, int index, int total);
+  String semanticsVerseLabel(String verseNum, String text);
+
+  String get semanticsDailyVerseShare;
+  String get semanticsDailyVerseCopy;
+  String semanticsContinueReading(String title);
+  String semanticsStartReading(String title);
+  String get semanticsStreakCard;
 }

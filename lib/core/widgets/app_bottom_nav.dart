@@ -19,10 +19,13 @@ class AppBottomNav extends StatelessWidget {
   /// Otherwise uses [BuildContext] theme colors like the rest of the app.
   final bool matchReaderShellColors;
 
+  /// Search is deliberately absent: it belongs to a book, not to the whole
+  /// app, so it lives on the books tab and in the reader toolbar where a scope
+  /// already exists. The middle slot goes to reading plans instead.
   static const _icons = [
     (Icons.home_rounded, Icons.home_outlined),
     (Icons.menu_book_rounded, Icons.menu_book_outlined),
-    (Icons.search_rounded, Icons.search_rounded),
+    (Icons.event_note_rounded, Icons.event_note_outlined),
     (Icons.bookmark_rounded, Icons.bookmark_border_rounded),
     (Icons.person_rounded, Icons.person_outline_rounded),
   ];
@@ -30,7 +33,7 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
-    final labels = [s.navHome, s.navBooks, s.navSearch, s.navSaved, s.navMe];
+    final labels = [s.navHome, s.navBooks, s.navPlans, s.navSaved, s.navMe];
     final c = context.colors;
 
     final Color barBg;
@@ -85,44 +88,62 @@ class AppBottomNav extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: List.generate(_icons.length, (i) {
-              final (activeIcon, inactiveIcon) = _icons[i];
-              final isActive = i == selectedIndex;
-              return Expanded(
-                child: InkWell(
-                  onTap: () => onTap(i),
-                  highlightColor: Colors.transparent,
-                  splashColor: splashColor,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: Icon(
-                          isActive ? activeIcon : inactiveIcon,
-                          key: ValueKey(isActive),
-                          size: 24,
-                          color: isActive ? activeColor : inactiveColor,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 64),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: List.generate(_icons.length, (i) {
+                final (activeIcon, inactiveIcon) = _icons[i];
+                final isActive = i == selectedIndex;
+                final tabAnnouncement =
+                    s.semanticsTabAnnouncement(labels[i], i + 1, _icons.length);
+                return Expanded(
+                  child: Semantics(
+                    button: true,
+                    selected: isActive,
+                    label: tabAnnouncement,
+                    child: InkWell(
+                      onTap: () => onTap(i),
+                      highlightColor: Colors.transparent,
+                      splashColor: splashColor,
+                      child: ExcludeSemantics(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 180),
+                              child: Icon(
+                                isActive ? activeIcon : inactiveIcon,
+                                key: ValueKey(isActive),
+                                size: 24,
+                                color: isActive ? activeColor : inactiveColor,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                labels[i],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.amharicCaption.copyWith(
+                                  fontSize: 10,
+                                  color: isActive ? activeColor : inactiveColor,
+                                  fontWeight:
+                                      isActive ? FontWeight.w700 : FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        labels[i],
-                        style: AppTypography.amharicCaption.copyWith(
-                          fontSize: 10,
-                          color: isActive ? activeColor : inactiveColor,
-                          fontWeight:
-                              isActive ? FontWeight.w700 : FontWeight.w400,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ),

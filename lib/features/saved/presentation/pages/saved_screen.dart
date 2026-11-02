@@ -8,10 +8,12 @@ import '../../../../core/sync/sync_repository.dart';
 import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_color_scheme.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_dialog.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../books/presentation/pages/reader_screen.dart';
 import 'bookmarks_tab.dart';
 import 'highlights_tab.dart';
+import 'history_tab.dart';
 import 'notes_tab.dart';
 import 'saved_common.dart';
 
@@ -26,7 +28,10 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   int _tab = 0;
   bool _loading = true;
   bool _initialized = false;
+  int _historyLimit = 50;
+  bool _hasMoreHistory = true;
 
+  List<AnnotationItem> _history = [];
   List<AnnotationItem> _highlights = [];
   List<AnnotationItem> _bookmarks = [];
   List<AnnotationItem> _notes = [];
@@ -62,6 +67,10 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
       ).pullAll();
     }
 
+    final rawHistory = await ref
+        .read(appDatabaseProvider)
+        .getReadingHistory(limit: _historyLimit);
+
     final results = await Future.wait([
       db.getAllBookmarks(),
       db.getAllHighlights(),
@@ -73,6 +82,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     final rawNotes = results[2] as List<Note>;
 
     final bookIds = {
+      ...rawHistory.map((h) => h['book_id'] as String),
       ...rawBookmarks.map((b) => b.bookId),
       ...rawHighlights.map((h) => h.bookId),
       ...rawNotes.map((n) => n.bookId),
@@ -81,6 +91,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     if (bookIds.isEmpty) {
       if (mounted) {
         setState(() {
+          _history = [];
           _highlights = [];
           _bookmarks = [];
           _notes = [];
@@ -92,8 +103,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     final index = await repo.loadIndex();
     final entries = {
-      for (final e in index.where((e) => bookIds.contains(e.bookNameEn)))
-        e.bookNameEn: e,
+      for (final e in index.where((e) => bookIds.contains(e.id))) e.id: e,
     };
 
     final entryList = entries.values.toList();
@@ -101,7 +111,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
     final textMap = <String, Map<int, Map<int, String>>>{};
     for (var i = 0; i < entryList.length; i++) {
-      final bookId = entryList[i].bookNameEn;
+      final bookId = entryList[i].id;
       textMap[bookId] = {};
       for (final ch in books[i].chapters) {
         textMap[bookId]![ch.chapterNumber] = {
@@ -121,9 +131,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
       ].join('\n');
     }
 
-    if (!mounted) return;
-    setState(() {
-      _highlights = rawHighlights
+      var filteredHighlights = rawHighlights
           .map((h) {
             final e = entries[h.bookId];
             return e == null
@@ -134,15 +142,22 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     chapter: h.chapter,
                     verseStart: h.verseStart,
                     verseCount: h.verseCount,
-                    verseText: getText(h.bookId, h.chapter, h.verseStart, h.verseCount),
+                    verseText: getText(
+                      h.bookId,
+                      h.chapter,
+                      h.verseStart,
+                      h.verseCount,
+                    ),
                     createdAt: h.createdAt,
                     highlightColor: h.color,
+                    tags: h.tags,
+                    itemType: 'highlight',
                   );
           })
           .whereType<AnnotationItem>()
           .toList();
 
-      _bookmarks = rawBookmarks
+      var filteredBookmarks = rawBookmarks
           .map((b) {
             final e = entries[b.bookId];
             return e == null
@@ -153,14 +168,21 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     chapter: b.chapter,
                     verseStart: b.verseStart,
                     verseCount: b.verseCount,
-                    verseText: getText(b.bookId, b.chapter, b.verseStart, b.verseCount),
+                    verseText: getText(
+                      b.bookId,
+                      b.chapter,
+                      b.verseStart,
+                      b.verseCount,
+                    ),
                     createdAt: b.createdAt,
+                    tags: b.tags,
+                    itemType: 'bookmark',
                   );
           })
           .whereType<AnnotationItem>()
           .toList();
 
-      _notes = rawNotes
+      var filteredNotes = rawNotes
           .map((n) {
             final e = entries[n.bookId];
             return e == null
@@ -171,16 +193,80 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     chapter: n.chapter,
                     verseStart: n.verseStart,
                     verseCount: n.verseCount,
-                    verseText: getText(n.bookId, n.chapter, n.verseStart, n.verseCount),
+                    verseText: getText(
+                      n.bookId,
+                      n.chapter,
+                      n.verseStart,
+                      n.verseCount,
+                    ),
                     createdAt: n.createdAt,
                     noteContent: n.content,
+                    tags: n.tags,
+                    itemType: 'note',
                   );
           })
           .whereType<AnnotationItem>()
           .toList();
 
-      _loading = false;
-    });
+      final selectedCollectionId = ref.read(selectedCollectionIdProvider);
+      if (selectedCollectionId != null) {
+        final linkedItems =
+            await db.listItemsInCollection(selectedCollectionId);
+        final linkedHighlights = linkedItems
+            .where((r) => r['item_type'] == 'highlight')
+            .map((r) => r['item_id'] as int)
+            .toSet();
+        final linkedBookmarks = linkedItems
+            .where((r) => r['item_type'] == 'bookmark')
+            .map((r) => r['item_id'] as int)
+            .toSet();
+        final linkedNotes = linkedItems
+            .where((r) => r['item_type'] == 'note')
+            .map((r) => r['item_id'] as int)
+            .toSet();
+
+        filteredHighlights = filteredHighlights
+            .where((h) => linkedHighlights.contains(h.id))
+            .toList();
+        filteredBookmarks = filteredBookmarks
+            .where((b) => linkedBookmarks.contains(b.id))
+            .toList();
+        filteredNotes =
+            filteredNotes.where((n) => linkedNotes.contains(n.id)).toList();
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _hasMoreHistory = rawHistory.length >= _historyLimit;
+        _history = rawHistory
+            .map((row) {
+              final bookId = row['book_id'] as String;
+              final e = entries[bookId];
+              if (e == null) return null;
+
+              final chNum = row['chapter'] as int;
+              final verseNum = row['verse'] as int?;
+
+              return AnnotationItem(
+                id: row['id'] as int,
+                bookEntry: e,
+                chapter: chNum,
+                verseStart: verseNum ?? 1,
+                verseCount: 1,
+                verseText: getText(bookId, chNum, verseNum ?? 1, 1),
+                createdAt: DateTime.fromMillisecondsSinceEpoch(
+                  row['opened_at'] as int,
+                ),
+              );
+            })
+            .whereType<AnnotationItem>()
+            .toList();
+
+        _highlights = filteredHighlights;
+        _bookmarks = filteredBookmarks;
+        _notes = filteredNotes;
+        _loading = false;
+      });
   }
 
   void _openVerse(AnnotationItem item) {
@@ -228,10 +314,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // ── Collections Header Row ──────────────────────────────────────────
+          _CollectionsHeaderSection(onCollectionChanged: _load),
 
           // ── Tab bar ───────────────────────────────────────────────────────
-          Padding(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
@@ -254,6 +344,13 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                   count: _notes.length,
                   active: _tab == 2,
                   onTap: () => setState(() => _tab = 2),
+                ),
+                const SizedBox(width: 24),
+                _TabLabel(
+                  label: s.savedHistory,
+                  count: _history.length,
+                  active: _tab == 3,
+                  onTap: () => setState(() => _tab = 3),
                 ),
               ],
             ),
@@ -282,6 +379,22 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                         items: _notes,
                         onOpen: _openVerse,
                         onRefresh: _load,
+                      ),
+                      HistoryTab(
+                        items: _history,
+                        onOpen: _openVerse,
+                        onRefresh: _load,
+                        onLoadMore: () {
+                          setState(() => _historyLimit += 50);
+                          _load();
+                        },
+                        hasMore: _hasMoreHistory,
+                        onDeleteItem: (id) async {
+                          await ref
+                              .read(appDatabaseProvider)
+                              .deleteReadingHistoryItem(id);
+                          _load();
+                        },
                       ),
                     ],
                   ),
@@ -363,4 +476,247 @@ class _TabLabel extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Collections Header Section ──────────────────────────────────────────────────
+
+class _CollectionsHeaderSection extends ConsumerWidget {
+  const _CollectionsHeaderSection({required this.onCollectionChanged});
+
+  final VoidCallback onCollectionChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = L10n.of(context);
+    final c = context.colors;
+    final collectionsAsync = ref.watch(collectionsNotifierProvider);
+    final selectedCollectionId = ref.watch(selectedCollectionIdProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          child: Row(
+            children: [
+              Text(
+                s.collections,
+                style: AppTypography.amharicLabel.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: c.textMuted,
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () => showCreateCollectionDialog(context, ref),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add_rounded, size: 16, color: c.primary),
+                      const SizedBox(width: 2),
+                      Text(
+                        s.newCollection,
+                        style: AppTypography.amharicCaption.copyWith(
+                          color: c.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        collectionsAsync.when(
+          data: (collections) {
+            if (collections.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                child: Text(
+                  s.noCollections,
+                  style: AppTypography.amharicCaption.copyWith(
+                    color: c.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              );
+            }
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Row(
+                children: [
+                  for (final col in collections) ...[
+                    _CollectionChip(
+                      collection: col,
+                      isSelected: selectedCollectionId == col.id,
+                      onTap: () {
+                        if (selectedCollectionId == col.id) {
+                          ref.read(selectedCollectionIdProvider.notifier).state =
+                              null;
+                        } else {
+                          ref.read(selectedCollectionIdProvider.notifier).state =
+                              col.id;
+                        }
+                        onCollectionChanged();
+                      },
+                      onLongPress: () => _showCollectionOptions(
+                          context, ref, col, onCollectionChanged),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (err, stack) => const SizedBox.shrink(),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _CollectionChip extends StatelessWidget {
+  const _CollectionChip({
+    required this.collection,
+    required this.isSelected,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  final Collection collection;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final color = collection.color ?? c.primary;
+
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.2) : c.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? color : c.borderSubtle,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              collection.name,
+              style: AppTypography.amharicCaption.copyWith(
+                color: isSelected ? c.textOnParchment : c.textMuted,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _showCollectionOptions(
+  BuildContext context,
+  WidgetRef ref,
+  Collection col,
+  VoidCallback onChanged,
+) async {
+  final s = L10n.of(context);
+  final c = context.colors;
+  final error = Theme.of(context).colorScheme.error;
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => AppSheet(
+      icon: getCollectionIconData(col.icon),
+      title: col.name,
+      caption: 'COLLECTION',
+      onClose: () => Navigator.pop(ctx),
+      children: [
+        InkWell(
+          onTap: () async {
+            Navigator.pop(ctx);
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (dCtx) => AppDialog(
+                icon: Icons.delete_outline_rounded,
+                title: s.collectionDeleteTitle,
+                caption: col.name.toUpperCase(),
+                actions: AppDialogActions(
+                  cancelLabel: s.savedCancel,
+                  onCancel: () => Navigator.pop(dCtx, false),
+                  confirmLabel: s.savedDelete,
+                  onConfirm: () => Navigator.pop(dCtx, true),
+                  destructive: true,
+                ),
+                children: [AppDialogBody(s.collectionDeleteMessage)],
+              ),
+            );
+            if (confirmed == true && col.id != null) {
+              if (ref.read(selectedCollectionIdProvider) == col.id) {
+                ref.read(selectedCollectionIdProvider.notifier).state = null;
+              }
+              await ref
+                  .read(collectionsNotifierProvider.notifier)
+                  .deleteCollection(col.id!);
+              onChanged();
+            }
+          },
+          borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: error.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(kAppDialogInnerRadius),
+              border: Border.all(color: error.withValues(alpha: 0.25)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline_rounded, size: 18, color: error),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    s.collectionDeleteTitle,
+                    style: AppTypography.amharicLabel.copyWith(
+                      color: error,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, size: 18, color: c.textCaption),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

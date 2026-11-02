@@ -11,6 +11,107 @@ const highlightPalette = <Color>[
   Color(0xFF704A6A), // purple
 ];
 
+// ARCHITECTURAL DECISION (Issue #25):
+// Tags are stored as a comma-separated normalized string in the `tags` column of each
+// annotation table (bookmarks, highlights, notes) rather than using a full join table.
+// This lightweight implementation satisfies scaling needs while avoiding migration
+// costs and complex multi-table joins. If a future contributor prefers a formal join table,
+// this decision can be revisited.
+
+/// Normalizes a comma-separated tag string by:
+/// 1. Trimming each tag
+/// 2. Collapsing internal whitespace
+/// 3. Case-folding (converting to lowercase for English; Amharic is unaffected)
+/// 4. Deduplicating while preserving order
+///
+/// Example: `" ጾም , prayer ,  ጾም "` -> `"ጾም,prayer"`
+String? normalizeTags(String? rawTags) {
+  if (rawTags == null) return null;
+  final split = rawTags.split(',');
+  final processed = <String>[];
+  final seen = <String>{};
+  for (final tag in split) {
+    final trimmed = tag.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
+    if (trimmed.isNotEmpty && seen.add(trimmed)) {
+      processed.add(trimmed);
+    }
+  }
+  if (processed.isEmpty) return null;
+  return processed.join(',');
+}
+
+// ── Collection ────────────────────────────────────────────────────────────────
+
+class Collection {
+  const Collection({
+    this.id,
+    required this.name,
+    this.color,
+    this.icon,
+    this.sortOrder = 0,
+    required this.createdAt,
+    this.remoteId,
+    this.syncStatus = SyncStatus.pendingCreate,
+  });
+
+  final int? id;
+  final String name;
+  final Color? color;
+  final String? icon;
+  final int sortOrder;
+  final DateTime createdAt;
+  final String? remoteId;
+  final SyncStatus syncStatus;
+
+  Collection copyWith({
+    int? id,
+    String? name,
+    Color? color,
+    String? icon,
+    int? sortOrder,
+    DateTime? createdAt,
+    String? remoteId,
+    SyncStatus? syncStatus,
+  }) =>
+      Collection(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        color: color ?? this.color,
+        icon: icon ?? this.icon,
+        sortOrder: sortOrder ?? this.sortOrder,
+        createdAt: createdAt ?? this.createdAt,
+        remoteId: remoteId ?? this.remoteId,
+        syncStatus: syncStatus ?? this.syncStatus,
+      );
+
+  Map<String, dynamic> toMap() => {
+        if (id != null) 'id': id,
+        'name': name,
+        'color': color?.toARGB32(),
+        'icon': icon,
+        'sort_order': sortOrder,
+        'created_at': createdAt.millisecondsSinceEpoch,
+        'remote_id': remoteId,
+        'sync_status': syncStatus.name,
+      };
+
+  factory Collection.fromMap(Map<String, dynamic> m) {
+    final argb = m['color'] as int?;
+    return Collection(
+      id: m['id'] as int?,
+      name: m['name'] as String,
+      color: argb != null ? Color(argb) : null,
+      icon: m['icon'] as String?,
+      sortOrder: m['sort_order'] as int? ?? 0,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(m['created_at'] as int),
+      remoteId: m['remote_id'] as String?,
+      syncStatus: SyncStatus.values.byName(
+        m['sync_status'] as String? ?? SyncStatus.pendingCreate.name,
+      ),
+    );
+  }
+}
+
 // ── Bookmark ──────────────────────────────────────────────────────────────────
 
 class Bookmark {
@@ -25,6 +126,7 @@ class Bookmark {
     required this.updatedAt,
     this.syncStatus = SyncStatus.pendingCreate,
     this.remoteId,
+    this.tags,
   });
 
   final int? id;
@@ -37,6 +139,26 @@ class Bookmark {
   final DateTime updatedAt;
   final SyncStatus syncStatus;
   final String? remoteId;
+  final String? tags;
+
+  Bookmark copyWith({
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+    String? tags,
+  }) =>
+      Bookmark(
+        id: id,
+        bookId: bookId,
+        bookNumber: bookNumber,
+        chapter: chapter,
+        verseStart: verseStart,
+        verseCount: verseCount,
+        createdAt: createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        syncStatus: syncStatus ?? this.syncStatus,
+        remoteId: remoteId,
+        tags: tags ?? this.tags,
+      );
 
   Map<String, dynamic> toMap() => {
         if (id != null) 'id': id,
@@ -49,6 +171,7 @@ class Bookmark {
         'updated_at': updatedAt.millisecondsSinceEpoch,
         'sync_status': syncStatus.name,
         'remote_id': remoteId,
+        'tags': tags,
       };
 
   factory Bookmark.fromMap(Map<String, dynamic> m) => Bookmark(
@@ -62,6 +185,7 @@ class Bookmark {
         updatedAt: DateTime.fromMillisecondsSinceEpoch(m['updated_at'] as int),
         syncStatus: SyncStatus.values.byName(m['sync_status'] as String),
         remoteId: m['remote_id'] as String?,
+        tags: m['tags'] as String?,
       );
 }
 
@@ -81,6 +205,7 @@ class Highlight {
     required this.updatedAt,
     this.syncStatus = SyncStatus.pendingCreate,
     this.remoteId,
+    this.tags,
   });
 
   final int? id;
@@ -95,12 +220,14 @@ class Highlight {
   final DateTime updatedAt;
   final SyncStatus syncStatus;
   final String? remoteId;
+  final String? tags;
 
   Highlight copyWith({
     Color? color,
     String? note,
     DateTime? updatedAt,
     SyncStatus? syncStatus,
+    String? tags,
   }) =>
       Highlight(
         id: id,
@@ -115,6 +242,7 @@ class Highlight {
         updatedAt: updatedAt ?? this.updatedAt,
         syncStatus: syncStatus ?? this.syncStatus,
         remoteId: remoteId,
+        tags: tags ?? this.tags,
       );
 
   Map<String, dynamic> toMap() => {
@@ -130,6 +258,7 @@ class Highlight {
         'updated_at': updatedAt.millisecondsSinceEpoch,
         'sync_status': syncStatus.name,
         'remote_id': remoteId,
+        'tags': tags,
       };
 
   factory Highlight.fromMap(Map<String, dynamic> m) {
@@ -152,6 +281,7 @@ class Highlight {
       updatedAt: DateTime.fromMillisecondsSinceEpoch(m['updated_at'] as int),
       syncStatus: SyncStatus.values.byName(m['sync_status'] as String),
       remoteId: m['remote_id'] as String?,
+      tags: m['tags'] as String?,
     );
   }
 }
@@ -172,6 +302,7 @@ class Note {
     required this.updatedAt,
     this.syncStatus = SyncStatus.pendingCreate,
     this.remoteId,
+    this.tags,
   });
 
   final int? id;
@@ -186,12 +317,14 @@ class Note {
   final DateTime updatedAt;
   final SyncStatus syncStatus;
   final String? remoteId;
+  final String? tags;
 
   Note copyWith({
     String? content,
     bool? isPrivate,
     DateTime? updatedAt,
     SyncStatus? syncStatus,
+    String? tags,
   }) =>
       Note(
         id: id,
@@ -206,6 +339,7 @@ class Note {
         updatedAt: updatedAt ?? this.updatedAt,
         syncStatus: syncStatus ?? this.syncStatus,
         remoteId: remoteId,
+        tags: tags ?? this.tags,
       );
 
   Map<String, dynamic> toMap() => {
@@ -221,6 +355,7 @@ class Note {
         'updated_at': updatedAt.millisecondsSinceEpoch,
         'sync_status': syncStatus.name,
         'remote_id': remoteId,
+        'tags': tags,
       };
 
   factory Note.fromMap(Map<String, dynamic> m) => Note(
@@ -236,6 +371,7 @@ class Note {
         updatedAt: DateTime.fromMillisecondsSinceEpoch(m['updated_at'] as int),
         syncStatus: SyncStatus.values.byName(m['sync_status'] as String),
         remoteId: m['remote_id'] as String?,
+        tags: m['tags'] as String?,
       );
 }
 

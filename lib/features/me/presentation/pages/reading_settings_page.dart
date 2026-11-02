@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../books/presentation/widgets/edition_switcher.dart';
 import '../../../books/presentation/widgets/reader/constants.dart';
 import '../../../books/presentation/widgets/reader/font_settings_widgets.dart';
+import '../../../books/providers/edition_providers.dart';
 
 /// Full-page reading customizer — opened from Me settings or the reader Aa sheet.
 class ReadingSettingsPage extends StatelessWidget {
@@ -46,6 +49,10 @@ class ReadingSettingsPage extends StatelessWidget {
                 bodyFontIndex: 0,
                 titleFontIndex: 0,
                 fontSize: 17.0,
+                lineHeight: 1.6,
+                marginScale: 1.0,
+                textAlign: 0,
+                keepScreenOn: false,
               ),
             ),
             child: Text(
@@ -64,6 +71,9 @@ class ReadingSettingsPage extends StatelessWidget {
             bodyFont: bodyFont,
             titleFont: titleFont,
             fontSize: settings.fontSize,
+            lineHeight: settings.lineHeight,
+            marginScale: settings.marginScale,
+            textAlign: settings.textAlign,
             textColor: textColor,
             mutedColor: mutedColor,
             accentColor: accentColor,
@@ -71,6 +81,23 @@ class ReadingSettingsPage extends StatelessWidget {
             previewLabel: s.readingSettingsPreview,
           ),
           const SizedBox(height: 24),
+
+          // ── Parallel translation ──────────────────────────────────────────
+          _ParallelRow(
+            label: s.parallelSettingLabel,
+            offLabel: s.parallelOff,
+            textColor: textColor,
+            mutedColor: mutedColor,
+            accentColor: accentColor,
+            sheetTheme: EditionSheetTheme(
+              surface: surfaceColor,
+              text: textColor,
+              muted: mutedColor,
+              accent: accentColor,
+              border: mutedColor.withValues(alpha: 0.25),
+            ),
+          ),
+          const SizedBox(height: 20),
 
           // ── Continuous reading toggle ─────────────────────────────────────
           _SettingRow(
@@ -82,6 +109,22 @@ class ReadingSettingsPage extends StatelessWidget {
             onChanged: (v) => Settings.update(
               context,
               settings.copyWith(continuousReading: v),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // ── Keep screen on toggle ─────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: KeepScreenOnToggle(
+              keepScreenOn: settings.keepScreenOn,
+              label: s.readingSettingsKeepScreenOn,
+              accentColor: accentColor,
+              textColor: textColor,
+              onChanged: (v) => Settings.update(
+                context,
+                settings.copyWith(keepScreenOn: v),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -101,6 +144,66 @@ class ReadingSettingsPage extends StatelessWidget {
             onChanged: (v) => Settings.update(
               context,
               settings.copyWith(fontSize: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Line height slider ───────────────────────────────────────────
+          SectionLabel(
+            label: s.readingSettingsLineHeight,
+            textColor: textColor,
+            mutedColor: mutedColor,
+          ),
+          const SizedBox(height: 8),
+          LineHeightSlider(
+            lineHeight: settings.lineHeight,
+            accentColor: accentColor,
+            mutedColor: mutedColor,
+            textColor: textColor,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(lineHeight: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Margin scale slider ──────────────────────────────────────────
+          SectionLabel(
+            label: s.readingSettingsMarginScale,
+            textColor: textColor,
+            mutedColor: mutedColor,
+          ),
+          const SizedBox(height: 8),
+          MarginScaleSlider(
+            marginScale: settings.marginScale,
+            accentColor: accentColor,
+            mutedColor: mutedColor,
+            textColor: textColor,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(marginScale: v),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Text alignment selector ──────────────────────────────────────
+          SectionLabel(
+            label: s.readingSettingsTextAlign,
+            textColor: textColor,
+            mutedColor: mutedColor,
+          ),
+          const SizedBox(height: 10),
+          TextAlignSelector(
+            textAlign: settings.textAlign,
+            accentColor: accentColor,
+            mutedColor: mutedColor,
+            textColor: textColor,
+            surfaceColor: surfaceColor,
+            startLabel: s.readingSettingsAlignStart,
+            justifyLabel: s.readingSettingsAlignJustify,
+            onChanged: (v) => Settings.update(
+              context,
+              settings.copyWith(textAlign: v),
             ),
           ),
           const SizedBox(height: 24),
@@ -156,6 +259,9 @@ class _PreviewCard extends StatelessWidget {
     required this.bodyFont,
     required this.titleFont,
     required this.fontSize,
+    required this.lineHeight,
+    required this.marginScale,
+    required this.textAlign,
     required this.textColor,
     required this.mutedColor,
     required this.accentColor,
@@ -166,6 +272,9 @@ class _PreviewCard extends StatelessWidget {
   final String bodyFont;
   final String titleFont;
   final double fontSize;
+  final double lineHeight;
+  final double marginScale;
+  final int textAlign;
   final Color textColor;
   final Color mutedColor;
   final Color accentColor;
@@ -174,8 +283,11 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectivePadding = (20.0 * marginScale).clamp(10.0, 40.0);
+    final effectiveAlign = textAlign == 1 ? TextAlign.justify : TextAlign.start;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(effectivePadding),
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(18),
@@ -218,12 +330,13 @@ class _PreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           RichText(
+            textAlign: effectiveAlign,
             text: TextSpan(
               style: TextStyle(
                 fontFamily: bodyFont,
                 fontSize: fontSize,
                 color: textColor,
-                height: 2.0,
+                height: lineHeight,
               ),
               children: [
                 TextSpan(
@@ -244,6 +357,61 @@ class _PreviewCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Opens the edition chooser at its parallel-column controls.
+///
+/// A row rather than a switch: choosing *which* edition sits alongside is the
+/// decision, and there is no sensible default second translation to toggle on.
+class _ParallelRow extends ConsumerWidget {
+  const _ParallelRow({
+    required this.label,
+    required this.offLabel,
+    required this.textColor,
+    required this.mutedColor,
+    required this.accentColor,
+    required this.sheetTheme,
+  });
+
+  final String label;
+  final String offLabel;
+  final Color textColor;
+  final Color mutedColor;
+  final Color accentColor;
+  final EditionSheetTheme sheetTheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final parallel = ref.watch(secondaryEditionTitleProvider).valueOrNull;
+
+    return InkWell(
+      onTap: () => showEditionSwitcher(context, theme: sheetTheme),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.view_column_outlined, size: 17, color: mutedColor),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.amharicLabel.copyWith(color: textColor),
+              ),
+            ),
+            Text(
+              parallel ?? offLabel,
+              style: AppTypography.amharicCaption.copyWith(
+                color: parallel == null ? mutedColor : accentColor,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(Icons.chevron_right_rounded, size: 18, color: mutedColor),
+          ],
+        ),
       ),
     );
   }

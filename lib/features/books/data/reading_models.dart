@@ -25,6 +25,18 @@ class ReadingPosition {
   }
 }
 
+/// Lifetime counters behind the streak page's stat row.
+@immutable
+class ReadingTotals {
+  const ReadingTotals({this.totalDays = 0, this.totalChapters = 0});
+
+  /// Distinct calendar days with a qualifying read.
+  final int totalDays;
+
+  /// Distinct chapters ever read, across every book.
+  final int totalChapters;
+}
+
 @immutable
 class ReadingStreakState {
   const ReadingStreakState({
@@ -34,6 +46,7 @@ class ReadingStreakState {
     this.longestStreak = 0,
     this.longestStreakStart,
     this.longestStreakEnd,
+    this.freezeCredits = 0,
   });
 
   final String? lastQualifiedDate;
@@ -42,6 +55,9 @@ class ReadingStreakState {
   final int longestStreak;
   final String? longestStreakStart;
   final String? longestStreakEnd;
+
+  /// Banked rest days, spent automatically to bridge a missed day.
+  final int freezeCredits;
 
   factory ReadingStreakState.fromRow(Map<String, Object?> row) {
     int n(Object? k, [int d = 0]) {
@@ -59,6 +75,7 @@ class ReadingStreakState {
       longestStreak: n('longest_streak'),
       longestStreakStart: s('longest_streak_start'),
       longestStreakEnd: s('longest_streak_end'),
+      freezeCredits: n('freeze_credits'),
     );
   }
 
@@ -69,6 +86,7 @@ class ReadingStreakState {
     int? longestStreak,
     String? longestStreakStart,
     String? longestStreakEnd,
+    int? freezeCredits,
   }) =>
       ReadingStreakState(
         lastQualifiedDate: lastQualifiedDate ?? this.lastQualifiedDate,
@@ -77,5 +95,6 @@ class ReadingStreakState {
         longestStreak: longestStreak ?? this.longestStreak,
         longestStreakStart: longestStreakStart ?? this.longestStreakStart,
         longestStreakEnd: longestStreakEnd ?? this.longestStreakEnd,
+        freezeCredits: freezeCredits ?? this.freezeCredits,
       );
 }

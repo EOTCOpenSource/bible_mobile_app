@@ -15,25 +15,34 @@ import '../../../../core/sync/sync_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
+import '../../data/models/edition.dart';
 import '../../data/reading_constants.dart';
+import '../../data/repositories/bible_repository.dart' show BibleRepository;
+import '../widgets/edition_switcher.dart';
 import '../../providers/reading_progress_providers.dart';
 import '../../providers/reader_immersive_provider.dart';
 import '../../../../core/deep_links/deep_link_uri.dart';
+import '../../../../core/audio/audio_service.dart';
+import '../../../../core/audio/play_verses.dart';
 import '../widgets/reader/constants.dart';
 import '../widgets/reader/toolbar.dart';
 import '../widgets/reader/breadcrumb.dart';
 import '../widgets/reader/chapter_page.dart';
+import '../widgets/reader/chapter_picker_sheet.dart';
+import '../widgets/reader/reference_jump_sheet.dart';
+import '../widgets/reader/parallel_chapter_page.dart';
 import '../widgets/reader/font_sheet.dart';
 import '../widgets/reader/highlight_sheet.dart';
 import '../widgets/reader/note_sheet.dart';
 import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
-import '../widgets/reader/cross_reference_sheet.dart';
-import '../../data/repositories/cross_reference_repository.dart';
+import '../widgets/reader/verse_apparatus_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
+import '../../../crossref/presentation/widgets/cross_ref_sheet.dart';
+import '../../../search/presentation/pages/search_tab.dart';
 import '../../../share/verse_card_sheet.dart';
-
+import 'package:wakelock_plus/wakelock_plus.dart';
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -43,6 +52,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
     this.initialChapter = 0,
     this.initialChapterNumber,
     this.initialVerse,
+    this.autoStartAudio = false,
   });
 
   final BookIndexEntry entry;
@@ -53,6 +63,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
   /// If set, overrides [initialChapter] after the book loads (canonical chapter number).
   final int? initialChapterNumber;
   final int? initialVerse;
+  final bool autoStartAudio;
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
@@ -62,21 +73,61 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     with WidgetsBindingObserver {
   Book? _book;
   bool _loading = true;
-  late final PageController _pageCtrl;
+  late PageController _pageCtrl;
   int _currentChapter = 0;
+
+  /// The open book *in the active edition*. Re-resolved on every edition
+  /// switch: the USFM id is stable, everything else about the entry is not.
+  late BookIndexEntry _entry;
+
+  BibleRepository? _repo;
+  bool _initialized = false;
+
+  /// Parallel column state. [_secondaryBook] is null while parallel reading is
+  /// off *and* when the parallel edition's canon has no such book — the two are
+  /// told apart by [_parallelOn], because the second case has to say so rather
+  /// than quietly drop back to one column.
+  Book? _secondaryBook;
+  bool _parallelOn = false;
+  String _primaryLabel = '';
+  String _secondaryLabel = '';
+
+  /// The primary edition as of the last load, so a notification that only
+  /// changed the parallel column does not re-read the whole book.
+  String? _primaryEditionId;
 
   String? _selectedKey;
   String? _selectionEndKey;
   final GlobalKey _spotlightKey = GlobalKey();
 
+  /// About a second at 60fps — long enough for a book swap to lay out, short
+  /// enough that a verse which never renders stops costing frames.
+  static const int _kSpotlightScrollAttempts = 60;
+  final GlobalKey _audioScrollKey = GlobalKey();
+  bool _isAudioPlaying = false;
+
   Timer? _dwellTimer;
   int? _dwellChapterNumber;
 
-  /// Page index used only to spotlight [initialVerse] on first open.
+  /// Page index of the chapter currently holding the spotlight.
   int? _spotlightChapterPageIndex;
+
+  /// The verse to select, scroll to and spotlight on the next chapter render.
+  ///
+  /// Starts as [ReaderScreen.initialVerse] but has to be state rather than the
+  /// widget property, because the jumps that need it stay inside this State: a
+  /// cross-reference tap and a step back along the trail both move the reader
+  /// without rebuilding it. Reading the property instead would spotlight
+  /// whatever verse the reader was *opened* at — or, in the common case where
+  /// it was opened at no verse at all, nothing.
+  int? _spotlightVerse;
+  int _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
 
   /// Toolbar, breadcrumb, chapter footer, and home bottom nav follow this.
   bool _readerChromeVisible = true;
+
+  /// Stack of cross-reference navigation points for returning back.
+  final List<({BookIndexEntry entry, int chapter, int verse, String label})> _navTrail = [];
 
   /// Root container for updates that must not use [ref] after dispose (immersive flag).
   ProviderContainer? _riverpodContainer;
@@ -85,14 +136,84 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _entry = widget.entry;
     _currentChapter = widget.initialChapter;
     _pageCtrl = PageController(initialPage: widget.initialChapter);
+    AudioService.instance.currentVerseIndexNotifier.addListener(_onAudioVerseIndexChanged);
+    AudioService.instance.stateNotifier.addListener(_onAudioStateChanged);
+  }
+
+  void _onAudioStateChanged() {
+    final state = AudioService.instance.stateNotifier.value;
+    final wasPlaying = _isAudioPlaying;
+    _isAudioPlaying = (state == AudioState.playing || state == AudioState.buffering);
+    if (wasPlaying && !_isAudioPlaying && mounted) {
+      setState(() {
+        _selectedKey = null;
+        _selectionEndKey = null;
+      });
+    }
+  }
+
+  void _onAudioVerseIndexChanged() {
+    final verseIdx = AudioService.instance.currentVerseIndexNotifier.value;
+    if (verseIdx == null || _book == null || !mounted) return;
+    if (_currentChapter >= _book!.chapters.length) return;
+    final chapter = _book!.chapters[_currentChapter];
+    if (verseIdx < 0 || verseIdx >= chapter.allVerses.length) return;
+
+    final verse = chapter.allVerses[verseIdx];
+    for (var sIdx = 0; sIdx < chapter.sections.length; sIdx++) {
+      if (chapter.sections[sIdx].verses.any((v) => v.verseNumber == verse.verseNumber)) {
+        final targetKey = _verseKey(chapter.chapterNumber, sIdx, verse.verseNumber);
+        if (_selectedKey != targetKey) {
+          setState(() {
+            _isAudioPlaying = true;
+            _selectedKey = targetKey;
+            _selectionEndKey = null;
+          });
+          // Auto-scroll to the active verse
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final ctx = _audioScrollKey.currentContext;
+            if (ctx != null) {
+              Scrollable.ensureVisible(
+                ctx,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                alignment: 0.3,
+              );
+            }
+          });
+        }
+        break;
+      }
+    }
+  }
+
+  /// Returns the verse number currently being read by audio on page [pageIdx],
+  /// or null if audio is not active on that page.
+  int? _audioVerseNum(int pageIdx) {
+    if (!_isAudioPlaying || _book == null) return null;
+    if (pageIdx != _currentChapter) return null;
+    final verseIdx = AudioService.instance.currentVerseIndexNotifier.value;
+    if (verseIdx == null) return null;
+    final chapter = _book!.chapters[_currentChapter];
+    if (verseIdx < 0 || verseIdx >= chapter.allVerses.length) return null;
+    return chapter.allVerses[verseIdx].verseNumber;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _riverpodContainer = ProviderScope.containerOf(context);
+    if (!_initialized) {
+      _initialized = true;
+      // The toolbar can switch editions mid-chapter; follow the repository so
+      // the text under the reader is always the edition they just chose.
+      _repo = BibleRepositoryProvider.of(context);
+      _repo!.addListener(_onEditionChanged);
+    }
     // Defer: updating [readerBottomNavMatchReaderProvider] rebuilds [HomeScreen]
     // while this route is mounting; doing it synchronously here can throw.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,15 +223,35 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     if (_book == null && _loading) _loadBook();
   }
 
+  /// Manages the screen wake lock state based on user preferences.
+  /// Enables WakelockPlus when keepScreenOn is true and disables when false.
+  /// Wrapped in try/catch to safely handle unsupported desktop/web targets.
+  void _syncWakelock(bool keepScreenOn) {
+    try {
+      if (keepScreenOn) {
+        WakelockPlus.enable();
+      } else {
+        WakelockPlus.disable();
+      }
+    } on Object catch (_) {}
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _dwellTimer?.cancel();
+      _recordHistory();
       _persistReadingPosition();
+      try {
+        WakelockPlus.disable();
+      } on Object catch (_) {}
     } else if (state == AppLifecycleState.resumed) {
+      _lastHistoryUpdateTime = DateTime.now().millisecondsSinceEpoch;
       _persistReadingPosition();
       _scheduleDwellTimer();
+      final settings = Settings.of(context);
+      _syncWakelock(settings.keepScreenOn);
     }
   }
 
@@ -132,8 +273,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   @override
   void dispose() {
+    try {
+      WakelockPlus.disable();
+    } on Object catch (_) {}
+    AudioService.instance.currentVerseIndexNotifier.removeListener(_onAudioVerseIndexChanged);
+    AudioService.instance.stateNotifier.removeListener(_onAudioStateChanged);
     _dwellTimer?.cancel();
+    _repo?.removeListener(_onEditionChanged);
     WidgetsBinding.instance.removeObserver(this);
+    _recordHistory();
     _persistReadingPosition();
     // Reset immersive/color providers while ref is still valid (before super.dispose).
     // _riverpodContainer is only for timer callbacks that may fire after dispose.
@@ -173,6 +321,33 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     return false;
   }
 
+  void _recordHistory() {
+    if (_book == null) return;
+    final container = _riverpodContainer;
+    if (container == null) return;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final durationMs = now - _lastHistoryUpdateTime;
+    _lastHistoryUpdateTime = now;
+    if (durationMs < 1000) return;
+
+    final verse = _selectionVerseStart;
+    unawaited(
+      () async {
+        try {
+          await container.read(appDatabaseProvider).insertReadingHistory(
+            bookId: _entry.id,
+            chapter: _currentChapterNumber,
+            verse: verse,
+            durationMs: durationMs,
+          );
+        } catch (e, st) {
+          debugPrint('Failed to insert reading history: $e\n$st');
+        }
+      }(),
+    );
+  }
+
   void _persistReadingPosition() {
     if (_book == null) return;
     final ProviderContainer container;
@@ -186,7 +361,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       container
           .read(readingProgressRepositoryProvider)
           .saveReadingPosition(
-            bookId: widget.entry.bookNameEn,
+            bookId: _entry.id,
             chapter: _currentChapterNumber,
             verse: verse,
           ),
@@ -212,7 +387,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         } on Object catch (_) {
           return;
         }
-        final bookId = widget.entry.bookNameEn;
+        final bookId = _entry.id;
         await container
             .read(readingProgressRepositoryProvider)
             .recordQualifiedChapterRead(bookId: bookId, chapter: chNum);
@@ -232,7 +407,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   Future<void> _loadBook() async {
     final book = await BibleRepositoryProvider.of(
       context,
-    ).loadBook(widget.entry);
+    ).loadBook(_entry);
     if (!mounted) return;
 
     var pageIdx = widget.initialChapter.clamp(0, book.chapters.length - 1);
@@ -247,23 +422,160 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       _book = book;
       _currentChapter = pageIdx;
       _loading = false;
+      _spotlightVerse = widget.initialVerse;
       _spotlightChapterPageIndex = widget.initialVerse != null ? pageIdx : null;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_pageCtrl.hasClients) return;
-      if (_pageCtrl.page?.round() != pageIdx) {
-        _pageCtrl.jumpToPage(pageIdx);
-      }
-    });
+    _ensureOnPage(pageIdx);
 
     _persistReadingPosition();
     _scheduleDwellTimer();
     _autoSelectInitialVerse(pageIdx);
+
+    if (widget.autoStartAudio) {
+      _playCurrentChapterAudio();
+    }
+    unawaited(_refreshParallel());
+  }
+
+  /// Reads the open chapter aloud with the user's own key and chosen voice.
+  ///
+  /// Anything that stops it from starting routes to the voice settings page
+  /// rather than failing silently — a missing key is the common case on a
+  /// fresh install, and it is fixable right there.
+  Future<void> _playCurrentChapterAudio() async {
+    final book = _book;
+    if (book == null || _currentChapter >= book.chapters.length) return;
+    final ch = book.chapters[_currentChapter];
+
+    await playVersesAloud(
+      context: context,
+      ref: ref,
+      title: '${_entry.bookNameAm} ${ch.chapterNumber}',
+      verses: ch.allVerses.map((v) => v.text).toList(),
+    );
+  }
+
+  /// Re-reads the parallel column for the open book.
+  ///
+  /// Cheap enough to call on every edition notification: the secondary book is
+  /// cached in the repository, and a book the parallel canon does not carry
+  /// resolves to null without touching the database twice.
+  Future<void> _refreshParallel() async {
+    final repo = _repo;
+    if (repo == null) return;
+
+    _primaryEditionId = repo.activeEditionId;
+    final parallelId = repo.secondaryEditionId;
+
+    if (parallelId == null) {
+      if (!mounted) return;
+      setState(() {
+        _parallelOn = false;
+        _secondaryBook = null;
+        _secondaryLabel = '';
+      });
+      return;
+    }
+
+    final book = await repo.loadSecondaryBook(_entry.id);
+    final secondary = await repo.secondaryEdition();
+    final primary = await repo.activeEdition();
+    if (!mounted) return;
+
+    setState(() {
+      _parallelOn = true;
+      _secondaryBook = book;
+      _primaryLabel = primary == null ? '' : _editionLabel(primary);
+      _secondaryLabel = secondary == null ? '' : _editionLabel(secondary);
+    });
+  }
+
+  static String _editionLabel(Edition e) => e.shortLabel;
+
+  /// The open chapter in the parallel edition, null when its versification
+  /// does not reach this far.
+  Chapter? _secondaryChapterFor(int chapterNumber) {
+    final book = _secondaryBook;
+    if (book == null) return null;
+    for (final c in book.chapters) {
+      if (c.chapterNumber == chapterNumber) return c;
+    }
+    return null;
+  }
+
+  /// Re-reads the open book from the edition just switched to, holding the
+  /// reader on the same chapter number.
+  ///
+  /// Two things can go wrong and both are ordinary: the new canon may not carry
+  /// this book at all (the protestant editions have no deuterocanon), and its
+  /// versification may not carry this chapter. The first leaves the reader, the
+  /// second lands on the nearest chapter the edition does have.
+  Future<void> _onEditionChanged() async {
+    final repo = _repo;
+    if (repo == null || !mounted) return;
+
+    // Turning the parallel column on or off leaves the primary text alone;
+    // reloading the book would throw away the reader's scroll position for a
+    // change that does not affect it.
+    if (_primaryEditionId != null &&
+        repo.activeEditionId == _primaryEditionId) {
+      await _refreshParallel();
+      return;
+    }
+
+    final entry = await repo.bookById(_entry.id);
+    if (!mounted) return;
+
+    if (entry == null) {
+      final s = L10n.of(context);
+      final edition = await repo.activeEdition();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              s.editionBookMissing(
+                edition == null ? '' : editionTitleFor(edition, s),
+              ),
+            ),
+          ),
+        );
+      if (ModalRoute.of(context)?.isCurrent ?? false) Navigator.pop(context);
+      return;
+    }
+
+    final keepChapter = _currentChapterNumber;
+    final book = await repo.loadBook(entry);
+    if (!mounted) return;
+
+    var idx = book.chapters.indexWhere((c) => c.chapterNumber == keepChapter);
+    if (idx < 0) idx = (keepChapter - 1).clamp(0, book.chapters.length - 1);
+
+    // A fresh controller rather than a jump: the new edition can have fewer
+    // chapters, and a PageController restoring an out-of-range offset lands on
+    // the wrong page.
+    final previous = _pageCtrl;
+    setState(() {
+      _entry = entry;
+      _book = book;
+      _loading = false;
+      _currentChapter = idx;
+      _selectedKey = null;
+      _selectionEndKey = null;
+      _spotlightChapterPageIndex = null;
+      _pageCtrl = PageController(initialPage: idx);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+
+    _persistReadingPosition();
+    _scheduleDwellTimer();
+    await _refreshParallel();
   }
 
   void _autoSelectInitialVerse(int chapterPageIndex) {
-    final targetVerse = widget.initialVerse;
+    final targetVerse = _spotlightVerse;
     if (targetVerse == null || _book == null) return;
     final chIdx = chapterPageIndex.clamp(0, _book!.chapters.length - 1);
     final chapter = _book!.chapters[chIdx];
@@ -274,33 +586,112 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         setState(() {
           _selectedKey = _verseKey(chapter.chapterNumber, sIdx, targetVerse);
         });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // Wait one extra frame so any page jump has time to render the
-          // target chapter before we try to scroll within it.
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            final ctx = _spotlightKey.currentContext;
-            if (ctx != null) {
-              Scrollable.ensureVisible(
-                ctx,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-                alignment: 0.3,
-              );
-            }
-          });
-        });
+        _scrollToSpotlight();
         break;
       }
     }
   }
 
+  /// Moves the PageView onto [pageIdx] after the controller behind it has been
+  /// replaced.
+  ///
+  /// Replacing a [PageController] does not move the view. [Scrollable] hands
+  /// the *existing* [ScrollPosition] to the new controller, and `initialPage`
+  /// is only consulted when a position is built from scratch — so a jump into
+  /// another book keeps whatever page the previous book was on, which is
+  /// chapter 1 nine times out of ten. Every piece of chrome meanwhile reads the
+  /// chapter out of state and says 45, so the reader shows Isaiah 1 under a
+  /// header that reads Isaiah 45.
+  void _ensureOnPage(int pageIdx) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_pageCtrl.hasClients) return;
+      if (_pageCtrl.page?.round() != pageIdx) {
+        _pageCtrl.jumpToPage(pageIdx);
+      }
+    });
+  }
+
+  /// Scrolls the spotlighted verse into view once it exists to be scrolled to.
+  ///
+  /// Waiting a fixed two frames is enough when only the page index changes, but
+  /// not when a cross-reference into another book replaces the book, the
+  /// PageView and its controller: the target chapter is then still being laid
+  /// out — with a cacheExtent large enough to pre-build every section — and
+  /// `currentContext` is null for several frames. A fixed wait lands early,
+  /// silently does nothing, and leaves the reader at the top of the chapter
+  /// with the right verse selected but off screen.
+  ///
+  /// So it retries frame by frame until the verse is there, and gives up after
+  /// [_kSpotlightScrollAttempts] rather than looping forever on a verse that
+  /// never renders.
+  void _scrollToSpotlight([int attempt = 0]) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _spotlightKey.currentContext;
+      if (ctx == null) {
+        if (attempt < _kSpotlightScrollAttempts) {
+          // A post-frame callback only runs when a frame is scheduled, and an
+          // idle reader schedules none — so ask for one, or the retry stops
+          // silently after however many frames the jump happened to produce.
+          WidgetsBinding.instance.scheduleFrame();
+          _scrollToSpotlight(attempt + 1);
+        }
+        return;
+      }
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+        alignment: 0.3,
+      );
+    });
+  }
+
   void _goToChapter(int idx) {
     if (_book == null) return;
+    final target = idx.clamp(0, _book!.chapters.length - 1);
+    // Animating across a long jump would flick through every chapter between
+    // Psalm 1 and Psalm 119, so only neighbours slide.
+    if ((target - _currentChapter).abs() > 2) {
+      _pageCtrl.jumpToPage(target);
+      return;
+    }
     _pageCtrl.animateToPage(
-      idx.clamp(0, _book!.chapters.length - 1),
+      target,
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeInOut,
+    );
+  }
+
+  // ── Chapter picker ────────────────────────────────────────────────────────
+
+  void _showChapterPicker(BuildContext ctx, AppSettings settings) {
+    final book = _book;
+    if (book == null || book.chapters.isEmpty) return;
+
+    final isDark = settings.isDarkReader;
+    showModalBottomSheet<void>(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => ReaderChapterPicker(
+        entry: _entry,
+        chapters: book.chapters,
+        currentIndex: _currentChapter,
+        useGeez: settings.useGeezNumbers,
+        isAmharic: L10n.of(ctx) is AmStrings,
+        s: L10n.of(ctx),
+        surfaceColor: isDark ? readerDarkSurface : Colors.white,
+        textColor: isDark ? readerDarkText : AppColors.textOnParchment,
+        mutedColor: isDark ? readerDarkMuted : AppColors.textMuted,
+        accentColor: isDark ? readerDarkAccent : AppColors.accentDeep,
+        titleFontFamily: readerFonts[settings.titleFontIndex],
+        onSelect: (i) {
+          Navigator.pop(sheetCtx);
+          _deselect();
+          _goToChapter(i);
+        },
+      ),
     );
   }
 
@@ -376,7 +767,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   ChapterKey get _chapterKey =>
-      (bookId: widget.entry.bookNameEn, chapter: _currentChapterNumber);
+      (bookId: _entry.id, chapter: _currentChapterNumber);
 
   String? _selectedVerseText(AppSettings settings) {
     if (_book == null || _selectedKey == null) return null;
@@ -405,8 +796,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       final refEnd = count > 1
           ? '-${useGeez ? toGeez(start + count - 1) : '${start + count - 1}'}'
           : '';
-      final ref = '${widget.entry.bookNameAm} $chNum:$startStr$refEnd';
-      final deepLink = verseDeepLinkUri(widget.entry, chNum, start);
+      final ref = '${_entry.bookNameAm} $chNum:$startStr$refEnd';
+      final deepLink = verseDeepLinkUri(_entry, chNum, start);
       return '${texts.join('\n')}\n$ref\n$deepLink';
     } catch (_) {
       return null;
@@ -458,6 +849,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Reference Jump sheet ──────────────────────────────────────────────────
+
+  void _showReferenceJumpSheet(BuildContext ctx, AppSettings settings) {
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ReferenceJumpSheet(
+        useGeez: settings.useGeezNumbers,
+        isAmharic: L10n.of(ctx) is AmStrings,
+        s: L10n.of(ctx),
+      ),
+    );
+  }
+
   // ── Highlight sheet ───────────────────────────────────────────────────────
 
   void _showHighlightSheet(
@@ -489,7 +895,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               .read(chapterAnnotationsProvider(_chapterKey).notifier)
               .setHighlight(
                 verseStart: verseNum,
-                bookNumber: widget.entry.bookNumber,
+                bookNumber: _entry.bookNumber,
                 color: color,
                 verseCount: count,
               );
@@ -541,87 +947,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               .read(chapterAnnotationsProvider(_chapterKey).notifier)
               .saveNote(
                 verseStart: verseNum,
-                bookNumber: widget.entry.bookNumber,
+                bookNumber: _entry.bookNumber,
                 content: content,
                 verseCount: count,
               );
           if (mounted) _deselect();
-        },
-      ),
-    );
-  }
-
-  // ── Cross reference sheet ──────────────────────────────────────────────────
-
-  void _showCrossReferenceSheet(
-    BuildContext ctx,
-    AppSettings settings, {
-    int? chapterNum,
-    int? selectedVerse,
-  }) {
-    final chNum = chapterNum ?? _currentChapterNumber;
-    if (selectedVerse != null) {
-      setState(() {
-        _selectedKey = '$chNum:0:$selectedVerse';
-        _selectionEndKey = null;
-      });
-      _persistReadingPosition();
-    }
-    final verseNum = selectedVerse ?? _selectionVerseStart;
-    if (verseNum == null) return;
-
-    final isDark = settings.isDarkReader;
-    final surfaceColor = isDark ? readerDarkSurface : Colors.white;
-    final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
-    final mutedColor = isDark ? readerDarkMuted : AppColors.textMuted;
-    final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
-    final bodyFont = readerFonts[settings.bodyFontIndex];
-    final s = L10n.of(context);
-    final isAm = s is AmStrings;
-
-    showModalBottomSheet(
-      context: ctx,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => CrossReferenceSheet(
-        sourceEntry: widget.entry,
-        sourceChapter: chNum,
-        sourceVerse: verseNum,
-        isDark: isDark,
-        surfaceColor: surfaceColor,
-        textColor: textColor,
-        mutedColor: mutedColor,
-        accentColor: accentColor,
-        bodyFont: bodyFont,
-        useGeez: settings.useGeezNumbers,
-        isAmharic: isAm,
-        onNavigate: (targetEntry, targetChapter, targetVerse) {
-          _deselect();
-          if (targetEntry.bookNumber == widget.entry.bookNumber) {
-            final chIdx = targetChapter - 1;
-            if (chIdx >= 0 && chIdx < _book!.chapters.length) {
-              _pageCtrl.jumpToPage(chIdx);
-              setState(() {
-                _currentChapter = chIdx;
-                _selectedKey = '$targetChapter:0:$targetVerse';
-                _selectionEndKey = null;
-              });
-              return;
-            }
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ReaderScreen(
-                entry: targetEntry,
-                initialChapter: targetChapter - 1,
-                initialVerse: targetVerse,
-              ),
-            ),
-          );
         },
       ),
     );
@@ -667,7 +997,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     final chNumDisplay = settings.useGeezNumbers ? toGeez(chNum) : '$chNum';
     final vNumDisplay = settings.useGeezNumbers ? toGeez(vNum) : '$vNum';
-    final reference = '${widget.entry.bookNameAm} $chNumDisplay:$vNumDisplay';
+    final reference = '${_entry.bookNameAm} $chNumDisplay:$vNumDisplay';
 
     showModalBottomSheet(
       context: context,
@@ -691,7 +1021,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _selectedKey = verseKey;
             _selectionEndKey = null;
           });
-          final chKey = (bookId: widget.entry.bookNameEn, chapter: chNum);
+          final chKey = (bookId: _entry.id, chapter: chNum);
           final liveAnnotations =
               _riverpodContainer
                   ?.read(chapterAnnotationsProvider(chKey))
@@ -703,12 +1033,171 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Footnotes and cross references ────────────────────────────────────────
+
+  void _showApparatus(Verse verse, int chapterNumber) {
+    if (verse.refs.isEmpty && verse.notes.isEmpty) return;
+
+    final s = L10n.of(context);
+    final settings = Settings.of(context);
+    final isDark = settings.isDarkReader;
+    final useGeez = settings.useGeezNumbers;
+
+    final chNum = useGeez ? toGeez(chapterNumber) : '$chapterNumber';
+    final vNum = verse.displayNumber(useGeez: useGeez);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => VerseApparatusSheet(
+        reference: '${_entry.bookNameAm} $chNum:$vNum',
+        refs: verse.refs,
+        notes: verse.notes,
+        s: s,
+        surfaceColor: isDark ? readerDarkSurface : Colors.white,
+        textColor: isDark ? readerDarkText : AppColors.textOnParchment,
+        mutedColor: isDark ? readerDarkMuted : AppColors.textMuted,
+        accentColor: isDark ? readerDarkAccent : AppColors.accentDeep,
+        bodyFont: readerFonts[settings.bodyFontIndex],
+      ),
+    );
+  }
+
+  void _showCrossRefSheet() {
+    final vNum = _selectionVerseStart ?? 1;
+    final useGeez = Settings.of(context).useGeezNumbers;
+    final isAm = L10n.of(context) is AmStrings;
+    final bookName = isAm ? _entry.bookNameAm : _entry.bookNameEn;
+    final vDisplay = useGeez ? toGeez(vNum) : '$vNum';
+    final chDisplay = useGeez ? toGeez(_currentChapterNumber) : '$_currentChapterNumber';
+    final sourceRefLabel = '$bookName $chDisplay${isAm ? '፥' : ':'}$vDisplay';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CrossRefSheet(
+        sourceBook: _entry.id,
+        sourceChapter: _currentChapterNumber,
+        sourceVerse: vNum,
+        sourceReferenceLabel: sourceRefLabel,
+        onSelectCrossRef: (targetBook, targetChapter, targetVerse) =>
+            _jumpToCrossRef(
+              sourceLabel: sourceRefLabel,
+              targetBook: targetBook,
+              targetChapter: targetChapter,
+              targetVerse: targetVerse,
+            ),
+      ),
+    );
+  }
+
+  Future<void> _jumpToCrossRef({
+    required String sourceLabel,
+    required String targetBook,
+    required int targetChapter,
+    required int targetVerse,
+  }) async {
+    _navTrail.add((
+      entry: _entry,
+      chapter: _currentChapterNumber,
+      verse: _selectionVerseStart ?? 1,
+      label: sourceLabel,
+    ));
+
+    _deselect();
+    final repo = _repo ?? BibleRepositoryProvider.of(context);
+    final targetEntry = await repo.bookById(targetBook);
+    if (targetEntry == null || !mounted) return;
+
+    if (targetEntry.id == _entry.id) {
+      var pageIdx = _book?.chapters.indexWhere((c) => c.chapterNumber == targetChapter) ?? -1;
+      if (pageIdx < 0) pageIdx = targetChapter - 1;
+      _goToChapter(pageIdx);
+      // The verse, not just the chapter. A reference that lands the reader at
+      // the top of Isaiah 45 has not answered "and where in it?" — the whole
+      // point of following one is the line it points at.
+      setState(() {
+        _spotlightVerse = targetVerse;
+        _spotlightChapterPageIndex = pageIdx;
+      });
+      _autoSelectInitialVerse(pageIdx);
+    } else {
+      final book = await repo.loadBook(targetEntry);
+      if (!mounted) return;
+      var pageIdx = book.chapters.indexWhere((c) => c.chapterNumber == targetChapter);
+      if (pageIdx < 0) pageIdx = (targetChapter - 1).clamp(0, book.chapters.length - 1);
+
+      final previous = _pageCtrl;
+      setState(() {
+        _entry = targetEntry;
+        _book = book;
+        _loading = false;
+        _currentChapter = pageIdx;
+        _selectedKey = null;
+        _selectionEndKey = null;
+        _spotlightVerse = targetVerse;
+        _spotlightChapterPageIndex = pageIdx;
+        _pageCtrl = PageController(initialPage: pageIdx);
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+      _ensureOnPage(pageIdx);
+      _autoSelectInitialVerse(pageIdx);
+    }
+  }
+
+  Future<void> _popNavTrail() async {
+    if (_navTrail.isEmpty) return;
+    final last = _navTrail.removeLast();
+    _deselect();
+
+    final repo = _repo ?? BibleRepositoryProvider.of(context);
+    final targetEntry = await repo.findBook(last.entry.bookNumber);
+    if (targetEntry == null || !mounted) return;
+
+    if (targetEntry.id == _entry.id) {
+      var pageIdx = _book?.chapters.indexWhere((c) => c.chapterNumber == last.chapter) ?? -1;
+      if (pageIdx < 0) pageIdx = last.chapter - 1;
+      _goToChapter(pageIdx);
+      // Back to the verse that was left, not just its chapter — the trail
+      // records the verse for exactly this.
+      setState(() {
+        _spotlightVerse = last.verse;
+        _spotlightChapterPageIndex = pageIdx;
+      });
+      _autoSelectInitialVerse(pageIdx);
+    } else {
+      final book = await repo.loadBook(targetEntry);
+      if (!mounted) return;
+      var pageIdx = book.chapters.indexWhere((c) => c.chapterNumber == last.chapter);
+      if (pageIdx < 0) pageIdx = (last.chapter - 1).clamp(0, book.chapters.length - 1);
+
+      final previous = _pageCtrl;
+      setState(() {
+        _entry = targetEntry;
+        _book = book;
+        _loading = false;
+        _currentChapter = pageIdx;
+        _selectedKey = null;
+        _selectionEndKey = null;
+        _spotlightVerse = last.verse;
+        _spotlightChapterPageIndex = pageIdx;
+        _pageCtrl = PageController(initialPage: pageIdx);
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+      _ensureOnPage(pageIdx);
+      _autoSelectInitialVerse(pageIdx);
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final s = L10n.of(context);
     final settings = Settings.of(context);
+    _syncWakelock(settings.keepScreenOn);
     final useGeez = settings.useGeezNumbers;
     final isAm = s is AmStrings;
     final isDark = settings.isDarkReader;
@@ -760,21 +1249,44 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ReaderToolbar(
-                                entry: widget.entry,
+                                entry: _entry,
                                 currentChapter: _currentChapter,
+                                chapterNumber:
+                                    chapterReady ? _currentChapterNumber : null,
+                                onChapterTap: chapterReady
+                                    ? () => _showChapterPicker(context, settings)
+                                    : null,
+                                onGoToReference: () =>
+                                    _showReferenceJumpSheet(context, settings),
                                 useGeez: useGeez,
                                 isAmharic: isAm,
                                 bgColor: bgColor,
                                 textColor: textColor,
                                 mutedColor: mutedColor,
+                                accentColor: accentColor,
+                                sheetTheme: EditionSheetTheme(
+                                  surface: surfaceColor,
+                                  text: textColor,
+                                  muted: mutedColor,
+                                  accent: accentColor,
+                                  border: mutedColor.withValues(alpha: 0.25),
+                                ),
                                 s: s,
+                                onSearch: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        SearchTab(initialBook: _entry),
+                                  ),
+                                ),
                                 onBack: () => Navigator.pop(context),
                                 onFontSettings: () =>
                                     _showFontSheet(context, settings),
+                                onAudio: _playCurrentChapterAudio,
                               ),
                               if (chapterReady)
                                 ReaderBreadcrumb(
-                                  entry: widget.entry,
+                                  entry: _entry,
                                   chapter: _book!.chapters[_currentChapter],
                                   useGeez: useGeez,
                                   isAmharic: isAm,
@@ -782,6 +1294,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   bgColor: bgColor,
                                   accentColor: accentColor,
                                   mutedColor: mutedColor,
+                                  backTrailLabel: _navTrail.isNotEmpty ? _navTrail.last.label : null,
+                                  onBackTrailTap: _navTrail.isNotEmpty ? _popNavTrail : null,
                                 ),
                             ],
                           )
@@ -800,7 +1314,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                         : NotificationListener<ScrollNotification>(
                             onNotification: _onChapterScroll,
                             child: GestureDetector(
-                              onTap: _deselect,
+                              onTap: () {
+                                if (!settings.hasSeenReaderHint) {
+                                  Settings.update(
+                                    context,
+                                    settings.copyWith(hasSeenReaderHint: true),
+                                  );
+                                }
+                                _deselect();
+                              },
                               behavior: HitTestBehavior.translucent,
                               child: Stack(
                                 children: [
@@ -808,6 +1330,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                     controller: _pageCtrl,
                                     itemCount: _book!.chapters.length,
                                     onPageChanged: (i) {
+                                      _recordHistory();
                                       setState(() => _currentChapter = i);
                                       _setReaderChromeVisible(true);
                                       _persistReadingPosition();
@@ -817,7 +1340,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       final pageChapterNum =
                                           _book!.chapters[i].chapterNumber;
                                       final pageKey = (
-                                        bookId: widget.entry.bookNameEn,
+                                        bookId: _entry.id,
                                         chapter: pageChapterNum,
                                       );
                                       return Consumer(
@@ -831,19 +1354,65 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                   )
                                                   .value ??
                                               ChapterAnnotations.empty;
-                                          final pageCrossRefs =
-                                              pageRef
-                                                  .watch(
-                                                    chapterCrossReferenceVersesProvider((
-                                                      bookNumber:
-                                                          widget.entry.bookNumber,
-                                                      chapter: pageChapterNum,
-                                                    )),
-                                                  )
-                                                  .value ??
-                                              const <int>{};
+                                          final spotlightVerse =
+                                              (_spotlightVerse != null &&
+                                                      i ==
+                                                          _spotlightChapterPageIndex)
+                                                  ? _spotlightVerse
+                                                  : null;
+                                          final spotlightKey =
+                                              spotlightVerse == null
+                                                  ? null
+                                                  : _spotlightKey;
+
+                                          // Parallel wins over continuous
+                                          // reading: a paragraph of run-on
+                                          // verses has nothing to align a
+                                          // second translation against.
+                                          if (_parallelOn) {
+                                            return ParallelChapterPage(
+                                              entry: _entry,
+                                              chapter: _book!.chapters[i],
+                                              secondaryChapter:
+                                                  _secondaryChapterFor(
+                                                pageChapterNum,
+                                              ),
+                                              secondaryBookMissing:
+                                                  _secondaryBook == null,
+                                              primaryLabel: _primaryLabel,
+                                              secondaryLabel: _secondaryLabel,
+                                              isDark: isDark,
+                                              fontSize: settings.fontSize,
+                                              fontFamily: bodyFont,
+                                              titleFontFamily: titleFont,
+                                              textColor: textColor,
+                                              mutedColor: mutedColor,
+                                              accentColor: accentColor,
+                                              useGeez: useGeez,
+                                              isAmharic: isAm,
+                                              s: s,
+                                              isSelectedFn: _isSelected,
+                                              onVerseTap: _selectVerse,
+                                              verseKeyFn: _verseKey,
+                                              annotations: pageAnnotations,
+                                              lineHeight: settings.lineHeight,
+                                              marginScale: settings.marginScale,
+                                              textAlign: settings.textAlign,
+                                              onNoteTap: (key, ann) =>
+                                                  _showNoteView(key, ann),
+                                              onApparatusTap: (verse) =>
+                                                  _showApparatus(
+                                                verse,
+                                                pageChapterNum,
+                                              ),
+                                              spotlightVerseNum:
+                                                  spotlightVerse,
+                                              spotlightKey: spotlightKey,
+                                            );
+                                          }
+
                                           return ReaderChapterPage(
-                                            entry: widget.entry,
+                                            entry: _entry,
                                             chapter: _book!.chapters[i],
                                             isDark: isDark,
                                             fontSize: settings.fontSize,
@@ -858,30 +1427,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                             onVerseTap: _selectVerse,
                                             verseKeyFn: _verseKey,
                                             annotations: pageAnnotations,
-                                            crossRefVerseNums: pageCrossRefs,
-                                            onCrossRefTap: (vNum) =>
-                                                _showCrossReferenceSheet(
-                                                  context,
-                                                  settings,
-                                                  chapterNum: pageChapterNum,
-                                                  selectedVerse: vNum,
-                                                ),
                                             continuousReading:
                                                 settings.continuousReading,
+                                            lineHeight: settings.lineHeight,
+                                            marginScale: settings.marginScale,
+                                            textAlign: settings.textAlign,
                                             onNoteTap: (key, ann) =>
                                                 _showNoteView(key, ann),
-                                            spotlightVerseNum:
-                                                (widget.initialVerse != null &&
-                                                    i ==
-                                                        _spotlightChapterPageIndex)
-                                                ? widget.initialVerse
-                                                : null,
-                                            spotlightKey:
-                                                (widget.initialVerse != null &&
-                                                    i ==
-                                                        _spotlightChapterPageIndex)
-                                                ? _spotlightKey
-                                                : null,
+                                            onApparatusTap: (verse) =>
+                                                _showApparatus(
+                                              verse,
+                                              pageChapterNum,
+                                            ),
+                                            spotlightVerseNum: _audioVerseNum(i) ?? spotlightVerse,
+                                            spotlightKey: _audioVerseNum(i) != null
+                                                ? _audioScrollKey
+                                                : spotlightKey,
                                           );
                                         },
                                       );
@@ -889,7 +1450,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                   ),
                                   // Verse action bar
                                   AnimatedSlide(
-                                    offset: _selectedKey != null
+                                    offset: (_selectedKey != null && !_isAudioPlaying)
                                         ? Offset.zero
                                         : const Offset(0, 1),
                                     duration: const Duration(milliseconds: 220),
@@ -904,6 +1465,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                         isBookmarked: isBookmarked,
                                         highlightColor: highlightColor,
                                         hasNote: hasNote,
+                                        onCrossRef: _showCrossRefSheet,
                                         onBookmark: () {
                                           if (verseNum == null) return;
                                           final c = _riverpodContainer;
@@ -917,7 +1479,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                               .toggleBookmark(
                                                 verseStart: verseNum,
                                                 bookNumber:
-                                                    widget.entry.bookNumber,
+                                                    _entry.bookNumber,
                                                 verseCount:
                                                     _selectionVerseCount,
                                               );
@@ -932,10 +1494,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                           context,
                                           settings,
                                           annotations,
-                                        ),
-                                        onCrossRef: () => _showCrossReferenceSheet(
-                                          context,
-                                          settings,
                                         ),
                                         onCopy: () async {
                                           final text = _selectedVerseText(
@@ -976,11 +1534,79 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                       ),
                                     ),
                                   ),
+                                  // Contextual Reader Hint (One-off Coach Mark)
+                                  if (!settings.hasSeenReaderHint)
+                                    Positioned(
+                                      top: 16,
+                                      left: 20,
+                                      right: 20,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Settings.update(
+                                            context,
+                                            settings.copyWith(
+                                              hasSeenReaderHint: true,
+                                            ),
+                                          );
+                                        },
+                                        child: Material(
+                                          elevation: 6,
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                          color: isDark
+                                              ? readerDarkSurface
+                                              : Colors.white,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: accentColor.withValues(
+                                                    alpha: 0.5),
+                                                width: 1.2,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.touch_app_rounded,
+                                                  color: accentColor,
+                                                  size: 24,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Text(
+                                                    s.readerVerseActionHint,
+                                                    style: TextStyle(
+                                                      fontFamily: bodyFont,
+                                                      fontSize: 13,
+                                                      color: textColor,
+                                                      height: 1.4,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.close_rounded,
+                                                  color: mutedColor,
+                                                  size: 18,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
                           ),
                   ),
+                  _buildAudioMiniPlayer(settings),
                   if (!_loading && _book != null)
                     ChapterNavBar(
                       currentChapter: _currentChapter,
@@ -999,6 +1625,84 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildAudioMiniPlayer(AppSettings settings) {
+    return ValueListenableBuilder<AudioState>(
+      valueListenable: AudioService.instance.stateNotifier,
+      builder: (context, audioState, _) {
+        if (audioState == AudioState.stopped) return const SizedBox.shrink();
+        final isDark = settings.isDarkReader;
+        final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+        final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
+        final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            border: Border(
+              top: BorderSide(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              IconButton(
+                icon: audioState == AudioState.buffering
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: accentColor,
+                        ),
+                      )
+                    : Icon(
+                        audioState == AudioState.playing
+                            ? Icons.pause_circle_filled_rounded
+                            : Icons.play_circle_filled_rounded,
+                        size: 32,
+                        color: accentColor,
+                      ),
+                onPressed: audioState == AudioState.buffering
+                    ? null
+                    : () {
+                        if (audioState == AudioState.playing) {
+                          AudioService.instance.pause();
+                        } else {
+                          AudioService.instance.resume();
+                        }
+                      },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: AudioService.instance.currentTitleNotifier,
+                  builder: (context, title, _) {
+                    return Text(
+                      title ?? 'ድምፅ ንባብ',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.stop_rounded, color: Colors.redAccent),
+                onPressed: () => AudioService.instance.stop(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

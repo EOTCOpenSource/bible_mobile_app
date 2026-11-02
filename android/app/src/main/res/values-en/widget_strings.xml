@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English widget chrome. Every name in values/widget_strings.xml must also
+  appear here, or an English device falls back to the Amharic label for the
+  missing one.
+-->
+<resources>
+    <string name="widget_daily_verse_label">Daily Verse</string>
+    <string name="widget_daily_verse_description">See the verse of the day on your home screen.</string>
+    <string name="widget_daily_verse_badge">Verse of the day</string>
+
+    <string name="widget_continue_reading_label">Continue Reading</string>
+    <string name="widget_continue_reading_description">Pick up where you left off in one tap.</string>
+    <string name="widget_continue_label">Continue reading</string>
+
+    <string name="widget_streak_label">Reading Streak</string>
+    <string name="widget_streak_description">Keep track of your consecutive reading days.</string>
+
+    <string name="widget_open_app">Open the app</string>
+    <string name="widget_start_reading">Start reading</string>
+</resources>

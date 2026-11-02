@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The soft disc bleeding off the daily verse card's top-right corner, at the
+  same 5% white daily_verse_card.dart uses.
+
+  Shown only under the brand theme — on a white card it would be invisible and
+  on a dark one it would read as a smudge.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/widget_brand_disc" />
+</shape>

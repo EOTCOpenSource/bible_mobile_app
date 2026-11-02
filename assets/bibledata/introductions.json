@@ -1,0 +1,2865 @@
+{
+  "_comment": "Ethiopian Orthodox Tewahedo Bible 81-Book Introductions Asset. Keys are 1-based book numbers as strings. Primary language is Amharic (authorAm, periodAm, summaryAm, themesAm, titleAm) with English fallbacks (authorEn, periodEn, summaryEn, themesEn, titleEn). Content presents orthodox theology with 100-200 word summaries per book.",
+  "1": {
+    "authorAm": "ሙሴ",
+    "authorEn": "Moses",
+    "periodAm": "~1450–1410 ዓ.ዓ.",
+    "periodEn": "~1450–1410 BC",
+    "summaryAm": "ኦሪት ዘፍጥረት የመጽሐፍ ቅዱስ የመጀመሪያው መጽሐፍ ሲሆን የዓለምን፣ የሰውን ልጅ እና የእስራኤልን ሕዝብ አመጣጥ የሚተርክ ታላቅ የመለኮት መግለጫ ነው። እግዚአብሔር አምላክ ፍጥረታትን ሁሉ በቃሉ እንደ ፈጠረ፣ ሰውን በምስሉና በምሳሌው እንደ ሠራ፣ እንዲሁም የሰው ልጅ በትእዛዝ ማፍረስ ምክንያት ወደ ኃጢአትና ወደ ውድቀት እንደ ወደቀ ያብራራል። የመጽሐፉ ሁለተኛ ክፍል ደግሞ አባቶች የተባሉትን የአብርሃምን፣ የይስሐቅን፣ የያዕቆብንና የዮሴፍን ታሪክና ከእግዚአብሔር ጋር ያደረጉትን ቃል ኪዳን በሰፊው ያቀርባል። በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ትምህርት መሠረት ኦሪት ዘፍጥረት የቤተ ክርስቲያን ምስጢራትና የመዳን ታሪክ መሠረት ነው፤ አዳም የተሰጠው የመዳን ተስፋ በክርስቶስ አካል እንደ ተፈጸመ የሚያሳይ የትንቢትና የጥላ መጽሐፍ ነው።",
+    "summaryEn": "The Book of Genesis is the foundational book of Holy Scripture, detailing the creation of the universe, the origins of humanity, and the call of God's covenant people. Written by the Prophet Moses, it presents the primary divine account of Creation, the Fall of Man, the Universal Flood, and the faith journey of the Patriarchs: Abraham, Isaac, Jacob, and Joseph. In Ethiopian Orthodox Tewahedo tradition, Genesis lays the theological foundation for cosmic divine order, human dignity created in the image of God, and the foreshadowing of salvation fulfilled in Jesus Christ.",
+    "themesAm": [
+      "ፍጥረት",
+      "ቃል ኪዳን",
+      "እምነት",
+      "መዳን"
+    ],
+    "themesEn": [
+      "Creation",
+      "Covenant",
+      "Faith",
+      "Salvation"
+    ],
+    "outline": [
+      {
+        "titleAm": "የዓለም ፍጥረትና የመጀመሪያዎቹ አባቶች",
+        "titleEn": "Creation and Primeval History",
+        "fromChapter": 1,
+        "toChapter": 11
+      },
+      {
+        "titleAm": "የአብርሃም ታሪክና ቃል ኪዳን",
+        "titleEn": "Abraham and the Covenant",
+        "fromChapter": 12,
+        "toChapter": 25
+      },
+      {
+        "titleAm": "የይስሐቅና የያዕቆብ ታሪክ",
+        "titleEn": "Isaac and Jacob",
+        "fromChapter": 26,
+        "toChapter": 36
+      },
+      {
+        "titleAm": "የዮሴፍ ታሪክና ወደ ግብፅ መውረድ",
+        "titleEn": "Joseph and Israel in Egypt",
+        "fromChapter": 37,
+        "toChapter": 50
+      }
+    ]
+  },
+  "2": {
+    "authorAm": "ሙሴ",
+    "authorEn": "Moses",
+    "periodAm": "~1450–1410 ዓ.ዓ.",
+    "periodEn": "~1450–1410 BC",
+    "summaryAm": "ኦሪት ዘጸአት የእስራኤል ሕዝብ ከግብፅ የባርነት ቤት የወጡበትንና እግዚአብሔር በታላቅ ክንድና በተአምራት ያዳናቸውን ታሪክ ያበስራል። ሊቀ ነቢያት ሙሴ ሕዝቡን በማራት ከቀይ ባሕር ማዶ ከተሻገሩ በኋላ በሲና ተራራ ላይ አሥርቱ ቃላትንና ሕጉን ከእግዚአብሔር ተቀብለዋል። መጽሐፉ የደብተራ ማኅደርን (የመገናኛው ድንኳን) አሠራር፣ የካህናቱን አገልግሎትና የእግዚአብሔር ክብር ድንኳኑን እንደ ሞላው በስፋት ያብራራል። በቤተ ክርስቲያን ትምህርት ዘጸአት የነጻነትና የጥምቀት ምሳሌ ሲሆን፣ የፋሲካው ጠበብት በግ ደግሞ የክርስቶስ ቤዛነት ማሳያ ነው።",
+    "summaryEn": "The Book of Exodus records Israel's miraculous liberation from Egyptian bondage, their journey through the Red Sea, and the establishment of the Sinai Covenant. God calls the Prophet Moses to lead the people and gives the Ten Commandments alongside ceremonial worship laws. Exodus describes the construction of the Tabernacle and the indwelling of divine glory. In EOTC tradition, Exodus is a prototype of spiritual redemption through Christ, where the Passover Lamb points directly to the Holy Eucharist.",
+    "themesAm": [
+      "ነጻነት",
+      "ሕግ",
+      "የመገናኛው ድንኳን",
+      "ቃል ኪዳን"
+    ],
+    "themesEn": [
+      "Redemption",
+      "Law",
+      "Tabernacle",
+      "Covenant"
+    ],
+    "outline": [
+      {
+        "titleAm": "ከግብፅ ባርነት መውጣትና የቀይ ባሕር መከፈል",
+        "titleEn": "Deliverance from Egypt",
+        "fromChapter": 1,
+        "toChapter": 18
+      },
+      {
+        "titleAm": "በሲና ተራራ የተሰጠው ሕግና ቃል ኪዳን",
+        "titleEn": "The Law at Mount Sinai",
+        "fromChapter": 19,
+        "toChapter": 24
+      },
+      {
+        "titleAm": "የመገናኛው ድንኳን አሠራርና ትእዛዝ",
+        "titleEn": "Instructions for the Tabernacle",
+        "fromChapter": 25,
+        "toChapter": 31
+      },
+      {
+        "titleAm": "የወርቁ ጥጃ ኃጢአትና የመገናኛው ድንኳን መተከል",
+        "titleEn": "The Golden Calf & Tabernacle Built",
+        "fromChapter": 32,
+        "toChapter": 40
+      }
+    ]
+  },
+  "3": {
+    "authorAm": "ሙሴ",
+    "authorEn": "Moses",
+    "periodAm": "~1450–1410 ዓ.ዓ.",
+    "periodEn": "~1450–1410 BC",
+    "summaryAm": "ኦሪት ዘሌዋውያን ስለ ቅድስና፣ መስዋዕትና የካህናት አገልግሎት የሚያስተምር መለኮታዊ መጽሐፍ ነው። እግዚአብሔር ቅዱስ እንደ ሆነ ሁሉ ሕዝቡም በኑሯቸው፣ በአመጋገባቸውና በአምልኮታቸው ቅዱሳን እንዲሆኑ ያዝዛል። በመጽሐፉ ውስጥ የተለያዩ የመስዋዕት ዓይነቶች (የሚቃጠል፣ የእህል፣ የምስጋና፣ የኃጢአትና የበደል መስዋዕት) እና የስርየት ቀን ሥርዓት ተዘርዝረዋል። በቤተ ክርስቲያን አስተምህሮ የሌዋውያን መስዋዕት የክርስቶስ አንድ ጊዜ የከፈለው ፍጹም መስዋዕትነት ጥላና ምሳሌ ነው።",
+    "summaryEn": "The Book of Leviticus focuses on divine holiness, sacrificial worship, and the Levitical priesthood. God instructs Israel to live holy lives worthy of His holy presence. Leviticus outlines the offering systems and the solemn Day of Atonement (Yom Kippur). In Orthodox theology, Leviticus unveils the sanctity of God's presence and foreshadows the ultimate sacrificial offering of Jesus Christ on the Cross.",
+    "themesAm": [
+      "ቅድስና",
+      "መስዋዕት",
+      "ስርየት",
+      "ክህነት"
+    ],
+    "themesEn": [
+      "Holiness",
+      "Sacrifice",
+      "Atonement",
+      "Priesthood"
+    ],
+    "outline": [
+      {
+        "titleAm": "የመስዋዕት ዓይነቶችና ሥርዓታቸው",
+        "titleEn": "Laws of Sacrifices",
+        "fromChapter": 1,
+        "toChapter": 7
+      },
+      {
+        "titleAm": "የአሮንና የመስዋዕት ካህናት መቀደስ",
+        "titleEn": "Ordination of Priests",
+        "fromChapter": 8,
+        "toChapter": 10
+      },
+      {
+        "titleAm": "የንጽሕናና የስርየት ቀን ሥርዓት",
+        "titleEn": "Laws of Cleansing & Day of Atonement",
+        "fromChapter": 11,
+        "toChapter": 16
+      },
+      {
+        "titleAm": "የቅድስና ሕግና በዓላት",
+        "titleEn": "The Holiness Code & Feasts",
+        "fromChapter": 17,
+        "toChapter": 27
+      }
+    ]
+  },
+  "4": {
+    "authorAm": "ሙሴ",
+    "authorEn": "Moses",
+    "periodAm": "~1450–1410 ዓ.ዓ.",
+    "periodEn": "~1450–1410 BC",
+    "summaryAm": "ኦሪት ዘኊልቊ እስራኤላውያን በሲና በረሃ ያደረጉትን የ40 ዓመት ጉዞና የእግዚአብሔርን ታማኝነት የሚተርክ መጽሐፍ ነው። መጽሐፉ የሕዝቡን ቆጠራ፣ የነገዶቹን አደረጃጀት፣ እና በበረሃ የነበረውን ማጉረምረምና አለመታዘዝ ያሳያል። እግዚአብሔር ባልታመኑት ትውልድ ላይ ቢፈርድም፣ አዲሱን ትውልድ ወደ ተስፋይቱ ምድር ለመምራት የታመነ አምላክ መሆኑን ያስመሰክራል። በበረሃ የተሰቀለው የናስ እባብ የክርስቶስ መስቀልና የመዳን ምሳሌ ተደርጎ ይተረጎማል።",
+    "summaryEn": "The Book of Numbers chronicles the forty-year wilderness wandering of Israel from Mount Sinai to the borders of Canaan. It records two major censuses of the tribes, organizational instructions for encampment, and the tragic consequences of rebellion and unbelief. Despite human failure, God faithfully preserves a new generation. The Bronze Serpent lifted up in the wilderness serves as a key Christological typology for Christ's crucifixion.",
+    "themesAm": [
+      "ጉዞ",
+      "ታማኝነት",
+      "መቀጣትና ምሕረት",
+      "የተስፋ ምድር"
+    ],
+    "themesEn": [
+      "Wilderness Journey",
+      "God's Faithfulness",
+      "Judgment & Mercy",
+      "Promised Land"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሕዝቡ ቆጠራና የሲና ዝግጅት",
+        "titleEn": "Census and Preparation at Sinai",
+        "fromChapter": 1,
+        "toChapter": 10
+      },
+      {
+        "titleAm": "የበረሃ ጉዞና የሕዝቡ ማጉረምረም",
+        "titleEn": "Wilderness Wandering & Rebellion",
+        "fromChapter": 11,
+        "toChapter": 25
+      },
+      {
+        "titleAm": "ሁለተኛው ቆጠራና ወደ ተስፋይቱ ምድር መቃረብ",
+        "titleEn": "Second Census & Canaan Preparation",
+        "fromChapter": 26,
+        "toChapter": 36
+      }
+    ]
+  },
+  "5": {
+    "authorAm": "ሙሴ",
+    "authorEn": "Moses",
+    "periodAm": "~1450–1410 ዓ.ዓ.",
+    "periodEn": "~1450–1410 BC",
+    "summaryAm": "ኦሪት ዘዳግም ሙሴ ከመሞቱ በፊት በሞዓብ ሜዳ ለሁለተኛው ትውልድ የተናገራቸው የመሰናበቻ ስብከቶችና የሕግ ድግግሞሽ ነው። ሙሴ የእግዚአብሔርን ታላቅ ውለታ ያስታውሳል፤ ሕጉን፣ ትእዛዛቱንና አሥርቱ ቃላትን ድጋሚ ያብራራል። የታዛዥነት በረከትንና አለመታዘዝ የሚያስከትለውን መርገም በግልጽ ያቀርባል። መጽሐፉ 'ስማ እስራኤል' (ሽማ) የሚለውን ታላቅ የእምነት መግለጫ ይዟል፤ እግዚአብሔርን በፍጹም ልብ መውደድ እንደሚገባ ያሳስባል።",
+    "summaryEn": "The Book of Deuteronomy contains the final sermon series and prophetic testaments of Moses delivered on the plains of Moab before entering Canaan. Moses reviews Israel's history, restates the Law, and urges wholehearted love and faithfulness to the one true God ('Shema Israel'). Deuteronomy sets forth the choices between life and death, blessing and curse, leaving a legacy of covenant loyalty for future generations.",
+    "themesAm": [
+      "ቃል ኪዳን",
+      "ፍቅርና ታዛዥነት",
+      "በረከትና መርገም",
+      "ትዝታ"
+    ],
+    "themesEn": [
+      "Covenant Renewal",
+      "Love & Obedience",
+      "Blessing & Curse",
+      "Remembrance"
+    ],
+    "outline": [
+      {
+        "titleAm": "የበረሃ ታሪክ ትዝታና የሙሴ መግቢያ",
+        "titleEn": "Review of Israel's Journey",
+        "fromChapter": 1,
+        "toChapter": 4
+      },
+      {
+        "titleAm": "አሥርቱ ቃላትና የሕጉ ማብራሪያ",
+        "titleEn": "The Ten Commandments & Exposition",
+        "fromChapter": 5,
+        "toChapter": 26
+      },
+      {
+        "titleAm": "የቃል ኪዳኑ በረከትና መርገም",
+        "titleEn": "Covenant Blessings & Curses",
+        "fromChapter": 27,
+        "toChapter": 30
+      },
+      {
+        "titleAm": "የሙሴ የመጨረሻ ቃላትና ሞቱ",
+        "titleEn": "Final Words & Death of Moses",
+        "fromChapter": 31,
+        "toChapter": 34
+      }
+    ]
+  },
+  "6": {
+    "authorAm": "ኢያሱ ወልደ ነዌ",
+    "authorEn": "Joshua son of Nun",
+    "periodAm": "~1400–1370 ዓ.ዓ.",
+    "periodEn": "~1400–1370 BC",
+    "summaryAm": "መጽሐፈ ኢያሱ የሙሴ ተኪ የሆነው ኢያሱ ወልደ ነዌ እስራኤልን መርቶ የዮርዳኖስን ወንዝ በመሻገር የተስፋይቱን ምድር ከነዓንን እንዴት እንደ ወረሱና ለነገዶቹ እንደ ተካፈሉ ያበስራል። የመጽሐፉ ዋና መልእክት የእግዚአብሔር ታማኝነትና የሕዝቡ ታዛዥነት ድልን እንደሚሰጥ ማሳየት ነው።",
+    "summaryEn": "The Book of Joshua records Israel's entry into the Promised Land under Joshua's leadership, the miraculous crossing of the Jordan, the fall of Jericho, and the division of Canaan among the twelve tribes.",
+    "themesAm": [
+      "ድል",
+      "የተስፋ ምድር",
+      "እምነት",
+      "ታማኝነት"
+    ],
+    "themesEn": [
+      "Conquest",
+      "Promised Land",
+      "Faith",
+      "Divine Faithfulness"
+    ],
+    "outline": [
+      {
+        "titleAm": "ወደ ከነዓን መግባትና የኢያሪኮ ውድቀት",
+        "titleEn": "Entry into Canaan & Jericho",
+        "fromChapter": 1,
+        "toChapter": 12
+      },
+      {
+        "titleAm": "የምድሪቱ ክፍፍልና የመጨረሻ ቃል",
+        "titleEn": "Land Division & Joshua's Farewell",
+        "fromChapter": 13,
+        "toChapter": 24
+      }
+    ]
+  },
+  "7": {
+    "authorAm": "ሳሙኤል",
+    "authorEn": "Samuel",
+    "periodAm": "~1050–1000 ዓ.ዓ.",
+    "periodEn": "~1050–1000 BC",
+    "summaryAm": "መጽሐፈ መሳፍንት ከኢያሱ ሞት በኋላ እስከ ንጉሥ ሳኦል ዘመን የነበረውን የእስራኤልን የ300 ዓመታት ውጣ ውረድ ታሪክ ይዘግባል። ሕዝቡ ወደ ጣዖት አምልኮ ሲወድቁ ጠላቶች ያሸንፏቸዋል፤ ሲያለቅሱና ሲመለሱ እግዚአብሔር መሳፍንትን (እንደ ጌዴዎን፣ ዮፍታሔ፣ ሶምሶን፣ ዲቦራ) አስነስቶ ያድናቸዋል።",
+    "summaryEn": "The Book of Judges recounts the turbulent period between Joshua and the monarchy, highlighting a repeating cycle of sin, oppression, repentance, and deliverance through God-raised judges.",
+    "themesAm": [
+      "የኃጢአት ዑደት",
+      "ምሕረት",
+      "የእግዚአብሔር አዳኝነት",
+      "መሳፍንት"
+    ],
+    "themesEn": [
+      "Cycle of Sin",
+      "Divine Mercy",
+      "Deliverance",
+      "Judges"
+    ],
+    "outline": [
+      {
+        "titleAm": "የመሳፍንት ዘመን መግቢያ",
+        "titleEn": "Introduction & Israel's Failure",
+        "fromChapter": 1,
+        "toChapter": 3
+      },
+      {
+        "titleAm": "የታላላቆቹ መሳፍንት ታሪክ",
+        "titleEn": "Stories of the Judges",
+        "fromChapter": 4,
+        "toChapter": 16
+      },
+      {
+        "titleAm": "የሃይማኖትና የሞራል ውድቀት",
+        "titleEn": "Religious & Moral Decay",
+        "fromChapter": 17,
+        "toChapter": 21
+      }
+    ]
+  },
+  "8": {
+    "authorAm": "ሳሙኤል",
+    "authorEn": "Samuel",
+    "periodAm": "~1010 ዓ.ዓ.",
+    "periodEn": "~1010 BC",
+    "summaryAm": "መጽሐፈ ሩት በረሃብ ዘመን ከሞዓብ ምድር ወደ ቤተልሔም የተመለሰችውን ታማኝዋን ሞዓባዊት ሩትንና አማቷን ኑኃሚንን ታሪክ ያቀርባል። ሩት ከአማቷ አምላክና ሕዝብ ጋር በመጣበቋ ቦዔዝ አግባት፤ የንጉሥ ዳዊትና የጌታችን የኢየሱስ ክርስቶስ ቅድመ አያት የመሆን ታላቅ ክብር አግኝታለች።",
+    "summaryEn": "The Book of Ruth is a beautiful story of devotion, redemption, and loyalty set during the period of the Judges. Ruth the Moabitess chooses the God of Israel, marrying Boaz and entering the lineage of King David and Jesus Christ.",
+    "themesAm": [
+      "ፍቅርና ታማኝነት",
+      "ቤዛነት",
+      "የእግዚአብሔር ጥበቃ",
+      "ቅድመ አያት"
+    ],
+    "themesEn": [
+      "Loyalty",
+      "Redemption",
+      "Providence",
+      "Lineage of Christ"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሩትና የኑኃሚን ጉዞ ወደ ቤተልሔም",
+        "titleEn": "Ruth & Naomi Return to Bethlehem",
+        "fromChapter": 1,
+        "toChapter": 2
+      },
+      {
+        "titleAm": "ከቦዔዝ ጋር መገናኘትና ቤዛነት",
+        "titleEn": "Boaz Redemption & Marriage",
+        "fromChapter": 3,
+        "toChapter": 4
+      }
+    ]
+  },
+  "9": {
+    "authorAm": "ሳሙኤል፣ ጋድና ናታን",
+    "authorEn": "Samuel, Gad & Nathan",
+    "periodAm": "~930 ዓ.ዓ.",
+    "periodEn": "~930 BC",
+    "summaryAm": "መጽሐፈ ሳሙኤል ቀዳማዊ ከመሳፍንት ዘመን ወደ ንጉሥ ሥርዓት መሸጋገሩን ይተርካል። የነቢዩ ሳሙኤል ልደትና ጥሪ፣ የመጀመሪያው ንጉሥ የሳኦል መንገሥና አለመታዘዝ፣ እንዲሁም ዳዊት በሳሙኤል ተቀብቶ በእግዚአብሔር ኃይል ጎልያድን ማሸነፉና በሳኦል መሳደዱ ተጽፏል።",
+    "summaryEn": "1 Samuel depicts the transition from judges to monarchy in Israel. It covers the life of Samuel the Prophet, the tragic reign of King Saul, and the anointed rise of David who defeats Goliath.",
+    "themesAm": [
+      "ንግሥና",
+      "ቀባት",
+      "ታዛዥነት",
+      "የዳዊት መመረጥ"
+    ],
+    "themesEn": [
+      "Monarchy",
+      "Anointing",
+      "Obedience",
+      "Rise of David"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሳሙኤል ታሪክና ጥሪ",
+        "titleEn": "Life and Call of Samuel",
+        "fromChapter": 1,
+        "toChapter": 7
+      },
+      {
+        "titleAm": "የሳኦል ንግሥናና ውድቀት",
+        "titleEn": "Reign and Fall of Saul",
+        "fromChapter": 8,
+        "toChapter": 15
+      },
+      {
+        "titleAm": "የዳዊት መመረጥና ስደት",
+        "titleEn": "David's Anointing & Flight",
+        "fromChapter": 16,
+        "toChapter": 31
+      }
+    ]
+  },
+  "10": {
+    "authorAm": "ጋድና ናታን",
+    "authorEn": "Gad & Nathan",
+    "periodAm": "~930 ዓ.ዓ.",
+    "periodEn": "~930 BC",
+    "summaryAm": "መጽሐፈ ሳሙኤል ካልዕ ንጉሥ ዳዊት በመላው እስራኤል ላይ የነገሠበትንና ኢየሩሳሌምን የመንግሥቱ መዲና ያደረገበትን ታላቅ ዘመን ያቀርባል። እግዚአብሔር ለዳዊት የዘላለም መንግሥት ቃል ኪዳን ገብቶለታል፤ የዳዊት ድክመትና ኃጢአት እንዲሁም ንስሐውና የእግዚአብሔር ምሕረት በግልጽ ተስሏል።",
+    "summaryEn": "2 Samuel chronicles the reign of King David over united Israel, the establishment of Jerusalem as the royal capital, the Davidic Covenant, and David's deep repentance following his personal sin.",
+    "themesAm": [
+      "የዳዊት መንግሥት",
+      "ቃል ኪዳን",
+      "ንስሐ",
+      "ምሕረት"
+    ],
+    "themesEn": [
+      "Davidic Kingdom",
+      "Covenant",
+      "Repentance",
+      "Divine Mercy"
+    ],
+    "outline": [
+      {
+        "titleAm": "ዳዊት በይሁዳና በእስራኤል መንገሡ",
+        "titleEn": "David's Reign over Israel",
+        "fromChapter": 1,
+        "toChapter": 10
+      },
+      {
+        "titleAm": "የዳዊት ኃጢአት፣ ንስሐና የቤተሰብ መከራ",
+        "titleEn": "David's Sin, Repentance & Trials",
+        "fromChapter": 11,
+        "toChapter": 24
+      }
+    ]
+  },
+  "11": {
+    "authorAm": "ኤርምያስ",
+    "authorEn": "Jeremiah",
+    "periodAm": "~560 ዓ.ዓ.",
+    "periodEn": "~560 BC",
+    "summaryAm": "መጽሐፈ ነገሥት ቀዳማዊ በንጉሥ ሰሎሞን ዘመን የነበረውን የመንግሥት ጥበብና የታላቁ ቤተ መቅደስ መታነጽ ያበስራል። ከሰሎሞን ሞት በኋላ መንግሥቱ ለሁለት (እስራኤል በሰሜን፣ ይሁዳ በደቡብ) መከፈሉንና የነቢዩ ኤልያስን ታላቅ የተአምራት አገልግሎት ያቀርባል።",
+    "summaryEn": "1 Kings details the glory of King Solomon, the building of the First Temple in Jerusalem, the tragic division of the kingdom into Israel and Judah, and the powerful ministry of Elijah the Prophet.",
+    "themesAm": [
+      "ቤተ መቅደስ",
+      "ጥበብ",
+      "የመንግሥት መከፈል",
+      "የኤልያስ አገልግሎት"
+    ],
+    "themesEn": [
+      "Temple",
+      "Wisdom",
+      "Divided Kingdom",
+      "Ministry of Elijah"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሰሎሞን ንግሥናና የቤተ መቅደሱ ሕንፃ",
+        "titleEn": "Solomon's Reign & Temple",
+        "fromChapter": 1,
+        "toChapter": 11
+      },
+      {
+        "titleAm": "የመንግሥቱ መከፈልና የሰሜን/ደቡብ ነገሥታት",
+        "titleEn": "Divided Kingdom",
+        "fromChapter": 12,
+        "toChapter": 16
+      },
+      {
+        "titleAm": "የነቢዩ ኤልያስ አገልግሎት",
+        "titleEn": "Ministry of Elijah",
+        "fromChapter": 17,
+        "toChapter": 22
+      }
+    ]
+  },
+  "12": {
+    "authorAm": "ኤርምያስ",
+    "authorEn": "Jeremiah",
+    "periodAm": "~560 ዓ.ዓ.",
+    "periodEn": "~560 BC",
+    "summaryAm": "መጽሐፈ ነገሥት ካልዕ የነቢዩ ኤልሳዕን አገልግሎትና የሁለቱን መንግሥታት የውድቀት ታሪክ ይዘግባል። ሰሜኑ የእስራኤል መንግሥት በአሦራውያን (በ722 ዓ.ዓ.)፣ ደቡቡ የይሁዳ መንግሥት ደግሞ በባቢሎናውያን (በ586 ዓ.ዓ.) ተማርከው ቤተ መቅደሱ መፍረሱንና ሕዝቡ ለምርኮ መዳረጉን ያሳያል።",
+    "summaryEn": "2 Kings continues the narrative of the divided kingdoms, detailing Elisha's miracles, the spiritual decline of both nations, the fall of Samaria to Assyria, and the destruction of Jerusalem and Exile to Babylon.",
+    "themesAm": [
+      "ምርኮ",
+      "የነቢያት ተግሣፅ",
+      "የቤተ መቅደስ ውድቀት",
+      "ንስሐ"
+    ],
+    "themesEn": [
+      "Exile",
+      "Prophetic Warning",
+      "Fall of Jerusalem",
+      "Repentance"
+    ],
+    "outline": [
+      {
+        "titleAm": "የነቢዩ ኤልሳዕ አገልግሎትና ተአምራት",
+        "titleEn": "Ministry of Elisha",
+        "fromChapter": 1,
+        "toChapter": 13
+      },
+      {
+        "titleAm": "የሰሜኑ መንግሥት ውድቀትና የአሦር ምርኮ",
+        "titleEn": "Fall of Israel to Assyria",
+        "fromChapter": 14,
+        "toChapter": 17
+      },
+      {
+        "titleAm": "የይሁዳ ነገሥታት፣ የባቢሎን ምርኮና ውድቀት",
+        "titleEn": "Fall of Judah & Babylonian Exile",
+        "fromChapter": 18,
+        "toChapter": 25
+      }
+    ]
+  },
+  "13": {
+    "authorAm": "ዕዝራ",
+    "authorEn": "Ezra",
+    "periodAm": "~450 ዓ.ዓ.",
+    "periodEn": "~450 BC",
+    "summaryAm": "መጽሐፈ ዜና መዋዕል ቀዳማዊ ከአዳም ጀምሮ ያለውን የትውልድ ሐረግና የንጉሥ ዳዊት ታሪክ መንፈሳዊ ማዕከል በማድረግ ያቀርባል። መጽሐፉ ዳዊት ለአምልኮ፣ ለሌዋውያን መዝሙርና ለቤተ መቅደስ ሕንፃ ያደረገውን ታላቅ ዝግጅት ያጎላል።",
+    "summaryEn": "1 Chronicles provides a priestly and spiritual retell of Israel's history, focusing on genealogical lineages from Adam to David, and David's extensive preparations for Temple worship and liturgy.",
+    "themesAm": [
+      "ትውልድ ሐረግ",
+      "አምልኮ",
+      "የዳዊት ዝግጅት",
+      "ቅድስና"
+    ],
+    "themesEn": [
+      "Genealogy",
+      "Worship",
+      "David's Preparation",
+      "Sanctuary"
+    ],
+    "outline": [
+      {
+        "titleAm": "ከአዳም እስከ ዳዊት የትውልድ ሐረግ",
+        "titleEn": "Genealogies from Adam",
+        "fromChapter": 1,
+        "toChapter": 9
+      },
+      {
+        "titleAm": "የዳዊት ንግሥናና የቤተ መቅደስ ዝግጅት",
+        "titleEn": "David's Reign & Worship Setup",
+        "fromChapter": 10,
+        "toChapter": 29
+      }
+    ]
+  },
+  "14": {
+    "authorAm": "ዕዝራ",
+    "authorEn": "Ezra",
+    "periodAm": "~450 ዓ.ዓ.",
+    "periodEn": "~450 BC",
+    "summaryAm": "መጽሐፈ ዜና መዋዕል ካልዕ የሰሎሞን ቤተ መቅደስ ምስረታና የይሁዳ ነገሥታትን መንፈሳዊ ታሪክ ያቀርባል። እንደ ሕዝቅያስና ኢዮስያስ ያሉ ደጋግ ነገሥታት ያደረጉትን ሃይማኖታዊ ተሐድሶ ያጎላል፤ በመጨረሻም የፋርስ ንጉሥ ቂሮስ ሕዝቡ ተመልሰው ቤተ መቅደስ እንዲሠሩ ያወጣውን አዋጅ ያበስራል።",
+    "summaryEn": "2 Chronicles focuses on King Solomon's construction of the Temple and the spiritual history of Judah's kings, highlighting holy reforms under Hezekiah and Josiah, ending with Cyrus' decree of return.",
+    "themesAm": [
+      "ቤተ መቅደስ",
+      "ተሐድሶ",
+      "ጸሎት",
+      "የምርኮ መልስ"
+    ],
+    "themesEn": [
+      "Temple Restoration",
+      "Spiritual Reform",
+      "Prayer",
+      "Return from Exile"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሰሎሞን ንግሥናና የቤተ መቅደሱ ሕንፃ",
+        "titleEn": "Solomon & Temple Construction",
+        "fromChapter": 1,
+        "toChapter": 9
+      },
+      {
+        "titleAm": "የይሁዳ ነገሥታትና የሃይማኖት ተሐድሶ",
+        "titleEn": "Kings of Judah & Reforms",
+        "fromChapter": 10,
+        "toChapter": 35
+      },
+      {
+        "titleAm": "የባቢሎን ምርኮና የቂሮስ አዋጅ",
+        "titleEn": "Exile & Decree of Cyrus",
+        "fromChapter": 36,
+        "toChapter": 36
+      }
+    ]
+  },
+  "15": {
+    "authorAm": "ዕዝራ",
+    "authorEn": "Ezra",
+    "periodAm": "~440 ዓ.ዓ.",
+    "periodEn": "~440 BC",
+    "summaryAm": "መጽሐፈ ዕዝራ አይሁድ ከባቢሎን ምርኮ ተመልሰው በዘሩባቤል መሪነት ሁለተኛውን ቤተ መቅደስ እንደገና ያነጹበትንና በዕዝራ መሪነት ኦሪትን የተማሩበትን ታሪክ ያቀርባል።",
+    "summaryEn": "The Book of Ezra details the return of Jewish exiles from Babylon under Zerubbabel to rebuild the Temple, and Ezra's mission to restore the Law of Moses and spiritual purity.",
+    "themesAm": [
+      "ምርኮ መልስ",
+      "የቤተ መቅደስ ሕንፃ",
+      "የሕጉ መታደስ",
+      "ቅድስና"
+    ],
+    "themesEn": [
+      "Return from Exile",
+      "Temple Rebuilding",
+      "Restoration of Law",
+      "Purity"
+    ],
+    "outline": [
+      {
+        "titleAm": "የመጀመሪያው ተመላሽና የቤተ መቅደሱ መታነጽ",
+        "titleEn": "First Return & Temple Built",
+        "fromChapter": 1,
+        "toChapter": 6
+      },
+      {
+        "titleAm": "የዕዝራ አመፃፅና የሕዝቡ ንስሐ",
+        "titleEn": "Ezra's Return & Renewal",
+        "fromChapter": 7,
+        "toChapter": 10
+      }
+    ]
+  },
+  "16": {
+    "authorAm": "ነህምያ",
+    "authorEn": "Nehemiah",
+    "periodAm": "~430 ዓ.ዓ.",
+    "periodEn": "~430 BC",
+    "summaryAm": "መጽሐፈ ነህምያ የፋርስ ንጉሥ አጠረክስስ ጠጅ አላፊ የነበረው ነህምያ ወደ ኢየሩሳሌም ተመልሶ የተናደውን የከተማዋን ቅጥር በ52 ቀን ውስጥ እንደገና ያነጸበትንና የሕዝቡን ማኅበራዊና ሃይማኖታዊ ሕይወት ያደሰበትን ታሪክ ያቀርባል።",
+    "summaryEn": "The Book of Nehemiah chronicles Nehemiah's leadership in rebuilding Jerusalem's ruined walls in 52 days amidst fierce opposition, instituting social justice and religious covenant renewal.",
+    "themesAm": [
+      "ቅጥር መሥራት",
+      "መሪነት",
+      "ጸሎት",
+      "ተሐድሶ"
+    ],
+    "themesEn": [
+      "Rebuilding Walls",
+      "Godly Leadership",
+      "Prayer",
+      "Covenant Renewal"
+    ],
+    "outline": [
+      {
+        "titleAm": "የቅጥሩ መታነጽና የጠላቶች ተቃውሞ",
+        "titleEn": "Rebuilding Jerusalem Walls",
+        "fromChapter": 1,
+        "toChapter": 7
+      },
+      {
+        "titleAm": "የሕጉ መንበብና የሕዝቡ ቃል ኪዳን",
+        "titleEn": "Reading the Law & Covenant",
+        "fromChapter": 8,
+        "toChapter": 13
+      }
+    ]
+  },
+  "17": {
+    "authorAm": "መርዶክዮስ",
+    "authorEn": "Mordecai",
+    "periodAm": "~460 ዓ.ዓ.",
+    "periodEn": "~460 BC",
+    "summaryAm": "መጽሐፈ አስቴር በፋርስ ግዛት በስደት ይኖሩ የነበሩት አይሁድ በሐማ ሴራ ከጥፋት ሊደመሰሱ ሲሉ እግዚአብሔር በንግሥት አስቴርና በመርዶክዮስ አማካይነት ያደናቀፈበትንና ያዳናቸውን ታሪክ ያበስራል። ለዚህም መታሰቢያ የፑሪም (ፑር) በዓል ተሠርቷል።",
+    "summaryEn": "The Book of Esther reveals God's silent providence preserving His people in Persia through Queen Esther and Mordecai, thwarting Haman's genocidal plot, giving rise to the Feast of Purim.",
+    "themesAm": [
+      "ጥበቃ",
+      "እምነት",
+      "መዳን",
+      "የፑሪም በዓል"
+    ],
+    "themesEn": [
+      "Divine Providence",
+      "Courage",
+      "Deliverance",
+      "Feast of Purim"
+    ],
+    "outline": [
+      {
+        "titleAm": "አስቴር ንግሥት መሆኗና የሐማ ሴራ",
+        "titleEn": "Esther Queen & Haman Plot",
+        "fromChapter": 1,
+        "toChapter": 5
+      },
+      {
+        "titleAm": "የአይሁድ ድልና የፑሪም በዓል",
+        "titleEn": "Deliverance & Feast of Purim",
+        "fromChapter": 6,
+        "toChapter": 10
+      }
+    ]
+  },
+  "18": {
+    "authorAm": "ሙሴ / ኢዮብ",
+    "authorEn": "Moses / Job",
+    "periodAm": "~2000 / 1450 ዓ.ዓ.",
+    "periodEn": "Patriarchal Era",
+    "summaryAm": "መጽሐፈ ኢዮብ የጻድቁ ኢዮብን ታላቅ መከራ፣ ጽናትና የእግዚአብሔርን መለኮታዊ ጥበብ ያብራራል። ኢዮብ ያለ አበሳው ሀብቱን፣ ልጆቹንና ጤናውን ቢያጣም አምላኩን አልካደም፤ በመጨረሻም እግዚአብሔር በግርማው ተገልጦለታል፤ እጥፍ በረከትም ሰጥቶታል።",
+    "summaryEn": "The Book of Job explores the mystery of suffering, divine justice, and unshakeable faith. Job suffers profound loss yet maintains integrity, ultimately encountering God in majesty and receiving restoration.",
+    "themesAm": [
+      "ጽናት",
+      "መከራ",
+      "የእግዚአብሔር ጥበብ",
+      "በረከት"
+    ],
+    "themesEn": [
+      "Perseverance",
+      "Suffering",
+      "Divine Wisdom",
+      "Restoration"
+    ],
+    "outline": [
+      {
+        "titleAm": "የኢዮብ ፈተናና መከራ",
+        "titleEn": "Job's Trial & Suffering",
+        "fromChapter": 1,
+        "toChapter": 2
+      },
+      {
+        "titleAm": "ከወዳጆቹ ጋር የተደረገ ክርክር",
+        "titleEn": "Dialogues with Friends",
+        "fromChapter": 3,
+        "toChapter": 37
+      },
+      {
+        "titleAm": "የእግዚአብሔር መገለጥና የኢዮብ መታደስ",
+        "titleEn": "Divine Revelation & Restoration",
+        "fromChapter": 38,
+        "toChapter": 42
+      }
+    ]
+  },
+  "19": {
+    "authorAm": "ንጉሥ ዳዊትና ሌሎች",
+    "authorEn": "King David & Others",
+    "periodAm": "~1000–450 ዓ.ዓ.",
+    "periodEn": "~1000–450 BC",
+    "summaryAm": "መዝሙረ ዳዊት 150 መዝሙራትን የያዘ የቤተ ክርስቲያን የጸሎትና የምስጋና መዝገብ ነው። በስብሐተ እግዚአብሔር፣ በንስሐ፣ በችግር ጊዜ በሚደረግ አክብሮትና በክርስቶስ አካል (በትንቢተ መሲሕ) የተሞላ ታላቅ መጽሐፍ ነው። በኢትዮጵያ ቤተ ክርስቲያን መዝሙረ ዳዊት የዘወትር ጸሎት መሠረት ነው።",
+    "summaryEn": "The Book of Psalms (Psalter) is the prayer and hymnbook of the Church, containing 150 divine songs of praise, lament, thanksgiving, and profound Messianic prophecies fulfilled in Christ.",
+    "themesAm": [
+      "ምስጋና",
+      "ጸሎት",
+      "ንስሐ",
+      "ትንቢተ መሲሕ"
+    ],
+    "themesEn": [
+      "Praise",
+      "Prayer",
+      "Repentance",
+      "Messianic Prophecy"
+    ],
+    "outline": [
+      {
+        "titleAm": "መዝሙረ ዳዊት ክፍል 1 (1–41)",
+        "titleEn": "Book I (Psalms 1–41)",
+        "fromChapter": 1,
+        "toChapter": 41
+      },
+      {
+        "titleAm": "መዝሙረ ዳዊት ክፍል 2 (42–72)",
+        "titleEn": "Book II (Psalms 42–72)",
+        "fromChapter": 42,
+        "toChapter": 72
+      },
+      {
+        "titleAm": "መዝሙረ ዳዊት ክፍል 3 (73–89)",
+        "titleEn": "Book III (Psalms 73–89)",
+        "fromChapter": 73,
+        "toChapter": 89
+      },
+      {
+        "titleAm": "መዝሙረ ዳዊት ክፍል 4 (90–106)",
+        "titleEn": "Book IV (Psalms 90–106)",
+        "fromChapter": 90,
+        "toChapter": 106
+      },
+      {
+        "titleAm": "መዝሙረ ዳዊት ክፍል 5 (107–150)",
+        "titleEn": "Book V (Psalms 107–150)",
+        "fromChapter": 107,
+        "toChapter": 150
+      }
+    ]
+  },
+  "20": {
+    "authorAm": "ንጉሥ ሰሎሞን",
+    "authorEn": "King Solomon",
+    "periodAm": "~950 ዓ.ዓ.",
+    "periodEn": "~950 BC",
+    "summaryAm": "መጽሐፈ ምሳሌ የእግዚአብሔር ፍርሃት የጥበብ መጀመሪያ እንደ ሆነ የሚያስተምር፣ ለእለት ተእለት ኑሮ፣ ለሥነ ምግባር፣ ለታማኝነትና ለቅንነት የሚሆኑ መለኮታዊ ምክሮችን የያዘ መጽሐፍ ነው።",
+    "summaryEn": "The Book of Proverbs provides practical wisdom for holy living, establishing that 'The fear of the Lord is the beginning of wisdom.' It offers guidance on ethics, speech, work, and morality.",
+    "themesAm": [
+      "እግዚአብሔርን መፍራት",
+      "ጥበብ",
+      "ሥነ ምግባር",
+      "ቅንነት"
+    ],
+    "themesEn": [
+      "Fear of the Lord",
+      "Wisdom",
+      "Ethics",
+      "Righteous Living"
+    ],
+    "outline": [
+      {
+        "titleAm": "የጥበብ ጥሪና መግቢያ",
+        "titleEn": "Call of Wisdom",
+        "fromChapter": 1,
+        "toChapter": 9
+      },
+      {
+        "titleAm": "የሰሎሞን ምሳሌዎች",
+        "titleEn": "Proverbs of Solomon",
+        "fromChapter": 10,
+        "toChapter": 24
+      },
+      {
+        "titleAm": "የሕዝቅያስ ሰዎች የገለበጧቸው ምሳሌዎችና የልዑል/ብልህ ሴት ምስጋና",
+        "titleEn": "Hezekiah Collection & Virtuous Woman",
+        "fromChapter": 25,
+        "toChapter": 31
+      }
+    ]
+  },
+  "21": {
+    "authorAm": "ንጉሥ ሰሎሞን (መክብብ)",
+    "authorEn": "Solomon (Qoheleth)",
+    "periodAm": "~935 ዓ.ዓ.",
+    "periodEn": "~935 BC",
+    "summaryAm": "መጽሐፈ መክብብ ከእግዚአብሔር ውጭ ያለ ምድራዊ ሀብት፣ ሥልጣንና ቅንጦት ሁሉ 'ከንቱ ከንቱ የከንቱ ከንቱ' መሆኑን ይመረምራል። የመጽሐፉ ማጠቃለያ 'እግዚአብሔርን ፍራ፥ ትእዛዛቱንም ጠብቅ፤ ይህ የሰው ሙሉ ግዴታው ነውና' ይላል።",
+    "summaryEn": "Ecclesiastes reflects on the vanity of earthly pursuits apart from God. Qoheleth examines wealth, pleasure, and wisdom, concluding: 'Fear God and keep His commandments, for this is the whole duty of man.'",
+    "themesAm": [
+      "ከንቱነት",
+      "የእግዚአብሔር ፍርሃት",
+      "የሕይወት ትርጉም",
+      "ፍርድ"
+    ],
+    "themesEn": [
+      "Vanity of Earthly Life",
+      "Fear of God",
+      "Meaning of Life",
+      "Judgment"
+    ],
+    "outline": [
+      {
+        "titleAm": "የምድራዊ ነገር ከንቱነት",
+        "titleEn": "Vanity of Earthly Pursuits",
+        "fromChapter": 1,
+        "toChapter": 6
+      },
+      {
+        "titleAm": "የጥበብና የእውነተኛ ሕይወት መደምደሚያ",
+        "titleEn": "Wisdom & Conclusion",
+        "fromChapter": 7,
+        "toChapter": 12
+      }
+    ]
+  },
+  "22": {
+    "authorAm": "ንጉሥ ሰሎሞን",
+    "authorEn": "Solomon",
+    "periodAm": "~950 ዓ.ዓ.",
+    "periodEn": "~950 BC",
+    "summaryAm": "መኃልየ መኃልይ ዘሰሎሞን በሙሽራውና በሙሽራይቱ መካከል ያለውን ንጹሕ የፍቅር ቅኔ ያቀርባል። በቤተ ክርስቲያን ምሥጢራዊ ትርጓሜ በእግዚአብሔርና በእስራኤል፣ ወይም በክርስቶስና በቤተ ክርስቲያን (እንዲሁም በክርስቶስና በድንግል ማርያም/በሰው ነፍስ) መካከል ያለውን ታላቅ የመንፈሳዊ ፍቅር ምሥጢር ያሳያል።",
+    "summaryEn": "Song of Solomon (Song of Songs) celebrates holy love through poetic metaphor. In Orthodox mystical interpretation, it portrays the profound spiritual union between Christ the Bridegroom and the Church.",
+    "themesAm": [
+      "መንፈሳዊ ፍቅር",
+      "የክርስቶስና የቤተ ክርስቲያን አንድነት",
+      "ንጽሕና",
+      "ቃል ኪዳን"
+    ],
+    "themesEn": [
+      "Spiritual Love",
+      "Christ & Church Union",
+      "Purity",
+      "Divine Covenant"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሙሽራውና የሙሽራይቱ ፍቅር",
+        "titleEn": "Love of Bride & Bridegroom",
+        "fromChapter": 1,
+        "toChapter": 4
+      },
+      {
+        "titleAm": "የፍቅር ፍለጋና የታማኝነት ቃል ኪዳን",
+        "titleEn": "Search & Eternal Union",
+        "fromChapter": 5,
+        "toChapter": 8
+      }
+    ]
+  },
+  "23": {
+    "authorAm": "ኢሳይያስ",
+    "authorEn": "Isaiah",
+    "periodAm": "~740–680 ዓ.ዓ.",
+    "periodEn": "~740–680 BC",
+    "summaryAm": "ትንቢተ ኢሳይያስ 'የብሉይ ኪዳን ወንጌላዊ' በመባል ይታወቃል። የጌታችን የኢየሱስ ክርስቶስን ከድንግል መወለድ (7፡14)፣ መከራ መቀበሉንና ስለ እኛ መሞቱን (ምዕራፍ 53)፣ እንዲሁም አዲስ ሰማይና አዲስ ምድርን በግልጽ የተነበየ ታላቅ የነቢይ መጽሐፍ ነው።",
+    "summaryEn": "Isaiah, known as the 'Evangelist of the Old Testament', presents powerful prophecies of the Messiah: His Virgin Birth (7:14), Suffering Servant atonement (ch. 53), and future kingdom.",
+    "themesAm": [
+      "ትንቢተ መሲሕ",
+      "የድንግል መወለድ",
+      "የክርስቶስ መከራ",
+      "መዳን"
+    ],
+    "themesEn": [
+      "Messianic Prophecy",
+      "Virgin Birth",
+      "Suffering Servant",
+      "Salvation"
+    ],
+    "outline": [
+      {
+        "titleAm": "የይሁዳ ተግሣፅና የመሲሑ ትንቢት",
+        "titleEn": "Warnings & Messianic Hope",
+        "fromChapter": 1,
+        "toChapter": 12
+      },
+      {
+        "titleAm": "በአሕዛብ ላይ የተነገረ ፍርድ",
+        "titleEn": "Judgments on Nations",
+        "fromChapter": 13,
+        "toChapter": 35
+      },
+      {
+        "titleAm": "የሕዝቅያስ ታሪክ",
+        "titleEn": "Hezekiah Historical Account",
+        "fromChapter": 36,
+        "toChapter": 39
+      },
+      {
+        "titleAm": "የጽናናትና የክርስቶስ መከራ ትንቢት",
+        "titleEn": "Comfort & Suffering Servant",
+        "fromChapter": 40,
+        "toChapter": 66
+      }
+    ]
+  },
+  "24": {
+    "authorAm": "ኤርምያስ",
+    "authorEn": "Jeremiah",
+    "periodAm": "~626–586 ዓ.ዓ.",
+    "periodEn": "~626–586 BC",
+    "summaryAm": "ትንቢተ ኤርምያስ 'አልቃሻው ነቢይ' የተባለው ኤርምያስ ይሁዳ ከኃጢአቷ ተመልሳ እንድትንስሐ የተናገረውን ተግሣፅና የባቢሎን ምርኮ መቃረቡን ያሳያል። እግዚአብሔር በልብ ላይ የሚጽፈውን አዲሱን ቃል ኪዳን (31፡31) የተነበየበት መጽሐፍ ነው።",
+    "summaryEn": "Jeremiah, the 'Weeping Prophet', confronted Judah's idolatry, warning of Babylon's coming destruction while famously foretelling the New Covenant written on human hearts (31:31).",
+    "themesAm": [
+      "ንስሐ",
+      "አዲስ ቃል ኪዳን",
+      "የምርኮ ተግሣፅ",
+      "ታማኝነት"
+    ],
+    "themesEn": [
+      "Repentance",
+      "New Covenant",
+      "Warning of Exile",
+      "Faithfulness"
+    ],
+    "outline": [
+      {
+        "titleAm": "የኤርምያስ ጥሪና የይሁዳ ተግሣፅ",
+        "titleEn": "Call & Judgments on Judah",
+        "fromChapter": 1,
+        "toChapter": 25
+      },
+      {
+        "titleAm": "የኤርምያስ መከራና የአዲሱ ቃል ኪዳን ተስፋ",
+        "titleEn": "Persecution & New Covenant Promise",
+        "fromChapter": 26,
+        "toChapter": 45
+      },
+      {
+        "titleAm": "በአሕዛብ ላይ ፍርድና የኢየሩሳሌም ውድቀት",
+        "titleEn": "Judgments on Nations & Fall of Jerusalem",
+        "fromChapter": 46,
+        "toChapter": 52
+      }
+    ]
+  },
+  "25": {
+    "authorAm": "ኤርምያስ",
+    "authorEn": "Jeremiah",
+    "periodAm": "~586 ዓ.ዓ.",
+    "periodEn": "~586 BC",
+    "summaryAm": "ሰቆቃወ ኤርምያስ በባቢሎናውያን የጠፋችውን ኢየሩሳሌምንና የተቃጠለውን ቤተ መቅደስ በማየት ነቢዩ ኤርምያስ ያቀረበው አዘንና የንስሐ እንባ ነው። በመከራ መካከልም 'የእግዚአብሔር ምሕረት አያልቅም፤ ማለዳ ማለዳ አዲስ ነው' በማለት ተስፋን ያበስራል።",
+    "summaryEn": "Lamentations is a collection of acrostic poems weeping over the destruction of Jerusalem and the Temple in 586 BC, yet declaring God's abiding mercies: 'Great is Thy faithfulness; they are new every morning.'",
+    "themesAm": [
+      "ሐዘንና ንስሐ",
+      "የእግዚአብሔር ታማኝነት",
+      "ምሕረት",
+      "ተስፋ"
+    ],
+    "themesEn": [
+      "Lamentation",
+      "Repentance",
+      "God's Faithfulness",
+      "Hope"
+    ],
+    "outline": [
+      {
+        "titleAm": "የኢየሩሳሌም ሰቆቃና የኃጢአት እምነት",
+        "titleEn": "Desolation of Jerusalem",
+        "fromChapter": 1,
+        "toChapter": 2
+      },
+      {
+        "titleAm": "የነቢዩ መከራና የእግዚአብሔር ምሕረት ተስፋ",
+        "titleEn": "Hope in God's Mercy",
+        "fromChapter": 3,
+        "toChapter": 5
+      }
+    ]
+  },
+  "26": {
+    "authorAm": "ሕዝቅኤል",
+    "authorEn": "Ezekiel",
+    "periodAm": "~593–571 ዓ.ዓ.",
+    "periodEn": "~593–571 BC",
+    "summaryAm": "ትንቢተ ሕዝቅኤል በባቢሎን በምርኮ ሳለ የእግዚአብሔርን ታላቅ ክብር፣ የኪሩቤል ሰረገላ፣ የደረቁት አጥንቶች መሕያው መሆን (ምዕራፍ 37) እና የአዲሱን ቤተ መቅደስ ራእይ ያየበት ታላቅ የትንቢት መጽሐፍ ነው።",
+    "summaryEn": "Ezekiel, writing from exile in Babylon, receives majestic apocalyptic visions of God's throne-chariot, warns of judgment, predicts the resurrection of the Dry Bones (ch. 37), and visualizes the future Temple.",
+    "themesAm": [
+      "የእግዚአብሔር ክብር",
+      "የደረቁ አጥንቶች ሕይወት",
+      "ተሐድሶ",
+      "ራእይ"
+    ],
+    "themesEn": [
+      "Divine Glory",
+      "Valley of Dry Bones",
+      "Restoration",
+      "Apocalyptic Vision"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሕዝቅኤል ራእይና የጥሪ መላእክት",
+        "titleEn": "Vision of Glory & Call",
+        "fromChapter": 1,
+        "toChapter": 3
+      },
+      {
+        "titleAm": "በኢየሩሳሌም ላይ የተነገረ ፍርድ",
+        "titleEn": "Judgments on Jerusalem",
+        "fromChapter": 4,
+        "toChapter": 24
+      },
+      {
+        "titleAm": "በአሕዛብ ላይ የተነገረ ትንቢት",
+        "titleEn": "Prophecies Against Nations",
+        "fromChapter": 25,
+        "toChapter": 32
+      },
+      {
+        "titleAm": "የሕዝቡ መታደስ፣ የደረቁ አጥንቶችና አዲሱ ቤተ መቅደስ",
+        "titleEn": "Dry Bones & Future Temple",
+        "fromChapter": 33,
+        "toChapter": 48
+      }
+    ]
+  },
+  "27": {
+    "authorAm": "ዳንኤል",
+    "authorEn": "Daniel",
+    "periodAm": "~605–530 ዓ.ዓ.",
+    "periodEn": "~605–530 BC",
+    "summaryAm": "ትንቢተ ዳንኤል በባቢሎን ቤተ መንግሥት የታመኑትን የአራቱን ወጣቶች (ዳንኤል፣ ሲድራቅ፣ ሚሳቅ፣ አብደናጎ) እምነት፣ የአንበሶች ጉድጓድና የእሳቱ እቶን አዳኝነት ያሳያል። ዳንኤል የታላላቆቹን መንግሥታት ውድቀትና የመሲሑን የ70 ሳምንታት ትንቢት የተነበየበት መጽሐፍ ነው።",
+    "summaryEn": "The Book of Daniel combines court stories of unshakeable faith (Fiery Furnace, Lions' Den) with apocalyptic visions of world empires, the 'Son of Man', and the precise prophecy of Seventy Weeks.",
+    "themesAm": [
+      "እምነትና ጽናት",
+      "የዓለም መንግሥታት ራእይ",
+      "ወልደ ዕጓለ እመሕያው",
+      "የ70 ሳምንታት ትንቢት"
+    ],
+    "themesEn": [
+      "Faithfulness",
+      "World Empires Vision",
+      "Son of Man",
+      "Seventy Weeks Prophecy"
+    ],
+    "outline": [
+      {
+        "titleAm": "የዳንኤልና የጓደኞቹ ታሪክ በባቢሎን",
+        "titleEn": "Daniel & Companions in Babylon",
+        "fromChapter": 1,
+        "toChapter": 6
+      },
+      {
+        "titleAm": "የአራቱ አራዊትና የ70 ሳምንታት ራእይ",
+        "titleEn": "Visions of Empires & 70 Weeks",
+        "fromChapter": 7,
+        "toChapter": 12
+      }
+    ]
+  },
+  "28": {
+    "authorAm": "ሆሴዕ",
+    "authorEn": "Hosea",
+    "periodAm": "~755–715 ዓ.ዓ.",
+    "periodEn": "Hosea",
+    "summaryAm": "ትንቢተ ሆሴዕ የእግዚአብሔርን ያልተቋረጠ ፍቅር በእስራኤል ላይ ያሳያል፤ ነቢዩ አመንዝራዋን ጐመርን እንዲያገባ በተሰጠው ትእዛዝ የእግዚአብሔርን ይቅርታ ያስረዳል ።",
+    "summaryEn": "Hosea portrays God's relentless redeeming love for unfaithful Israel through Hosea's marriage to Gomer.",
+    "themesAm": [
+      "የእግዚአብሔር ፍቅር",
+      "ንስሐ",
+      "ምሕረት"
+    ],
+    "themesEn": [
+      "Unfailing Love",
+      "Repentance",
+      "Redemption"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ሆሴዕ",
+        "titleEn": "Book of Hosea",
+        "fromChapter": 1,
+        "toChapter": 14
+      }
+    ]
+  },
+  "29": {
+    "authorAm": "ኢዩኤል",
+    "authorEn": "Joel",
+    "periodAm": "~835 ዓ.ዓ.",
+    "periodEn": "Joel",
+    "summaryAm": "ትንቢተ ኢዩኤል የአንበጣን መንጋ በመቅሰፍትነት በመጥቀስ የሕዝቡን ንስሐ ይጠይቃል፤ በመጨረሻው ዘመን መንፈስ ቅዱስ በሥጋ ለባሽ ሁሉ ላይ እንደሚፈስ (2፡28) የተነበየ መጽሐፍ ነው።",
+    "summaryEn": "Joel calls Israel to urgent repentance following a locust plague, foretelling the outpouring of the Holy Spirit upon all flesh.",
+    "themesAm": [
+      "የመንፈስ ቅዱስ መፍሰስ",
+      "የእግዚአብሔር ቀን",
+      "ንስሐ"
+    ],
+    "themesEn": [
+      "Outpouring of Spirit",
+      "Day of the Lord",
+      "Repentance"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ኢዩኤል",
+        "titleEn": "Book of Joel",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "30": {
+    "authorAm": "አሞጽ",
+    "authorEn": "Amos",
+    "periodAm": "~760 ዓ.ዓ.",
+    "periodEn": "Amos",
+    "summaryAm": "ትንቢተ አሞጽ እውነተኛ አምልኮ ከማኅበራዊ ፍትሕና ከቅንነት ጋር መሄድ እንዳለበት የሚያስተምር፣ በድሆች ላይ የሚደረግን በደል የሚኮንን መጽሐፍ ነው።",
+    "summaryEn": "Amos, a shepherd from Tekoa, fearlessly condemns social injustice and empty ritualism, demanding: 'Let justice roll down like waters.'",
+    "themesAm": [
+      "ማኅበራዊ ፍትሕ",
+      "እውነተኛ አምልኮ",
+      "ፍርድ"
+    ],
+    "themesEn": [
+      "Social Justice",
+      "True Worship",
+      "Divine Judgment"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ አሞጽ",
+        "titleEn": "Book of Amos",
+        "fromChapter": 1,
+        "toChapter": 9
+      }
+    ]
+  },
+  "31": {
+    "authorAm": "አብድዩ",
+    "authorEn": "Obadiah",
+    "periodAm": "~586 ዓ.ዓ.",
+    "periodEn": "Obadiah",
+    "summaryAm": "ትንቢተ አብድዩ በይሁዳ መከራ ጊዜ በትዕቢት በተደሰቱት በኤዶምያውያን ላይ የተነገረውን ፍርድና የእግዚአብሔርን መንግሥት ድል ያበስራል።",
+    "summaryEn": "Obadiah pronounces judgment upon Edom for their pride and betrayal of Judah during Jerusalem's fall, declaring ultimate victory for Zion.",
+    "themesAm": [
+      "ትዕቢትና ፍርድ",
+      "የጽዮን ድል",
+      "የእግዚአብሔር መንግሥት"
+    ],
+    "themesEn": [
+      "Judgment on Pride",
+      "Triumph of Zion",
+      "Kingdom of God"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ አብድዩ",
+        "titleEn": "Book of Obadiah",
+        "fromChapter": 1,
+        "toChapter": 1
+      }
+    ]
+  },
+  "32": {
+    "authorAm": "ዮናስ",
+    "authorEn": "Jonah",
+    "periodAm": "~760 ዓ.ዓ.",
+    "periodEn": "Jonah",
+    "summaryAm": "ትንቢተ ዮናስ ነቢዩ ዮናስ ወደ ነነዌ ለመሄድ እንቢ ብሎ በዓሣ ነባሪ ሆድ 3 መዓልትና 3 ሌሊት የቆየበትንና የነነዌ ሕዝብ በንስሐ መዳናቸውን ያሳያል። የዮናስ 3 ቀን በዓሣ ሆድ መቆየት የክርስቶስ 3 ቀን በከርስተ መቃብር የመቆየቱ ምሳሌ ነው።",
+    "summaryEn": "Jonah attempts to flee God's call to Nineveh; after three days in the whale's belly—a prime type of Christ's resurrection—Nineveh repents.",
+    "themesAm": [
+      "የአሕዛብ መዳን",
+      "ንስሐ",
+      "የክርስቶስ ትንሣኤ ምሳሌ"
+    ],
+    "themesEn": [
+      "Salvation to Gentiles",
+      "Repentance",
+      "Type of Resurrection"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ዮናስ",
+        "titleEn": "Book of Jonah",
+        "fromChapter": 1,
+        "toChapter": 4
+      }
+    ]
+  },
+  "33": {
+    "authorAm": "ሚክያስ",
+    "authorEn": "Micah",
+    "periodAm": "~735–700 ዓ.ዓ.",
+    "periodEn": "Micah",
+    "summaryAm": "ትንቢተ ሚክያስ መሲሑ በቤተልሔም ኤፍራታ እንደሚወለድ (5፡2) በግልጽ የተነበየና ፍትሕን ማድረግን፣ ምሕረትን መውደድና ከአምላክ ጋር በትሕትና መሄድን የሚያስተምር መጽሐፍ ነው።",
+    "summaryEn": "Micah famously foretells Messiah's birthplace in Bethlehem (5:2) and summarizes true godliness: 'To do justice, love mercy, and walk humbly with God.'",
+    "themesAm": [
+      "የቤተልሔም ትንቢት",
+      "ፍትሕና ምሕረት",
+      "ትሕትና"
+    ],
+    "themesEn": [
+      "Bethlehem Prophecy",
+      "Justice & Mercy",
+      "Humility"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ሚክያስ",
+        "titleEn": "Book of Micah",
+        "fromChapter": 1,
+        "toChapter": 7
+      }
+    ]
+  },
+  "34": {
+    "authorAm": "ናሆም",
+    "authorEn": "Nahum",
+    "periodAm": "~660–612 ዓ.ዓ.",
+    "periodEn": "Nahum",
+    "summaryAm": "ትንቢተ ናሆም ጨቋኟና ግፈኛዋ የአሦር መዲና ነነዌ በኃጢአቷና በደሟ ምክንያት በፈጣሪ ፍርድ እንደሚጠፋት ያበስራል።",
+    "summaryEn": "Nahum declares the impending judgment and fall of Nineveh, comforting God's oppressed people with the assurance of divine justice.",
+    "themesAm": [
+      "መለኮታዊ ፍርድ",
+      "የግፍ ውድቀት",
+      "መጽናናት"
+    ],
+    "themesEn": [
+      "Divine Judgment",
+      "Fall of Tyranny",
+      "Comfort to Oppressed"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ናሆም",
+        "titleEn": "Book of Nahum",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "35": {
+    "authorAm": "ዕንባቆም",
+    "authorEn": "Habakkuk",
+    "periodAm": "~605 ዓ.ዓ.",
+    "periodEn": "Habakkuk",
+    "summaryAm": "ትንቢተ ዕንባቆም 'ጻድቅ በእምነቱ ይኖራል' (2፡4) የሚለውን ታላቅ መመሪያ የሰጠ፣ በክፉዎች ስኬትና በመከራ ጊዜ አምላክን በመታመን ማመስገን እንደሚገባ የሚያስተምር መጽሐፍ ነው።",
+    "summaryEn": "Habakkuk wrestles with evil and suffering, delivering the timeless truth: 'The just shall live by faith', ending with a hymn of joyful trust.",
+    "themesAm": [
+      "ጻድቅ በእምነት ይኖራል",
+      "እምነት",
+      "ምስጋና"
+    ],
+    "themesEn": [
+      "Just Shall Live by Faith",
+      "Unshakable Trust",
+      "Joyful Praise"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ዕንባቆም",
+        "titleEn": "Book of Habakkuk",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "36": {
+    "authorAm": "ሶፎንያስ",
+    "authorEn": "Zephaniah",
+    "periodAm": "~640–621 ዓ.ዓ.",
+    "periodEn": "Zephaniah",
+    "summaryAm": "ትንቢተ ሶፎንያስ የታላቁን 'የእግዚአብሔር ቀን' ፍርድ የሚያስጠነቅቅና ትሑታንና ምስኪናን የቀሩት ሕዝብ በእግዚአብሔር ስም እንደሚደሰቱ የሚያበስር መጽሐፍ ነው።",
+    "summaryEn": "Zephaniah warns of the purification of the 'Day of the Lord', promising restoration for a humble and faithful remnant.",
+    "themesAm": [
+      "የእግዚአብሔር ቀን",
+      "ትሕትና",
+      "የቀሩት ሕዝብ መዳን"
+    ],
+    "themesEn": [
+      "Day of the Lord",
+      "Humility",
+      "Restoration of Remnant"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ሶፎንያስ",
+        "titleEn": "Book of Zephaniah",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "37": {
+    "authorAm": "ሐጌ",
+    "authorEn": "Haggai",
+    "periodAm": "~520 ዓ.ዓ.",
+    "periodEn": "Haggai",
+    "summaryAm": "ትንቢተ ሐጌ ከምርኮ የተመለሱት ሕዝብ የራሳቸውን ቤት ከመሥራት ይልቅ የፈረሰውን የእግዚአብሔርን ቤተ መቅደስ እንዲያነጹ ያበረታታ መጽሐፍ ነው።",
+    "summaryEn": "Haggai exhorts the returned exiles to prioritize rebuilding the Temple, promising that the glory of the latter house shall exceed the former.",
+    "themesAm": [
+      "ቤተ መቅደስ ማነጽ",
+      "ቅደም ተከተል",
+      "በረከት"
+    ],
+    "themesEn": [
+      "Rebuilding Temple",
+      "Priorities",
+      "Future Glory"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ሐጌ",
+        "titleEn": "Book of Haggai",
+        "fromChapter": 1,
+        "toChapter": 2
+      }
+    ]
+  },
+  "38": {
+    "authorAm": "ዘካርያስ",
+    "authorEn": "Zechariah",
+    "periodAm": "~520–480 ዓ.ዓ.",
+    "periodEn": "Zechariah",
+    "summaryAm": "ትንቢተ ዘካርያስ ንጉሣችን በውድቅት አህያ ተቀምጦ ወደ ኢየሩሳሌም እንደሚገባ (9፡9)፣ በ30 ብር እንደሚሸጥና የተወጋውን እንደሚያዩት የተነበየ ታላቅ የመሲሕ መጽሐፍ ነው።",
+    "summaryEn": "Zechariah presents vivid Messianic prophecies: Christ's Triumphal Entry on a donkey (9:9), betrayal for thirty pieces of silver, and piercing.",
+    "themesAm": [
+      "የመሲሑ ትንቢት",
+      "ሆሣዕና",
+      "የ30 ብር ትንቢት"
+    ],
+    "themesEn": [
+      "Messianic Visions",
+      "Triumphal Entry",
+      "Thirty Pieces of Silver"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ዘካርያስ",
+        "titleEn": "Book of Zechariah",
+        "fromChapter": 1,
+        "toChapter": 14
+      }
+    ]
+  },
+  "39": {
+    "authorAm": "ሚልክያስ",
+    "authorEn": "Malachi",
+    "periodAm": "~430 ዓ.ዓ.",
+    "periodEn": "Malachi",
+    "summaryAm": "ትንቢተ ሚልክያስ የብሉይ ኪዳን የመጨረሻው መጽሐፍ ሲሆን፣ ከመሲሑ በፊት የሚመጣውን ነቢዩ ኤልያስን (መጥምቁ ዮሐንስን) እና ንጹሑን መስዋዕት (ቅዱስ ቁርባንን) የተነበየ መጽሐፍ ነው።",
+    "summaryEn": "Malachi, the final Old Testament prophet, rebukes spiritual apathy, foretelling the messenger (John the Baptist) and the pure offering among Gentiles.",
+    "themesAm": [
+      "የኤልያስ (ዮሐንስ) አመፃፅ",
+      "ንጹሕ መስዋዕት",
+      "ታማኝነት"
+    ],
+    "themesEn": [
+      "Messenger of the Covenant",
+      "Pure Offering",
+      "Tithe & Faithfulness"
+    ],
+    "outline": [
+      {
+        "titleAm": "ትንቢተ ሚልክያስ",
+        "titleEn": "Book of Malachi",
+        "fromChapter": 1,
+        "toChapter": 4
+      }
+    ]
+  },
+  "40": {
+    "authorAm": "ጦቢት / ጦብያ",
+    "authorEn": "Tobit / Tobias",
+    "periodAm": "~200 ዓ.ዓ.",
+    "periodEn": "~200 BC",
+    "summaryAm": "መጽሐፈ ጦቢት በነነዌ በስደት ይኖር የነበረውን ጻድቁን ጦቢት፣ ታማኝነቱን፣ ለምፅዋትና ለምስኪኖች ያደረገውን ቸርነት ያሳያል። ልጁ ጦብያ በመላአኩ ቅዱስ ሩፋኤል መሪነት ጉዞ አድርጎ ሣራን ከአጋንንት እስራት እንደ ፈታና የአባቱን ዓይን እንደ አበራ የሚተርክ ታላቅ የታሪክና የመንፈሳዊ ምክር መጽሐፍ ነው። በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን የመላእክት ጥበቃና የምፅዋት በረከት ታላቅ ማሳያ ነው።",
+    "summaryEn": "The Book of Tobit narrates the righteous life of Tobit in Assyrian exile, known for almsgiving and piety. God hears his prayers and sends Archangel Raphael (Azarias) to guide his son Tobias, heal Tobit's blindness, and deliver Sarah from demonic affliction. Tobit emphasizes angelic protection, family virtues, and the sanctity of prayer and alms.",
+    "themesAm": [
+      "የመላእክት ጥበቃ",
+      "ምፅዋት",
+      "ጸሎት",
+      "የቤተሰብ ቅድስና"
+    ],
+    "themesEn": [
+      "Angelic Protection",
+      "Almsgiving",
+      "Answered Prayer",
+      "Family Sanctity"
+    ],
+    "outline": [
+      {
+        "titleAm": "የጦቢት ጽድቅና መከራ",
+        "titleEn": "Tobit's Piety & Blindness",
+        "fromChapter": 1,
+        "toChapter": 3
+      },
+      {
+        "titleAm": "የጦብያ ጉዞ ከቅዱስ ሩፋኤል ጋር",
+        "titleEn": "Tobias' Journey with Raphael",
+        "fromChapter": 4,
+        "toChapter": 9
+      },
+      {
+        "titleAm": "የጦቢት መፈወስና የመላእኩ መገለጥ",
+        "titleEn": "Healing of Tobit & Raphael's Identity",
+        "fromChapter": 10,
+        "toChapter": 14
+      }
+    ]
+  },
+  "41": {
+    "authorAm": "ዮዲት",
+    "authorEn": "Judith",
+    "periodAm": "~150 ዓ.ዓ.",
+    "periodEn": "~150 BC",
+    "summaryAm": "መጽሐፈ ዮዲት አሦራውያን በሆሎፈርኔስ መሪነት ቤቱልያን ከበበው እስራኤልን ሊደመስሱ ሲሉ፣ እግዚአብሔርን የምትፈራው ዮዲት በጾምና በጸሎት ተዘጋጅታ በድፍረት የጠላትን አዛዥ በመግደል ሕዝቧን ከጥፋት ያደነችበት ታላቅ የድል መጽሐፍ ነው። ዮዲት የድንግል ማርያም የድልና የንጽሕና ምሳሌ ተደርጋ ትተረጎማለች።",
+    "summaryEn": "The Book of Judith tells how a courageous Jewish widow delivers her besieged town of Bethulia from Assyrian commander Holofernes. Through fasting, prayer, and divine courage, Judith slays the enemy general, liberating Israel. In EOTC tradition, Judith prefigures the Holy Virgin Mary crushing spiritual enemies.",
+    "themesAm": [
+      "ድፍረትና እምነት",
+      "ጾምና ጸሎት",
+      "የአምላክ አዳኝነት",
+      "የድንግል ማርያም ምሳሌ"
+    ],
+    "themesEn": [
+      "Courage & Faith",
+      "Fasting & Prayer",
+      "Divine Deliverance",
+      "Type of Virgin Mary"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሆሎፈርኔስ ጦርና የቤቱልያ መከበብ",
+        "titleEn": "Assyrian Siege of Bethulia",
+        "fromChapter": 1,
+        "toChapter": 7
+      },
+      {
+        "titleAm": "የዮዲት ጸሎት፣ ጽናትና የጥላት ውድቀት",
+        "titleEn": "Judith's Prayer, Action & Victory",
+        "fromChapter": 8,
+        "toChapter": 16
+      }
+    ]
+  },
+  "43": {
+    "authorAm": "ንጉሥ ሰሎሞን",
+    "authorEn": "Solomon",
+    "periodAm": "~100 ዓ.ዓ.",
+    "periodEn": "~100 BC",
+    "summaryAm": "መጽሐፈ ጥበብ የመለኮታዊ ጥበብን ባህርይ፣ የጻድቃንን የዘላለም ሕይወትና የኃጢአተኞችን ፍርድ የሚያስተምር ታላቅ መጽሐፍ ነው። መጽሐፉ ስለ ክርስቶስ መከራ መቀበልና በክፎች መጠላት (ምዕራፍ 2) በግልጽ የተነበየ ትንቢት ይዟል።",
+    "summaryEn": "The Wisdom of Solomon contrasts godly wisdom with worldly folly, proclaiming the immortality of righteous souls and delivering a stunning prophecy of Christ's rejection and passion by the ungodly (ch. 2).",
+    "themesAm": [
+      "መለኮታዊ ጥበብ",
+      "የነፍስ ሕያውነት",
+      "የክርስቶስ መከራ ትንቢት",
+      "ጽድቅ"
+    ],
+    "themesEn": [
+      "Divine Wisdom",
+      "Immortality of Soul",
+      "Prophecy of Christ's Passion",
+      "Righteousness"
+    ],
+    "outline": [
+      {
+        "titleAm": "ጥበብና የጻድቃን ተስፋ",
+        "titleEn": "Wisdom & Destiny of Righteous",
+        "fromChapter": 1,
+        "toChapter": 5
+      },
+      {
+        "titleAm": "የጥበብ ባህርይና የሰሎሞን ጸሎት",
+        "titleEn": "Nature of Wisdom & Solomon's Prayer",
+        "fromChapter": 6,
+        "toChapter": 9
+      },
+      {
+        "titleAm": "ጥበብ በታሪክ ውስጥ ያደረገችው አዳኝነት",
+        "titleEn": "Wisdom in Salvation History",
+        "fromChapter": 10,
+        "toChapter": 19
+      }
+    ]
+  },
+  "44": {
+    "authorAm": "ኢያሱ ወልደ ሲራክ",
+    "authorEn": "Jesus son of Sirach",
+    "periodAm": "~180 ዓ.ዓ.",
+    "periodEn": "~180 BC",
+    "summaryAm": "መጽሐፈ ሲራክ (ዕቅበተ ጥበብ) እግዚአብሔርን መፍራት፣ የቤተሰብ ሥርዓት፣ ጓደኝነት፣ ትሕትናና ምፅዋትን የሚያስተምር እጅግ ሰፊ የሥነ ምግባርና የጥበብ መዝገብ ነው። በቤተ ክርስቲያን ለአዲስ ተማሮችና ለምእመናን ምግባር ለማስተማር በሰፊው ጥቅም ላይ ይውላል።",
+    "summaryEn": "Sirach (Ecclesiasticus) is a masterwork of practical Orthodox ethical wisdom, offering profound guidance on worship, speech, friendship, humility, family, and honoring parents and elders.",
+    "themesAm": [
+      "እግዚአብሔርን መፍራት",
+      "ትሕትና",
+      "የቤተሰብ ሥርዓት",
+      "ወዳጅነት"
+    ],
+    "themesEn": [
+      "Fear of God",
+      "Humility",
+      "Family Virtues",
+      "Friendship"
+    ],
+    "outline": [
+      {
+        "titleAm": "የጥበብ መሠረትና እግዚአብሔርን መፍራት",
+        "titleEn": "Foundation of Wisdom",
+        "fromChapter": 1,
+        "toChapter": 23
+      },
+      {
+        "titleAm": "የማኅበራዊ ሕይወትና የሥነ ምግባር ምክር",
+        "titleEn": "Social & Moral Virtues",
+        "fromChapter": 24,
+        "toChapter": 43
+      },
+      {
+        "titleAm": "የቀደሙት አባቶች ምስጋና",
+        "titleEn": "Praise of the Ancestors",
+        "fromChapter": 44,
+        "toChapter": 51
+      }
+    ]
+  },
+  "45": {
+    "authorAm": "ባሩክ ወልደ ኔሪያ",
+    "authorEn": "Baruch son of Neriah",
+    "periodAm": "~580 ዓ.ዓ.",
+    "periodEn": "~580 BC",
+    "summaryAm": "መጽሐፈ ባሩክ የነቢዩ ኤርምያስ ጸሐፊ የነበረው ባሩክ በባቢሎን ምርኮ ላለው ሕዝብ የጻፈው የንስሐ፣ የጸሎትና የመጽናናት መጽሐፍ ነው። እግዚአብሔር ጥበቡን በምድር ላይ እንደ ገለጠና ከሰዎች ጋር እንደ ተመላለሰ (3፡37) የሚናገረው ታላቅ የመሲሕ ትንቢት አለበት።",
+    "summaryEn": "The Book of Baruch contains prayers of repentance from Babylonian exile, extolling Divine Wisdom who 'appeared upon earth and conversed with men' (3:37), foretelling Messianic salvation.",
+    "themesAm": [
+      "ንስሐ",
+      "መለኮታዊ ጥበብ",
+      "የመሲሑ መገለጥ",
+      "መጽናናት"
+    ],
+    "themesEn": [
+      "Repentance",
+      "Divine Wisdom",
+      "Incarnation Prophecy",
+      "Consolation"
+    ],
+    "outline": [
+      {
+        "titleAm": "የምርኮኞቹ የንስሐ ጸሎት",
+        "titleEn": "Prayer of Exiles",
+        "fromChapter": 1,
+        "toChapter": 3
+      },
+      {
+        "titleAm": "የጥበብ ውዳሴና የጽዮን መጽናናት",
+        "titleEn": "Praise of Wisdom & Consolation",
+        "fromChapter": 4,
+        "toChapter": 5
+      }
+    ]
+  },
+  "46": {
+    "authorAm": "ኤርምያስ",
+    "authorEn": "Jeremiah",
+    "periodAm": "~580 ዓ.ዓ.",
+    "periodEn": "~580 BC",
+    "summaryAm": "ተረፈ ኤርምያስ (የኤርምያስ መልእክት) ነቢዩ ኤርምያስ ወደ ባቢሎን ለሚማረኩት አይሁድ የጻፈው መልእክት ሲሆን፣ የከለዳውያንን የጣዖት አምልኮ ከንቱነትና የእውነተኛውን አምላክ ታላቅነት በግልፅ ያስረዳል ።",
+    "summaryEn": "The Letter of Jeremiah is a passionate polemic against Babylonian idolatry, urging Jewish exiles to remain steadfast in worshiping the living God of Israel.",
+    "themesAm": [
+      "የጣዖት ከንቱነት",
+      "የአምላክ እውነተኛነት",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "Futility of Idols",
+      "True God",
+      "Faithfulness in Exile"
+    ],
+    "outline": [
+      {
+        "titleAm": "የጣዖታት ከንቱነትና የኤርምያስ ማስጠንቀቂያ",
+        "titleEn": "Futility of Idols & Warning",
+        "fromChapter": 1,
+        "toChapter": 1
+      }
+    ]
+  },
+  "49": {
+    "authorAm": "መቃብያን",
+    "authorEn": "Maccabees",
+    "periodAm": "~100 ዓ.ዓ.",
+    "periodEn": "~100 BC",
+    "summaryAm": "መጽሐፈ መቃብያን ቀዳማዊ በይሁዳ መቃቢስና በወንድሞቹ መሪነት በግሪክ (ሲሪያ) አSelector ኤንትዮኮስ ኤፒፋንስ ላይ የተደረገውን ሃይማኖታዊ ተጋድሎ፣ የቤተ መቅደሱን መታደስና የሐኑካ በዓል ምስረታ የሚተርክ ታላቅ የታሪክ መጽሐፍ ነው።",
+    "summaryEn": "1 Maccabees documents the heroic Jewish struggle under Judas Maccabeus against Seleucid persecution, preserving Torah worship, cleansing the Temple, and establishing Hanukkah.",
+    "themesAm": [
+      "ሃይማኖታዊ ተጋድሎ",
+      "የቤተ መቅደስ መታደስ",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "Religious Zeal",
+      "Temple Cleansing",
+      "Martyrdom & Victory"
+    ],
+    "outline": [
+      {
+        "titleAm": "የኤንትዮኮስ ግፍና የመቃብያን አመፅ",
+        "titleEn": "Persecution & Revolt",
+        "fromChapter": 1,
+        "toChapter": 4
+      },
+      {
+        "titleAm": "የይሁዳ መቃቢስ ድልና የቅጥር መታደስ",
+        "titleEn": "Victories of Judas Maccabeus",
+        "fromChapter": 5,
+        "toChapter": 16
+      }
+    ]
+  },
+  "50": {
+    "authorAm": "መቃብያን",
+    "authorEn": "Maccabees",
+    "periodAm": "~120 ዓ.ዓ.",
+    "periodEn": "~120 BC",
+    "summaryAm": "መጽሐፈ መቃብያን ካልዕ ስለ ሙታን ትንሣኤ፣ ስለ ቅዱሳን ምልጃና ስለ ሰማዕታት (ስለ አልዓዛርና ስለ 7ቱ አሕዋትና እናታቸው ቅድስት ሰሎሞና) አክሊል ታላቅ መንፈሳዊ አስተምህሮ የሚሰጥ መጽሐፍ ነው።",
+    "summaryEn": "2 Maccabees emphasizes theological doctrines of the Resurrection of the Dead, intercession of saints, creation ex nihilo, and heroic martyrdom of Eleazar and the Seven Brothers.",
+    "themesAm": [
+      "የሙታን ትንሣኤ",
+      "የሰማዕታት አክሊል",
+      "ምልጃ",
+      "ፈጣሪነት"
+    ],
+    "themesEn": [
+      "Resurrection of Dead",
+      "Crown of Martyrdom",
+      "Intercession",
+      "Creation ex nihilo"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሰማዕታት አክሊልና የእልዓዛር ታሪክ",
+        "titleEn": "Martyrdom of Eleazar & 7 Brothers",
+        "fromChapter": 1,
+        "toChapter": 7
+      },
+      {
+        "titleAm": "የመቃብያን ድልና የቤተ መቅደሱ ቅዳሴ",
+        "titleEn": "Victories & Temple Purification",
+        "fromChapter": 8,
+        "toChapter": 15
+      }
+    ]
+  },
+  "51": {
+    "authorAm": "ዕዝራ ሱቱኤል",
+    "authorEn": "Ezra Sutuel (4 Ezra)",
+    "periodAm": "~100 ዓ.ም.",
+    "periodEn": "~100 AD",
+    "summaryAm": "መጽሐፈ ዕዝራ ሱቱኤል ዕዝራ በኢየሩሳሌም ውድቀት አዝኖ ያቀረበውን 7 ታላላቅ ራእዮችና ከመልአኩ ቅዱስ ኡርኤል ጋር ያደረገውን ጥልቅ መለኮታዊ ክርክር ያቀፈ ነው። የኃጢአት መኖርና የእግዚአብሔር ፍትሕ ምስጢር የተገለጠበት መጽሐፍ ነው።",
+    "summaryEn": "Ezra Sutuel (4 Ezra) contains seven profound apocalyptic visions of Ezra wrestling with the problem of evil and suffering after Jerusalem's destruction, guided by Archangel Uriel.",
+    "themesAm": [
+      "የኡርኤል መገለጥ",
+      "የዓለም ፍጻሜ",
+      "የእግዚአብሔር ፍትሕ",
+      "ራእይ"
+    ],
+    "themesEn": [
+      "Archangel Uriel",
+      "Problem of Suffering",
+      "Apocalyptic Visions",
+      "End of Age"
+    ],
+    "outline": [
+      {
+        "titleAm": "ከመልአኩ ኡርኤል ጋር የተደረገ ክርክር",
+        "titleEn": "Dialogues with Archangel Uriel",
+        "fromChapter": 1,
+        "toChapter": 8
+      },
+      {
+        "titleAm": "የንስርና የመሲሑ ራእይ",
+        "titleEn": "Visions of Eagle & Messiah",
+        "fromChapter": 9,
+        "toChapter": 14
+      }
+    ]
+  },
+  "53": {
+    "authorAm": "መቃብያን",
+    "authorEn": "Maccabees",
+    "periodAm": "~100 ዓ.ዓ.",
+    "periodEn": "~100 BC",
+    "summaryAm": "መጽሐፈ መቃብያን ሣልስ በእስክንድርያ ይኖሩ የነበሩ አይሁድ በንጉሥ በጥsequence ፊሎፓተር አምበሶች ሊበሏቸው ሲሉ እግዚአብሔር በመላእክቱ አማካይነት ተአምር አድርጎ ያዳናቸውን ታሪክ ያቀርባል።",
+    "summaryEn": "3 Maccabees describes the miraculous deliverance of Egyptian Jews in Alexandria under Ptolemy IV Philopator when God sent angels to protect them from enraged elephants.",
+    "themesAm": [
+      "ተአምራዊ አዳኝነት",
+      "የመላእክት እርዳታ",
+      "እምነት"
+    ],
+    "themesEn": [
+      "Miraculous Deliverance",
+      "Angelic Help",
+      "Unshakable Faith"
+    ],
+    "outline": [
+      {
+        "titleAm": "የበጥሎሜዎስ ዛቻና የአይሁድ ጸሎት",
+        "titleEn": "Threat of Ptolemy & Prayer",
+        "fromChapter": 1,
+        "toChapter": 5
+      },
+      {
+        "titleAm": "የመላእክት መገለጥና የታላቁ ድል በዓል",
+        "titleEn": "Angelic Intervention & Deliverance",
+        "fromChapter": 6,
+        "toChapter": 7
+      }
+    ]
+  },
+  "54": {
+    "authorAm": "ዕዝራ",
+    "authorEn": "Ezra",
+    "periodAm": "~150 ዓ.ዓ.",
+    "periodEn": "~150 BC",
+    "summaryAm": "መጽሐፈ ዕዝራ ካልዕ (3 ዕዝራ) ከንጉሥ ኢዮስያስ ዘመን ጀምሮ አይሁድ ከምርኮ ተመልሰው ቤተ መቅደስን እስከ አነጹበት ድረስ ያለውን ታሪክ የሚያቀርብ ቅዱስ መጽሐፍ ነው።",
+    "summaryEn": "Ezra Kalie (3 Ezra / 1 Esdras) narrates the history of the Temple from Josiah's Passover to the restoration under Zerubbabel and Ezra.",
+    "themesAm": [
+      "የሕንፃ መታደስ",
+      "ታማኝነት",
+      "ምርኮ መልስ"
+    ],
+    "themesEn": [
+      "Temple Restoration",
+      "Zerubbabel Contest",
+      "Return from Exile"
+    ],
+    "outline": [
+      {
+        "titleAm": "የኢዮስያስ ፋሲካና የቤተ መቅደስ መደሰት",
+        "titleEn": "Josiah's Passover & Restoration",
+        "fromChapter": 1,
+        "toChapter": 9
+      }
+    ]
+  },
+  "55": {
+    "authorAm": "ዮሴፍ",
+    "authorEn": "Joseph",
+    "periodAm": "~350 ዓ.ም.",
+    "periodEn": "~350 ዓ.ም.",
+    "summaryAm": "የአይሁድ ታሪክና የሁለተኛው ቤተ መቅደስ ታሪክ መጽሐፍ ነው።",
+    "summaryEn": "Historical record of the Second Temple period and Jewish struggles.",
+    "themesAm": [
+      "ታሪክ",
+      "ቤተ መቅደስ",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "History",
+      "Temple",
+      "Perseverance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ዮሴፍ ወልደ ኮርዮን (ዛሬ)",
+        "titleEn": "Book of Josippon Extra",
+        "fromChapter": 1,
+        "toChapter": 8
+      }
+    ]
+  },
+  "57": {
+    "authorAm": "ሙሴ (ከመላአከ ገጽ ተቀብሎ)",
+    "authorEn": "Moses (via Angel of Presence)",
+    "periodAm": "~150 ዓ.ዓ.",
+    "periodEn": "~150 BC",
+    "summaryAm": "መጽሐፈ ኩፋሌ (የኢዮቤልዩ መጽሐፍ) እግዚአብሔር በሲና ተራራ በመላአከ ገጽ አማካይነት ለሙሴ የገለጠው፣ ከአዳም ፍጥረት ጀምሮ እስከ ሲና ተራራ ያለውን ታሪክ በኢዮቤልዩ (በ49 ዓመታት) ክፍለ ዘመን በማስላት የሚያስተምር፣ የዘመናት ቁጥርና የበዓላት ሥርዓትን የሚያብራራ ታላቅ መጽሐፍ ነው።",
+    "summaryEn": "The Book of Jubilees (Kufale), preserved complete in Ge'ez, reveals sacred history from Creation to Sinai revealed to Moses by the Angel of the Presence, divided into 49-year Jubilee cycles, establishing the holy calendar, covenant law, and patriarchal traditions.",
+    "themesAm": [
+      "የኢዮቤልዩ ዘመን",
+      "የመላአከ ገጽ መገለጥ",
+      "የበዓላት calendar",
+      "የአባቶች ታሪክ"
+    ],
+    "themesEn": [
+      "Jubilee Cycles",
+      "Angel of Presence",
+      "Sacred Calendar",
+      "Patriarchal Traditions"
+    ],
+    "outline": [
+      {
+        "titleAm": "በሲና ተራራ የተሰጠው መግቢያና የፍጥረት ታሪክ",
+        "titleEn": "Sinai Revelation & Creation",
+        "fromChapter": 1,
+        "toChapter": 10
+      },
+      {
+        "titleAm": "የአብርሃም፣ የይስሐቅና የያዕቆብ የኢዮቤልዩ ታሪክ",
+        "titleEn": "Patriarchal Jubilee History",
+        "fromChapter": 11,
+        "toChapter": 40
+      },
+      {
+        "titleAm": "የዮሴፍ ታሪክና የፋሲካ ሕግ መደምደሚያ",
+        "titleEn": "Joseph & Passover Instructions",
+        "fromChapter": 41,
+        "toChapter": 50
+      }
+    ]
+  },
+  "58": {
+    "authorAm": "ሄኖክ (ዓቢይ ነቢይ)",
+    "authorEn": "Enoch the Seventh from Adam",
+    "periodAm": "~300–100 ዓ.ዓ.",
+    "periodEn": "~300–100 BC",
+    "summaryAm": "መጽሐፈ ሄኖክ በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ብቻ ሙሉ ሆኖ የተጠበቀ ታላቅ ቀዳሚ መጽሐፍ ነው። ሄኖክ ከእግዚአብሔር ጋር እንደ ሄደ፣ ስለ መላእክት አወቃቀር፣ ስለ ሰማያት ምስጢር፣ ስለ ኃጢአተኞች ፍርድና ስለ 'ወልደ ዕጓለ እመሕያው' (የሰው ልጅ - መሲሑ) ታላቅ ራእይ ያየበት መጽሐፍ ነው።",
+    "summaryEn": "The Book of Enoch, fully preserved only in the Ge'ez canon of the Ethiopian Orthodox Tewahedo Church, is a profound pseudepigraphal apocalypse detailing Enoch's heavenly journeys, angelic hierarchies, cosmic order, judgment of Watchers, and majestic visions of the Messiah ('Son of Man').",
+    "themesAm": [
+      "የሰማያት ምስጢር",
+      "ወልደ ዕጓለ እመሕያው",
+      "የመላእክት አወቃቀር",
+      "ፍርድ"
+    ],
+    "themesEn": [
+      "Heavenly Secrets",
+      "Son of Man Messiah",
+      "Angelic Hierarchies",
+      "Final Judgment"
+    ],
+    "outline": [
+      {
+        "titleAm": "የመላእክት (ትጉሃን) ውድቀትና የሄኖክ ራእይ",
+        "titleEn": "Book of Watchers & Enoch's Journeys",
+        "fromChapter": 1,
+        "toChapter": 36
+      },
+      {
+        "titleAm": "የምሳሌዎች መጽሐፍና የወልደ ዕጓለ እመሕያው ራእይ",
+        "titleEn": "Book of Similitudes & Son of Man",
+        "fromChapter": 37,
+        "toChapter": 71
+      },
+      {
+        "titleAm": "የሰማያት ብርሃናት ሥርዓትና የሳምንታት ትንቢት",
+        "titleEn": "Astronomical Book & Apocalypse of Weeks",
+        "fromChapter": 72,
+        "toChapter": 108
+      }
+    ]
+  },
+  "59": {
+    "authorAm": "ማቴዎስ (ሐዋርያ)",
+    "authorEn": "Matthew the Apostle",
+    "periodAm": "~60 ዓ.ም.",
+    "periodEn": "~60 AD",
+    "summaryAm": "ወንጌል ቅዱስ ዘማቴዎስ ጌታችን ኢየሱስ ክርስቶስ በብሉይ ኪዳን ነቢያት የተነገረለት እውነተኛው የአይሁድ ንጉሥና መሲሕ መሆኑን ያበስራል። በይሁዳ ባህል የተጻፈ ሲሆን፣ የተራራው ስብከት (ምዕራፍ 5-7)፣ አምስቱ ታላላቅ ትምህርቶችና የክርስቶስ ትንሣኤ በስፋት ተዘግበዋል። በቤተ ክርስቲያን የሰው (መልአክ) አምሳያ ምልክት ይሰጠዋል።",
+    "summaryEn": "The Gospel According to St. Matthew presents Jesus Christ as the Promised Messianic King of Israel who fulfills Old Testament prophecies. Matthew highlights the Sermon on the Mount, the Kingdom of Heaven, and the Great Commission. Represented in Orthodox iconography by the Man/Angel.",
+    "themesAm": [
+      "የመሲሑ ንግሥና",
+      "የተራራው ስብከት",
+      "የትንቢት መፈጸም",
+      "የሰማይ መንግሥት"
+    ],
+    "themesEn": [
+      "Messianic Kingship",
+      "Sermon on the Mount",
+      "Prophetic Fulfillment",
+      "Kingdom of Heaven"
+    ],
+    "outline": [
+      {
+        "titleAm": "የክርስቶስ ልደትና ጥምቀት",
+        "titleEn": "Genealogy, Birth & Baptism",
+        "fromChapter": 1,
+        "toChapter": 4
+      },
+      {
+        "titleAm": "የተራራው ስብከትና ተአምራት",
+        "titleEn": "Sermon on the Mount & Miracles",
+        "fromChapter": 5,
+        "toChapter": 9
+      },
+      {
+        "titleAm": "የሐዋርያት መላክና የሰማይ መንግሥት ምሳሌዎች",
+        "titleEn": "Mission of Apostles & Parables",
+        "fromChapter": 10,
+        "toChapter": 20
+      },
+      {
+        "titleAm": "የጌታ ሕማማት፣ ሞትና ትንሣኤ",
+        "titleEn": "Passion, Death & Resurrection",
+        "fromChapter": 21,
+        "toChapter": 28
+      }
+    ]
+  },
+  "60": {
+    "authorAm": "መርቆሬዎስ ማርቆስ (ሐዋርያ)",
+    "authorEn": "Mark the Evangelist",
+    "periodAm": "~55–65 ዓ.ም.",
+    "periodEn": "~55–65 AD",
+    "summaryAm": "ወንጌል ቅዱስ ዘማርቆስ የኢየሱስ ክርስቶስን ኃያል አገልግሎት፣ ተአምራትና አጋንንትን ማውጣት በፈጣንና በሕያው ሁኔታ የሚያቀርብ የመጀመሪያው ወንጌል ነው። ማርቆስ የግብፅና የኢትዮጵያ ቤተ ክርስቲያን መስራችና የመጀመሪያው ፓትሪያርክ ነው። በቤተ ክርስቲያን የአንበሳ አምሳያ ምልክት ይሰጠዋል።",
+    "summaryEn": "The Gospel According to St. Mark, authored by the founder of the See of Alexandria, dynamically presents Christ as the Suffering Servant and Son of God, emphasizing miraculous power and action. Represented by the Lion in Orthodox tradition.",
+    "themesAm": [
+      "ኃያል አገልግሎት",
+      "የአምላክ ልጅነት",
+      "ተአምራት",
+      "የክርስቶስ ሕማማት"
+    ],
+    "themesEn": [
+      "Action & Power",
+      "Son of God",
+      "Miracles",
+      "Servant Passion"
+    ],
+    "outline": [
+      {
+        "titleAm": "የኢየሱስ ጥምቀትና በገሊላ የተደረጉ ተአምራት",
+        "titleEn": "Baptism & Galilean Ministry",
+        "fromChapter": 1,
+        "toChapter": 8
+      },
+      {
+        "titleAm": "ወደ ኢየሩሳሌም መሄድና የሕማማቱ ሳምንት",
+        "titleEn": "Journey to Jerusalem & Passion",
+        "fromChapter": 9,
+        "toChapter": 16
+      }
+    ]
+  },
+  "61": {
+    "authorAm": "ሉቃስ (ባለ መድኃኒት)",
+    "authorEn": "Luke the Physician",
+    "periodAm": "~60–62 ዓ.ም.",
+    "periodEn": "~60–62 AD",
+    "summaryAm": "ወንጌል ቅዱስ ዘሉቃስ የጌታችንን ፍጹም ሰውነት፣ ምሕረትና አዳኝነት በስፋት የሚያብራራ ወንጌል ነው። የቅድስት ድንግል ማርያምን ብስራት፣ ውዳሴ (ማግኒፊካት)፣ የጠፋው ልጅና የቸሩ ሳምራዊ ምሳሌዎችን በልዩ ሁኔታ ያቀርባል። በቤተ ክርስቲያን የላም (የመስዋዕት) አምሳያ ምልክት ይሰጠዋል።",
+    "summaryEn": "The Gospel According to St. Luke, written by the Beloved Physician, offers a compassionate portrait of Christ as Savior of all humanity. Luke provides detailed accounts of the Annunciation to the Virgin Mary and beloved parables. Represented by the Ox/Sacrifice.",
+    "themesAm": [
+      "የሰው ልጅ አዳኝነት",
+      "ምሕረትና ጸሎት",
+      "ቅድስት ድንግል ማርያም",
+      "የመንፈስ ቅዱስ ሥራ"
+    ],
+    "themesEn": [
+      "Universal Salvation",
+      "Mercy & Prayer",
+      "Virgin Mary Nativity",
+      "Holy Spirit"
+    ],
+    "outline": [
+      {
+        "titleAm": "የዮሐንስና የኢየሱስ ልደት ብስራት",
+        "titleEn": "Annunciation & Birth Accounts",
+        "fromChapter": 1,
+        "toChapter": 3
+      },
+      {
+        "titleAm": "የኢየሱስ ስብከት፣ ምሳሌዎችና ተአምራት",
+        "titleEn": "Ministry & Parables",
+        "fromChapter": 4,
+        "toChapter": 18
+      },
+      {
+        "titleAm": "የጌታ ሕማማት፣ ሞትና የኤማሁስ ትንሣኤ",
+        "titleEn": "Passion, Death & Emmaus Resurrection",
+        "fromChapter": 19,
+        "toChapter": 24
+      }
+    ]
+  },
+  "62": {
+    "authorAm": "ዮሐንስ (ወንጌላዊ/ታኦሎጎስ)",
+    "authorEn": "John the Theologian",
+    "periodAm": "~90 ዓ.ም.",
+    "periodEn": "~90 AD",
+    "summaryAm": "ወንጌል ቅዱስ ዘዮሐንስ የቃልን ሥጋ መሆን (ዮሐ 1፡14)፣ የክርስቶስን አምላክነትና የዘላለም ሕይወት ምሥጢር በጥበብ የሚያስተምር መንፈሳዊ ወንጌል ነው። 'እኔ የሕይወት እንጀራ ነኝ'፣ 'እኔ የዓለም ብርሃን ነኝ' የሚሉትን ታላላቅ መለኮታዊ መግለጫዎች ይዟል። በቤተ ክርስቲያን የንስር አምሳያ ምልክት ይሰጠዋል።",
+    "summaryEn": "The Gospel According to St. John the Theologian opens with the eternal divinity of the Logos ('Word made flesh'). John reveals Christ's 'I AM' statements, the Holy Eucharist (ch. 6), and divine mysteries. Represented in Orthodox tradition by the Eagle.",
+    "themesAm": [
+      "ነበበ ቃል (Logos)",
+      "አምላክነት",
+      "የዘላለም ሕይወት",
+      "ቅዱስ ቁርባን"
+    ],
+    "themesEn": [
+      "Divinity of Logos",
+      "Incarnation",
+      "Eternal Life",
+      "Holy Eucharist"
+    ],
+    "outline": [
+      {
+        "titleAm": "የቃል ሥጋ መሆንና የመጀመሪያዎቹ ተአምራት",
+        "titleEn": "Prologue & Signs",
+        "fromChapter": 1,
+        "toChapter": 11
+      },
+      {
+        "titleAm": "የመጨረሻይቱ ራብ ወንጌልና የጌታ ጸሎት",
+        "titleEn": "Upper Room Discourse & Prayer",
+        "fromChapter": 12,
+        "toChapter": 17
+      },
+      {
+        "titleAm": "ሕማማት፣ መስቀልና ትንሣኤ",
+        "titleEn": "Passion, Cross & Resurrection",
+        "fromChapter": 18,
+        "toChapter": 21
+      }
+    ]
+  },
+  "63": {
+    "authorAm": "ሉቃስ",
+    "authorEn": "Luke",
+    "periodAm": "~62–64 ዓ.ም.",
+    "periodEn": "~62–64 AD",
+    "summaryAm": "ግብረ ሐዋርያት ጌታችን ካረገ በኋላ መንፈስ ቅዱስ በጰራቅሊጦስ ቀን በሐዋርያት ላይ ወርዶ ቤተ ክርስቲያን እንደ ተመሠረተችና ወንጌል በጴጥሮስና በጳውሎስ መሪነት ከኢየሩሳሌም እስከ ሮም እንደ ተስፋፋ የሚተርክ ታላቅ የመንፈስ ቅዱስ ግብረ መጽሐፍ ነው።",
+    "summaryEn": "Acts of the Apostles records the birth of the Church on Pentecost through the Holy Spirit and the explosive spread of the Gospel from Jerusalem to Rome through St. Peter and St. Paul.",
+    "themesAm": [
+      "የመንፈስ ቅዱስ ወረደ",
+      "የቤተ ክርስቲያን ምስረታ",
+      "የሐዋርያት ስብከት",
+      "ጰራቅሊጦስ"
+    ],
+    "themesEn": [
+      "Outpouring of Spirit",
+      "Birth of Church",
+      "Apostolic Witness",
+      "Pentecost"
+    ],
+    "outline": [
+      {
+        "titleAm": "ዕርገት፣ ጰራቅሊጦስና የኢየሩሳሌም ቤተ ክርስቲያን",
+        "titleEn": "Ascension, Pentecost & Jerusalem",
+        "fromChapter": 1,
+        "toChapter": 7
+      },
+      {
+        "titleAm": "የወንጌል መስፋፋት በይሁዳና በሰማርያ",
+        "titleEn": "Scattering & Samaria Ministry",
+        "fromChapter": 8,
+        "toChapter": 12
+      },
+      {
+        "titleAm": "የጳውሎስ የሐዋርያነት ጉዞዎችና ወደ ሮም መሄድ",
+        "titleEn": "Paul's Journeys & Journey to Rome",
+        "fromChapter": 13,
+        "toChapter": 28
+      }
+    ]
+  },
+  "64": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~57 ዓ.ም.",
+    "periodEn": "~57 ዓ.ም.",
+    "summaryAm": "በእምነት ስለ መጽደቅ፣ ስለ አዳም ውድቀተ ኃጢአትና በክርስቶስ ስለ ተገኘው የጸጋ ሕይወት የሚያስተምር ታላቅ የትምህርተ ሃይማኖት መልእክት ነው።",
+    "summaryEn": "Paul's theological masterpiece on justification by faith, grace, the Fall of Adam, and life in the Spirit.",
+    "themesAm": [
+      "ጽድቅ በእምነት",
+      "የአምላክ ጸጋ",
+      "መንፈሳዊ ሕይወት"
+    ],
+    "themesEn": [
+      "Justification",
+      "Grace",
+      "Life in Spirit"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ሮሜ",
+        "titleEn": "Epistle of Romans",
+        "fromChapter": 1,
+        "toChapter": 16
+      }
+    ]
+  },
+  "65": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~55 ዓ.ም.",
+    "periodEn": "~55 ዓ.ም.",
+    "summaryAm": "ስለ ቤተ ክርስቲያን አንድነት፣ ስለ ቅዱስ ቁርባን ሥርዓት፣ ስለ መንፈሳዊ ስጦታዎችና ስለ ፍቅር ውዳሴ (ምዕራፍ 13)፣ እንዲሁም ስለ ሙታን ትንሣኤ የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Addresses church unity, Eucharistic purity, spiritual gifts, the Hymn to Love (ch. 13), and Resurrection.",
+    "themesAm": [
+      "አንድነት",
+      "ቅዱስ ቁርባን",
+      "የፍቅር ውዳሴ",
+      "ትንሣኤ"
+    ],
+    "themesEn": [
+      "Church Unity",
+      "Holy Communion",
+      "Love",
+      "Resurrection"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 1 ቆሮንቶስ",
+        "titleEn": "Epistle of 1 Corinthians",
+        "fromChapter": 1,
+        "toChapter": 16
+      }
+    ]
+  },
+  "66": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~56 ዓ.ም.",
+    "periodEn": "~56 ዓ.ም.",
+    "summaryAm": "ስለ ሐዋርያዊ አገልግሎት መከራና ክብር፣ ስለ አዲሱ ቃል ኪዳን አገልጋዮችና ስለ እግዚአብሔር መጽናናት የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Defends Paul's apostolic authority, highlighting divine comfort in suffering and ministers of the New Covenant.",
+    "themesAm": [
+      "ሐዋርያዊ ሥልጣን",
+      "መጽናናት",
+      "አዲስ ቃል ኪዳን"
+    ],
+    "themesEn": [
+      "Apostolic Authority",
+      "Comfort",
+      "New Covenant"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 2 ቆሮንቶስ",
+        "titleEn": "Epistle of 2 Corinthians",
+        "fromChapter": 1,
+        "toChapter": 13
+      }
+    ]
+  },
+  "67": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~48–50 ዓ.ም.",
+    "periodEn": "~48–50 ዓ.ም.",
+    "summaryAm": "በክርስቶስ ስለ ተገኘው መንፈሳዊ ነጻነትና የመንፈስ ፍሬዎች (ፍቅር፣ ደስታ፣ ሰላም...) የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Proclaims Christian freedom in Christ and the cultivation of the Fruits of the Spirit.",
+    "themesAm": [
+      "መንፈሳዊ ነጻነት",
+      "የመንፈስ ፍሬ",
+      "ጸጋ"
+    ],
+    "themesEn": [
+      "Christian Freedom",
+      "Fruit of Spirit",
+      "Grace"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ገላትያ",
+        "titleEn": "Epistle of Galatians",
+        "fromChapter": 1,
+        "toChapter": 6
+      }
+    ]
+  },
+  "68": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~60–62 ዓ.ም.",
+    "periodEn": "~60–62 ዓ.ም.",
+    "summaryAm": "ቤተ ክርስቲያን የክርስቶስ አካል መሆኗን፣ የክርስቲያን መንፈሳዊ የጦር ዕቃና የአንድነት ምስጢር የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Extols the Church as the Body of Christ, cosmic unity, and the Whole Armor of God.",
+    "themesAm": [
+      "የክርስቶስ አካል",
+      "መንፈሳዊ የጦር ዕቃ",
+      "አንድነት"
+    ],
+    "themesEn": [
+      "Body of Christ",
+      "Armor of God",
+      "Unity"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ኤፌሶን",
+        "titleEn": "Epistle of Ephesians",
+        "fromChapter": 1,
+        "toChapter": 6
+      }
+    ]
+  },
+  "69": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~61 ዓ.ም.",
+    "periodEn": "~61 ዓ.ም.",
+    "summaryAm": "በእስር ቤት ሳለ የተጻፈ የደስታ መልእክት ሲሆን፣ የክርስቶስን ትሕትናና ሰው መሆን (ምዕራፍ 2) በግልጽ ያሳያል።",
+    "summaryEn": "The 'Epistle of Joy', celebrating Christ's self-emptying humility (Kenosis) in the Incarnation.",
+    "themesAm": [
+      "ደስታ",
+      "የክርስቶስ ትሕትና (Kenosis)",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "Joy in Lord",
+      "Christ's Humility",
+      "Perseverance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ፊልጵስዩስ",
+        "titleEn": "Epistle of Philippians",
+        "fromChapter": 1,
+        "toChapter": 4
+      }
+    ]
+  },
+  "70": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~61 ዓ.ም.",
+    "periodEn": "~61 ዓ.ም.",
+    "summaryAm": "ክርስቶስ የፍጥረት ሁሉ ራስና የቤተ ክርስቲያን አካል መሆኑን፣ የመለኮት ሙላት በሥጋ በእርሱ እንደሚኖር የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Proclaims the supreme preeminence of Christ, in whom dwells 'all the fullness of the Godhead bodily.'",
+    "themesAm": [
+      "የክርስቶስ የበላይነት",
+      "የመለኮት ሙላት",
+      "ቅድስና"
+    ],
+    "themesEn": [
+      "Preeminence of Christ",
+      "Fullness of Godhead",
+      "Holy Living"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ቆላስይስ",
+        "titleEn": "Epistle of Colossians",
+        "fromChapter": 1,
+        "toChapter": 4
+      }
+    ]
+  },
+  "71": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~51 ዓ.ም.",
+    "periodEn": "~51 ዓ.ም.",
+    "summaryAm": "ስለ ጌታችን ዳግም ምጽአት፣ ስለ ሙታን ትንሣኤና ሁልጊዜ ዝግጁ ሆኖ ስለ መኖር የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Focuses on the Second Coming of Christ, the resurrection of believers, and holy vigilance.",
+    "themesAm": [
+      "ዳግም ምጽአት",
+      "ትንሣኤ",
+      "ትጋት"
+    ],
+    "themesEn": [
+      "Second Coming",
+      "Resurrection",
+      "Vigilance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 1 ተሰሎንቄ",
+        "titleEn": "Epistle of 1 Thessalonians",
+        "fromChapter": 1,
+        "toChapter": 5
+      }
+    ]
+  },
+  "72": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~51–52 ዓ.ም.",
+    "periodEn": "~51–52 ዓ.ም.",
+    "summaryAm": "ከምጽአቱ በፊት ስለሚመጣው የዓመፅ ሰው (ጸረ-ክርስቶስ) እና በጽናት ስለ መቆም የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Clarifies events preceding Christ's return, warning against the Man of Lawlessness and idling.",
+    "themesAm": [
+      "ጸረ-ክርስቶስ",
+      "ዳግም ምጽአት",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "Man of Lawlessness",
+      "Second Coming",
+      "Faithfulness"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 2 ተሰሎንቄ",
+        "titleEn": "Epistle of 2 Thessalonians",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "73": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~63–64 ዓ.ም.",
+    "periodEn": "~63–64 ዓ.ም.",
+    "summaryAm": "ለእራሱ ደቀ መዝሙር ለጢሞቴዎስ የተጻፈ የቤተ ክርስቲያን አመራር፣ የኤጲስ ቆጶሳትና የዲያቆናት መስፈርት መመሪያ መልእክት ነው።",
+    "summaryEn": "Pastoral advice on church order, sound doctrine, and qualifications for Bishops and Deacons.",
+    "themesAm": [
+      "የቤተ ክርስቲያን ሥርዓት",
+      "የክህነት መስፈርት",
+      "እውነተኛ ትምህርት"
+    ],
+    "themesEn": [
+      "Church Order",
+      "Qualifications for Clergy",
+      "Sound Doctrine"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 1 ጢሞቴዎስ",
+        "titleEn": "Epistle of 1 Timothy",
+        "fromChapter": 1,
+        "toChapter": 6
+      }
+    ]
+  },
+  "74": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~66–67 ዓ.ም.",
+    "periodEn": "~66–67 ዓ.ም.",
+    "summaryAm": "የጳውሎስ የመጨረሻ መልእክት ሲሆን፣ 'መልካሙን ገድል ተጋድያለሁ፣ ሩጫውን ጨርሻለሁ' በማለት ለእምነት መሞቱን ያበስራል።",
+    "summaryEn": "Paul's poignant final testament: 'I have fought the good fight, I have finished the race.'",
+    "themesAm": [
+      "መልካሙ ገድል",
+      "የእምነት አክሊል",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "Good Fight",
+      "Crown of Righteousness",
+      "Endurance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 2 ጢሞቴዎስ",
+        "titleEn": "Epistle of 2 Timothy",
+        "fromChapter": 1,
+        "toChapter": 4
+      }
+    ]
+  },
+  "75": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~63–64 ዓ.ም.",
+    "periodEn": "~63–64 ዓ.ም.",
+    "summaryAm": "በቀርጤስ ቤተ ክርስቲያንን ስለ ማደራጀት፣ ስለ ደጋግ ምግባራትና ስለ ቅዱስ ትምህርት የተጻፈ መልእክት ነው።",
+    "summaryEn": "Instructions for setting in order the churches in Crete, emphasizing good works and sound teaching.",
+    "themesAm": [
+      "ደጋግ ምግባራት",
+      "የቤተ ክርስቲያን አደረጃጀት",
+      "ጸጋ"
+    ],
+    "themesEn": [
+      "Good Works",
+      "Church Organization",
+      "Grace"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ቲቶ",
+        "titleEn": "Epistle of Titus",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "76": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~61 ዓ.ም.",
+    "periodEn": "~61 ዓ.ም.",
+    "summaryAm": "ስለ ኰበለለው አገልጋይ ስለ አናሲሞስ ይቅርታና በክርስቶስ ፍቅር እንደ ወንድም ስለ መቀበል የተጻፈ ታላቅ የፍቅር መልእክት ነው።",
+    "summaryEn": "A touching personal plea for forgiveness and Christian brotherhood on behalf of the slave Onesimus.",
+    "themesAm": [
+      "ይቅርታ",
+      "ወንድማማችነት",
+      "የክርስቶስ ፍቅር"
+    ],
+    "themesEn": [
+      "Forgiveness",
+      "Christian Brotherhood",
+      "Love"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ፊልሞና",
+        "titleEn": "Epistle of Philemon",
+        "fromChapter": 1,
+        "toChapter": 1
+      }
+    ]
+  },
+  "77": {
+    "authorAm": "ጳውሎስ",
+    "authorEn": "Paul",
+    "periodAm": "~67–69 ዓ.ም.",
+    "periodEn": "~67–69 ዓ.ም.",
+    "summaryAm": "ክርስቶስ ከመላእክት፣ ከሙሴና ከሊቀ ካህናቱ ከአሮን እንደሚበልጥ፣ እንደ መልከ ጼዴቅ ሹመት የዘላለም ሊቀ ካህናት መሆኑን የሚያስተምር ታላቅ የመለኮት መጽሐፍ ነው።",
+    "summaryEn": "Exalts Jesus Christ as Superior to angels, Moses, and the Levitical priesthood—our Eternal High Priest after the order of Melchizedek.",
+    "themesAm": [
+      "የክርስቶስ ሊቀ ካህናትነት",
+      "እንደ መልከ ጼዴቅ ሹመት",
+      "እምነት (ምዕራፍ 11)"
+    ],
+    "themesEn": [
+      "Christ High Priest",
+      "Order of Melchizedek",
+      "Hall of Faith"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ዕብራውያን",
+        "titleEn": "Epistle of Hebrews",
+        "fromChapter": 1,
+        "toChapter": 13
+      }
+    ]
+  },
+  "78": {
+    "authorAm": "ያዕቆብ (የጌታ ወንድም)",
+    "authorEn": "James the Brother of the Lord",
+    "periodAm": "~45–48 ዓ.ም.",
+    "periodEn": "~45–48 ዓ.ም.",
+    "summaryAm": "እምነት ከሥራ ጋር መሆን እንዳለበት ('ሥራ የሌለው እምነት የሞተ ነው')፣ ስለ ምላስ ቁጥጥርና ስለ ታማኝ ጸሎት የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Stresses that 'faith without works is dead', warning against partiality and control of the tongue.",
+    "themesAm": [
+      "እምነትና ሥራ",
+      "የምላስ ቁጥጥር",
+      "የጸሎት ኃይል"
+    ],
+    "themesEn": [
+      "Faith & Works",
+      "Control of Tongue",
+      "Power of Prayer"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ያዕቆብ",
+        "titleEn": "Epistle of James",
+        "fromChapter": 1,
+        "toChapter": 5
+      }
+    ]
+  },
+  "79": {
+    "authorAm": "ጴጥሮስ (ሐዋርያ)",
+    "authorEn": "Peter the Apostle",
+    "periodAm": "~62–64 ዓ.ም.",
+    "periodEn": "~62–64 ዓ.ም.",
+    "summaryAm": "በመከራ ውስጥ ስላሉ ክርስቲያኖች መጽናናት፣ ስለ ቅድስና ሕይወትና ስለ ሕያው ተስፋ የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Encourages persecuted Christians, emphasizing holy living and our living hope in Christ.",
+    "themesAm": [
+      "ሕያው ተስፋ",
+      "ቅድስና በመከራ",
+      "የእግዚአብሔር ሕዝብ"
+    ],
+    "themesEn": [
+      "Living Hope",
+      "Holiness in Suffering",
+      "Royal Priesthood"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 1 ጴጥሮስ",
+        "titleEn": "Epistle of 1 Peter",
+        "fromChapter": 1,
+        "toChapter": 5
+      }
+    ]
+  },
+  "80": {
+    "authorAm": "ጴጥሮስ (ሐዋርያ)",
+    "authorEn": "Peter the Apostle",
+    "periodAm": "~65–68 ዓ.ም.",
+    "periodEn": "~65–68 ዓ.ም.",
+    "summaryAm": "ከሐሰተኞች አስተማሪዎች መጠበቅ፣ በጸጋ ማደግና ስለ ጌታ ዳግም ምጽአት እርግጠኝነት የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Warns against false teachers, urging growth in grace and affirming the certainty of Christ's return.",
+    "themesAm": [
+      "በጸጋ ማደግ",
+      "የሐሰተኞች ተግሣፅ",
+      "አዲስ ሰማይና ምድር"
+    ],
+    "themesEn": [
+      "Growth in Grace",
+      "Warning Against Heresy",
+      "New Heavens"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 2 ጴጥሮስ",
+        "titleEn": "Epistle of 2 Peter",
+        "fromChapter": 1,
+        "toChapter": 3
+      }
+    ]
+  },
+  "81": {
+    "authorAm": "ዮሐንስ (ወንጌላዊ)",
+    "authorEn": "John the Apostle",
+    "periodAm": "~90 ዓ.ም.",
+    "periodEn": "~90 ዓ.ም.",
+    "summaryAm": "እግዚአብሔር ፍቅር እንደ ሆነ (1ዮሐ 4፡8)፣ በእግዚአብሔር ልጅ በማመን የሚገኝን የዘላለም ሕይወትና ወንድምን መውደድ የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Proclaims that 'God is Love', offering assurance of eternal life and calling believers to mutual love.",
+    "themesAm": [
+      "እግዚአብሔር ፍቅር ነው",
+      "የዘላለም ሕይወት",
+      "ወንድማማችነት"
+    ],
+    "themesEn": [
+      "God is Love",
+      "Assurance of Salvation",
+      "Brotherly Love"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 1 ዮሐንስ",
+        "titleEn": "Epistle of 1 John",
+        "fromChapter": 1,
+        "toChapter": 5
+      }
+    ]
+  },
+  "82": {
+    "authorAm": "ዮሐንስ (ወንጌላዊ)",
+    "authorEn": "John the Apostle",
+    "periodAm": "~90 ዓ.ም.",
+    "periodEn": "~90 ዓ.ም.",
+    "summaryAm": "በእውነትና በፍቅር መመላለስ፣ ከሐሰተኞች ዲያቆናትና ትምህርት መራቅን የሚያስተምር መልእክት ነው።",
+    "summaryEn": "Urges walking in truth and love while guarding against antichrist deceivers.",
+    "themesAm": [
+      "በእውነት መመላለስ",
+      "የፍቅር ትእዛዝ",
+      "ጥንቃቄ"
+    ],
+    "themesEn": [
+      "Walking in Truth",
+      "Commandment of Love",
+      "Vigilance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 2 ዮሐንስ",
+        "titleEn": "Epistle of 2 John",
+        "fromChapter": 1,
+        "toChapter": 1
+      }
+    ]
+  },
+  "83": {
+    "authorAm": "ዮሐንስ (ወንጌላዊ)",
+    "authorEn": "John the Apostle",
+    "periodAm": "~90 ዓ.ም.",
+    "periodEn": "~90 ዓ.ም.",
+    "summaryAm": "ለጋይዮስ የተጻፈ የእንግዳ ተቀባይነትና የጋራ አገልግሎት ምስጋና መልእክት ነው።",
+    "summaryEn": "Commends Gaius for his hospitality to traveling missionaries and faithful service.",
+    "themesAm": [
+      "እንግዳ ተቀባይነት",
+      "ታማኝነት",
+      "እውነት"
+    ],
+    "themesEn": [
+      "Hospitality",
+      "Faithful Service",
+      "Support of Truth"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ 3 ዮሐንስ",
+        "titleEn": "Epistle of 3 John",
+        "fromChapter": 1,
+        "toChapter": 1
+      }
+    ]
+  },
+  "84": {
+    "authorAm": "ይሁዳ (የያዕቆብ ወንድም)",
+    "authorEn": "Jude Brother of James",
+    "periodAm": "~65–80 ዓ.ም.",
+    "periodEn": "~65–80 ዓ.ም.",
+    "summaryAm": "ለሃይማኖት እንድንጋደል፣ ከሐሰተኞች ትምህርት እንድንጠበቅ የሚመክርና የሄኖክን ትንቢት የሚጠቅስ መልእክት ነው።",
+    "summaryEn": "Exhorts believers to 'contend earnestly for the faith', referencing Enoch's prophecy.",
+    "themesAm": [
+      "ለሃይማኖት መጋደል",
+      "የሄኖክ ትንቢት",
+      "ጥንቃቄ"
+    ],
+    "themesEn": [
+      "Contending for Faith",
+      "Prophecy of Enoch",
+      "Preservation in God"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ይሁዳ",
+        "titleEn": "Epistle of Jude",
+        "fromChapter": 1,
+        "toChapter": 1
+      }
+    ]
+  },
+  "85": {
+    "authorAm": "ዮሐንስ (ታኦሎጎስ)",
+    "authorEn": "John the Theologian",
+    "periodAm": "~95 ዓ.ም.",
+    "periodEn": "~95 ዓ.ም.",
+    "summaryAm": "በፍጥሞ ደሴት ለነበሩት ለ7ቱ አብያተ ክርስቲያናት የተላከ፣ የሰማያዊ አምልኮ፣ የክርስቶስ ድል በዲያብሎስ ላይና የአዲሲቱ ኢየሩሳሌም ወረደ ታላቅ ራእይ ነው።",
+    "summaryEn": "The ultimate Book of Hope detailing heavenly liturgy, the Lamb on the Throne, victory over Satan, and the New Jerusalem descending from heaven.",
+    "themesAm": [
+      "የበጉ አምልኮ",
+      "የክርስቶስ ድል",
+      "አዲሲቱ ኢየሩሳሌም",
+      "ራእይ"
+    ],
+    "themesEn": [
+      "Worship of Lamb",
+      "Triumph of Christ",
+      "New Jerusalem",
+      "Apocalypse"
+    ],
+    "outline": [
+      {
+        "titleAm": "መልእክተ ራዕየ ዮሐንስ",
+        "titleEn": "Epistle of Revelation / Apocalypse",
+        "fromChapter": 1,
+        "toChapter": 22
+      }
+    ]
+  },
+  "86": {
+    "authorAm": "ጌታችን ኢየሱስ ክርስቶስ",
+    "authorEn": "Jesus Christ",
+    "periodAm": "~300 ዓ.ም.",
+    "periodEn": "~300 ዓ.ም.",
+    "summaryAm": "ጌታችን ከትንሣኤ በኋላ ለሐዋርያት ያስተማራቸውን ምስጢራትና የቤተ ክርስቲያን ሥርዓት የያዘ መጽሐፍ ነው።",
+    "summaryEn": "Post-Resurrection teachings of Christ to His Apostles regarding church hierarchy and holy mysteries.",
+    "themesAm": [
+      "የትንሣኤ ትምህርት",
+      "ምስጢራተ ቤተ ክርስቲያን",
+      "ሥርዓት"
+    ],
+    "themesEn": [
+      "Post-Resurrection Teaching",
+      "Sacraments",
+      "Liturgy"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ኪዳን",
+        "titleEn": "Book of Book of Covenant (Clement)",
+        "fromChapter": 1,
+        "toChapter": 2
+      }
+    ]
+  },
+  "87": {
+    "authorAm": "ሐዋርያት",
+    "authorEn": "The Apostles",
+    "periodAm": "~300 ዓ.ም.",
+    "periodEn": "~300 ዓ.ም.",
+    "summaryAm": "የቤተ ክርስቲያን ሕግጋት፣ የካህናት ሥርዓትና የቅዳሴ መመሪያዎችን የያዘ የሐዋርያት ሲኖዶስ መጽሐፍ ነው።",
+    "summaryEn": "Collection of Apostolic Canons establishing ecclesiastical law, ordination rules, and liturgical order in EOTC.",
+    "themesAm": [
+      "የሐዋርያት ሕግ",
+      "የክህነት ሥርዓት",
+      "ቤተ ክርስቲያን"
+    ],
+    "themesEn": [
+      "Apostolic Canons",
+      "Clergy Rules",
+      "Ecclesiology"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ሲኖዶስ",
+        "titleEn": "Book of Sinodos (Apostolic Canons)",
+        "fromChapter": 1,
+        "toChapter": 4
+      }
+    ]
+  },
+  "88": {
+    "authorAm": "ዮሴፍ ወልደ ኮርዮን",
+    "authorEn": "Joseph ben Gorion",
+    "periodAm": "~350 ዓ.ም.",
+    "periodEn": "~350 AD",
+    "summaryAm": "መጽሐፈ ዮሴፍ ወልደ ኮርዮን የሁለተኛው ቤተ መቅደስ ዘመንን፣ የሐስሞናውያንን ንግሥና፣ የሄሮድስን ዘመንና በ70 ዓ.ም. የኢየሩሳሌምን መጥፋት በሰፊው የሚያስተምር የታሪክ መጽሐፍ ነው።",
+    "summaryEn": "Josippon (Book of Joseph ben Gorion) provides a detailed chronicle of Jewish history during the Second Temple period up to the Siege and Destruction of Jerusalem in 70 AD.",
+    "themesAm": [
+      "የኢየሩሳሌም ታሪክ",
+      "የቤተ መቅደስ ውድቀት",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "Second Temple History",
+      "Destruction of Jerusalem",
+      "Jewish Resistance"
+    ],
+    "outline": [
+      {
+        "titleAm": "የሐስሞናውያን ታሪክና የኢየሩሳሌም ውድቀት",
+        "titleEn": "Hasmonean Era & Fall of Jerusalem",
+        "fromChapter": 1,
+        "toChapter": 8
+      }
+    ]
+  },
+  "89": {
+    "authorAm": "ሐዋርያት",
+    "authorEn": "The Apostles",
+    "periodAm": "~250 ዓ.ም.",
+    "periodEn": "~250 ዓ.ም.",
+    "summaryAm": "የሐዋርያት የትምህርትና የሥነ ምግባር መመሪያ፣ የኤጲስ ቆጶሳትና የምእመናን ተግባር መጽሐፍ ነው።",
+    "summaryEn": "Apostolic teaching manual covering pastoral care, charity, fasting, and liturgical discipline.",
+    "themesAm": [
+      "የሐዋርያት ትምህርት",
+      "ምፅዋትና ጾም",
+      "ሥነ ምግባር"
+    ],
+    "themesEn": [
+      "Apostolic Teaching",
+      "Charity & Fasting",
+      "Pastoral Care"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ዲድስቅልያ",
+        "titleEn": "Book of Didascalia",
+        "fromChapter": 1,
+        "toChapter": 43
+      }
+    ]
+  },
+  "90": {
+    "authorAm": "ቅዱስ ቀሌምንጦስ",
+    "authorEn": "St. Clement of Rome",
+    "periodAm": "~150 ዓ.ም.",
+    "periodEn": "~150 ዓ.ም.",
+    "summaryAm": "ቅዱስ ቀሌምንጦስ ከጴጥሮስ የተቀበላቸውን ምሥጢራትና የዓለምን ታሪክ የሚያብራራ መጽሐፍ ነው።",
+    "summaryEn": "Mystical discourses and revelations entrusted by St. Peter to St. Clement of Rome.",
+    "themesAm": [
+      "የጴጥሮስ ትምህርት",
+      "ምስጢር",
+      "ሃይማኖት"
+    ],
+    "themesEn": [
+      "Petrine Tradition",
+      "Mystical Wisdom",
+      "Faith"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ቀሌምንጦስ",
+        "titleEn": "Book of Clement (Qelementos)",
+        "fromChapter": 1,
+        "toChapter": 5
+      }
+    ]
+  },
+  "91": {
+    "authorAm": "ሐዋርያት",
+    "authorEn": "The Apostles",
+    "periodAm": "~250 ዓ.ም.",
+    "periodEn": "~250 ዓ.ም.",
+    "summaryAm": "የሐዋርያት የትምህርትና የሥነ ምግባር መመሪያ፣ የኤጲስ ቆጶሳትና የምእመናን ተግባር መጽሐፍ ነው።",
+    "summaryEn": "Apostolic teaching manual covering pastoral care, charity, fasting, and liturgical discipline.",
+    "themesAm": [
+      "የሐዋርያት ትምህርት",
+      "ምፅዋትና ጾም",
+      "ሥነ ምግባር"
+    ],
+    "themesEn": [
+      "Apostolic Teaching",
+      "Charity & Fasting",
+      "Pastoral Care"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ዲድስቅልያ",
+        "titleEn": "Book of Didascalia",
+        "fromChapter": 1,
+        "toChapter": 43
+      }
+    ]
+  },
+  "92": {
+    "authorAm": "ዮሴፍ",
+    "authorEn": "Joseph",
+    "periodAm": "~350 ዓ.ም.",
+    "periodEn": "~350 ዓ.ም.",
+    "summaryAm": "የአይሁድ ታሪክና የሁለተኛው ቤተ መቅደስ ታሪክ መጽሐፍ ነው።",
+    "summaryEn": "Historical record of the Second Temple period and Jewish struggles.",
+    "themesAm": [
+      "ታሪክ",
+      "ቤተ መቅደስ",
+      "ጽናት"
+    ],
+    "themesEn": [
+      "History",
+      "Temple",
+      "Perseverance"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ ዮሴፍ ወልደ ኮርዮን (ዛሬ)",
+        "titleEn": "Book of Josippon Extra",
+        "fromChapter": 1,
+        "toChapter": 8
+      }
+    ]
+  },
+  "93": {
+    "authorAm": "መቃብያን",
+    "authorEn": "Maccabees",
+    "periodAm": "~100 ዓ.ዓ.",
+    "periodEn": "~100 ዓ.ዓ.",
+    "summaryAm": "በኢትዮጵያ ካኖን ያለ የሞዓብና የብንያም መቃብያን ታሪክ ነው።",
+    "summaryEn": "Ethiopic traditional account of Maccabean martyr history.",
+    "themesAm": [
+      "ተጋድሎ",
+      "ጽናት",
+      "እምነት"
+    ],
+    "themesEn": [
+      "Martyrdom",
+      "Endurance",
+      "Faith"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ መቃብያን ካልዕ (ኢትዮጵያ)",
+        "titleEn": "Book of Ethiopic 2 Maccabees",
+        "fromChapter": 1,
+        "toChapter": 21
+      }
+    ]
+  },
+  "94": {
+    "authorAm": "መቃብያን",
+    "authorEn": "Maccabees",
+    "periodAm": "~100 ዓ.ዓ.",
+    "periodEn": "~100 ዓ.ዓ.",
+    "summaryAm": "በኢትዮጵያ ካኖን ያለ የጽድቅና የሃይማኖት ተጋድሎ መጽሐፍ ነው።",
+    "summaryEn": "Ethiopic account of righteousness and spiritual warfare.",
+    "themesAm": [
+      "ጽድቅ",
+      "ተጋድሎ",
+      "እምነት"
+    ],
+    "themesEn": [
+      "Righteousness",
+      "Spiritual Warfare",
+      "Faith"
+    ],
+    "outline": [
+      {
+        "titleAm": "መጽሐፈ መጽሐፈ መቃብያን ሣልስ (ኢትዮጵያ)",
+        "titleEn": "Book of Ethiopic 3 Maccabees",
+        "fromChapter": 1,
+        "toChapter": 10
+      }
+    ]
+  }
+}

@@ -9,7 +9,10 @@ import '../../../../core/theme/app_typography.dart';
 import '../../data/models/book.dart';
 import '../../data/models/book_index_entry.dart';
 import '../../data/reading_models.dart';
+import '../../data/repositories/bible_repository.dart' show BibleRepository;
 import '../../providers/reading_progress_providers.dart';
+import '../widgets/edition_switcher.dart';
+import '../widgets/reader/constants.dart';
 import 'book_reader_page.dart';
 import '../../../search/presentation/pages/search_tab.dart';
 
@@ -34,13 +37,78 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   Set<int> _readChapters = {};
   double _bookProgress = 0;
 
+  BibleRepository? _repo;
+
+  /// The book as the active edition names it — re-resolved on every switch.
+  late BookIndexEntry _entry;
+
+  /// Set when an edition switch left this book outside the active canon and
+  /// the reader was on top, so the exit is deferred until we are visible again.
+  bool _leaveWhenVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _entry = widget.entry;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
+      // Chapter counts and text are edition-specific, and the edition can now
+      // be switched from this very screen, so follow the repository.
+      _repo = BibleRepositoryProvider.of(context);
+      _repo!.addListener(_onEditionChanged);
       _loadBook();
     }
+  }
+
+  @override
+  void dispose() {
+    _repo?.removeListener(_onEditionChanged);
+    super.dispose();
+  }
+
+  /// Reloads the book against the newly active edition, or leaves the screen
+  /// when that edition's canon does not carry it — the protestant editions
+  /// have no deuterocanon, so this is an ordinary outcome, not an error.
+  Future<void> _onEditionChanged() async {
+    final repo = _repo;
+    if (repo == null || !mounted) return;
+
+    final entry = await repo.bookById(_entry.id);
+    if (!mounted) return;
+
+    if (entry == null) {
+      final s = L10n.of(context);
+      final edition = await repo.activeEdition();
+      if (!mounted) return;
+      final title = edition == null ? '' : editionTitleFor(edition, s);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(s.editionBookMissing(title))),
+        );
+      _leaveWhenVisible = true;
+      _exitIfVisible();
+      return;
+    }
+
+    setState(() {
+      _entry = entry;
+      _loading = true;
+    });
+    await _loadBook();
+  }
+
+  /// Pops back to the book list once this route is the visible one.
+  void _exitIfVisible() {
+    if (!_leaveWhenVisible || !mounted) return;
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    _leaveWhenVisible = false;
+    Navigator.pop(context);
   }
 
   Future<void> _loadBook() async {
@@ -56,14 +124,14 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     final repo = container.read(readingProgressRepositoryProvider);
 
     final book =
-        await BibleRepositoryProvider.of(context).loadBook(widget.entry);
+        await BibleRepositoryProvider.of(context).loadBook(_entry);
     if (!mounted) return;
 
     final pos = await repo.getReadingPosition();
     if (!mounted) return;
 
     final readSet =
-        await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
+        await repo.readChapterNumbersForBook(_entry.id);
     if (!mounted) return;
 
     final p = _deriveProgress(book, pos, readSet);
@@ -97,7 +165,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     if (!mounted) return;
 
     final readSet =
-        await repo.readChapterNumbersForBook(widget.entry.bookNameEn);
+        await repo.readChapterNumbersForBook(_entry.id);
     if (!mounted) return;
 
     final p = _deriveProgress(book, pos, readSet);
@@ -130,7 +198,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
   }) _deriveProgress(Book book, ReadingPosition? pos, Set<int> readChapters) {
     var lastIdx = 0;
     var lastVerse = 1;
-    if (pos != null && pos.bookId == widget.entry.bookNameEn) {
+    if (pos != null && pos.bookId == _entry.id) {
       final i =
           book.chapters.indexWhere((c) => c.chapterNumber == pos.chapter);
       if (i >= 0) lastIdx = i;
@@ -163,13 +231,19 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
       context,
       MaterialPageRoute<void>(
         builder: (_) => ReaderScreen(
-          entry: widget.entry,
+          entry: _entry,
           initialChapter: idx,
           initialChapterNumber: chNum,
         ),
       ),
     ).then((_) async {
       if (!mounted) return;
+      // The reader can switch editions too; if that dropped this book from the
+      // canon, leave now that this route is back on top.
+      if (_leaveWhenVisible) {
+        _exitIfVisible();
+        return;
+      }
       await _refreshChapterReadingUi();
     });
   }
@@ -179,7 +253,7 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
     final s = L10n.of(context);
     final useGeez = Settings.of(context).useGeezNumbers;
     final isAmharic = s is AmStrings;
-    final total = _book?.chapters.length ?? (widget.entry.chapterCount ?? 0);
+    final total = _book?.chapters.length ?? (_entry.chapterCount ?? 0);
 
     final c = context.colors;
     return Scaffold(
@@ -189,13 +263,13 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _TopBar(
-              entry: widget.entry,
+              entry: _entry,
               s: s,
               isAmharic: isAmharic,
               onSearch: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => SearchTab(initialBook: widget.entry),
+                  builder: (_) => SearchTab(initialBook: _entry),
                 ),
               ),
             ),
@@ -204,52 +278,266 @@ class _ChapterChooserPageState extends ConsumerState<ChapterChooserPage> {
                 child: Center(child: CircularProgressIndicator(color: c.primary)),
               )
             else ...[
-              _BookInfoCard(
-                entry: widget.entry,
-                totalChapters: total,
-                progress: _bookProgress,
-                s: s,
-                useGeez: useGeez,
-                isAmharic: isAmharic,
-              ),
-              const SizedBox(height: 10),
-              _ContinueCard(
-                s: s,
-                useGeez: useGeez,
-                lastChapterNum: _lastChapterNum,
-                lastVerseNum: _lastVerseNum,
-                onContinue: () => _openChapter(_lastChapterIdx),
-              ),
-              const SizedBox(height: 14),
-              _LegendRow(s: s),
-              const SizedBox(height: 10),
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                child: ListView(
                   physics: const BouncingScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.88,
-                  ),
-                  itemCount: _book!.chapters.length,
-                  itemBuilder: (ctx, i) {
-                    final chNum = _book!.chapters[i].chapterNumber;
-                    return _ChapterCell(
-                      chapterNum: chNum,
-                      isNext: _nextChapterIdx >= 0 && i == _nextChapterIdx,
-                      isRead: _readChapters.contains(chNum),
-                      isBookmarked: false,
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _BookInfoCard(
+                      entry: _entry,
+                      totalChapters: total,
+                      progress: _bookProgress,
+                      s: s,
                       useGeez: useGeez,
-                      onTap: () => _openChapter(i),
-                    );
-                  },
+                      isAmharic: isAmharic,
+                    ),
+                    const SizedBox(height: 6),
+                    BookIntroductionCard(
+                      entry: _entry,
+                      s: s,
+                      isAmharic: isAmharic,
+                      onSelectChapter: _openChapter,
+                    ),
+                    const SizedBox(height: 10),
+                    _ContinueCard(
+                      s: s,
+                      useGeez: useGeez,
+                      lastChapterNum: _lastChapterNum,
+                      lastVerseNum: _lastVerseNum,
+                      onContinue: () => _openChapter(_lastChapterIdx),
+                    ),
+                    const SizedBox(height: 14),
+                    _LegendRow(s: s),
+                    const SizedBox(height: 10),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 0.88,
+                      ),
+                      itemCount: _book!.chapters.length,
+                      itemBuilder: (ctx, i) {
+                        final chNum = _book!.chapters[i].chapterNumber;
+                        return _ChapterCell(
+                          chapterNum: chNum,
+                          isNext: _nextChapterIdx >= 0 && i == _nextChapterIdx,
+                          isRead: _readChapters.contains(chNum),
+                          isBookmarked: false,
+                          useGeez: useGeez,
+                          onTap: () => _openChapter(i),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Book introduction card ───────────────────────────────────────────────────
+
+class BookIntroductionCard extends StatefulWidget {
+  const BookIntroductionCard({
+    super.key,
+    required this.entry,
+    required this.s,
+    required this.isAmharic,
+    required this.onSelectChapter,
+  });
+
+  final BookIndexEntry entry;
+  final AppStrings s;
+  final bool isAmharic;
+  final ValueChanged<int> onSelectChapter;
+
+  @override
+  State<BookIntroductionCard> createState() => _BookIntroductionCardState();
+}
+
+class _BookIntroductionCardState extends State<BookIntroductionCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = BibleRepositoryProvider.of(context);
+    final locale = widget.isAmharic ? 'am' : 'en';
+    final intro = repo.getIntroduction(widget.entry.bookNumber, locale: locale);
+
+    if (intro == null) return const SizedBox.shrink();
+
+    final c = context.colors;
+    final settings = Settings.of(context);
+    final fontIndex = settings.bodyFontIndex.clamp(0, readerFonts.length - 1);
+    final fontFamily = readerFonts[fontIndex];
+    final summaryFontSize = (settings.fontSize * 0.82).clamp(12.0, 24.0);
+
+    final metaList = <String>[];
+    if (intro.author.isNotEmpty) metaList.add('${widget.s.author}: ${intro.author}');
+    if (intro.period.isNotEmpty) metaList.add('${widget.s.period}: ${intro.period}');
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_stories_rounded, size: 18, color: c.primary),
+              const SizedBox(width: 8),
+              Text(
+                widget.s.aboutThisBook,
+                style: AppTypography.amharicLabel.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: c.textOnParchment,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(60, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () => setState(() => _expanded = !_expanded),
+                child: Text(
+                  _expanded ? widget.s.showLess : widget.s.readMore,
+                  style: AppTypography.amharicCaption.copyWith(
+                    color: c.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (metaList.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              metaList.join('  •  '),
+              style: AppTypography.amharicCaption.copyWith(
+                color: c.textMuted,
+                fontSize: 12,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            intro.summary,
+            style: AppTypography.amharicBody.copyWith(
+              fontFamily: fontFamily,
+              color: c.textOnParchment,
+              fontSize: summaryFontSize,
+              height: 1.45,
+            ),
+            maxLines: _expanded ? null : 3,
+            overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+          ),
+          if (_expanded) ...[
+            if (intro.themes.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                widget.s.themes,
+                style: AppTypography.amharicCaption.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: c.textOnParchment,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: intro.themes.map((theme) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: c.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: c.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      theme,
+                      style: AppTypography.amharicCaption.copyWith(
+                        color: c.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+            if (intro.outline.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                widget.s.outline,
+                style: AppTypography.amharicCaption.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: c.textOnParchment,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ...intro.outline.map((item) {
+                final chLabel = item.fromChapter == item.toChapter
+                    ? '${widget.s.chapterAbbr} ${item.fromChapter}'
+                    : '${widget.s.chapterAbbr} ${item.fromChapter}–${item.toChapter}';
+                return InkWell(
+                  onTap: () => widget.onSelectChapter(item.fromChapter - 1),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: c.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            chLabel,
+                            style: AppTypography.amharicCaption.copyWith(
+                              fontSize: 11,
+                              color: c.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.amharicCaption.copyWith(
+                              color: c.textOnParchment,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ],
+        ],
       ),
     );
   }
@@ -307,6 +595,7 @@ class _TopBar extends StatelessWidget {
               ],
             ),
           ),
+          const EditionChip(),
           IconButton(
             icon: Icon(Icons.search_rounded, size: 20, color: c.textMuted),
             onPressed: onSearch,
@@ -583,36 +872,39 @@ class _LegendRow extends StatelessWidget {
     final c = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          _LegendDot(color: c.primary, label: s.legendNextChapter),
-          const SizedBox(width: 10),
-          _LegendIcon(
-            icon: Icons.menu_book_rounded,
-            color: c.primary,
-            label: s.chapSelectorProgressSuffix,
-          ),
-          const SizedBox(width: 10),
-          _LegendIcon(
-            icon: Icons.book_rounded,
-            color: c.textMuted,
-            label: s.legendUnread,
-          ),
-          const SizedBox(width: 10),
-          _LegendIcon(
-            icon: Icons.bookmark_rounded,
-            color: c.accentDark,
-            label: s.legendBookmark,
-          ),
-          const Spacer(),
-          Text(
-            s.chapSelectorChapNosLabel,
-            style: AppTypography.englishLabel.copyWith(
-              color: c.textCaption,
-              fontSize: 10,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _LegendDot(color: c.primary, label: s.legendNextChapter),
+            const SizedBox(width: 10),
+            _LegendIcon(
+              icon: Icons.menu_book_rounded,
+              color: c.primary,
+              label: s.chapSelectorProgressSuffix,
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            _LegendIcon(
+              icon: Icons.book_rounded,
+              color: c.textMuted,
+              label: s.legendUnread,
+            ),
+            const SizedBox(width: 10),
+            _LegendIcon(
+              icon: Icons.bookmark_rounded,
+              color: c.accentDark,
+              label: s.legendBookmark,
+            ),
+            const SizedBox(width: 14),
+            Text(
+              s.chapSelectorChapNosLabel,
+              style: AppTypography.englishLabel.copyWith(
+                color: c.textCaption,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

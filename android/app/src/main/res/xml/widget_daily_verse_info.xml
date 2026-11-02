@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  updatePeriodMillis is 0 on purpose. The system clamps it to 30 minutes
+  minimum and skips it entirely in Doze, so it can neither be relied on for
+  freshness nor made cheap enough to leave on. Dart drives every update
+  instead, from app launch and resume.
+
+  The four size attributes are not interchangeable and all four are needed:
+
+  - minWidth/minHeight      the size the widget is *placed* at (pre-API 31)
+  - targetCellWidth/Height  the same thing on API 31+, in cells
+  - minResizeWidth/Height   how far down the user may drag it
+  - maxResizeWidth/Height   how far up (API 31+)
+
+  Without the minResize pair the launcher takes minWidth as the floor, so the
+  widget cannot be made any smaller than the size it arrived at — which reads
+  on the home screen as a widget that simply refuses to be resized. The layout
+  is driven from the resulting box at runtime, so every size in this range is a
+  size the card is laid out for.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:maxResizeWidth="360dp"
+    android:maxResizeHeight="250dp"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:initialLayout="@layout/widget_daily_verse"
+    android:previewLayout="@layout/widget_daily_verse"
+    android:description="@string/widget_daily_verse_description"
+    android:updatePeriodMillis="0" />

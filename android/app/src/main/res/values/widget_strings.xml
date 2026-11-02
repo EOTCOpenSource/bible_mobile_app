@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget chrome only — the labels baked into the layout, not the content.
+
+  Everything that varies (the verse, the book, the streak count) is written
+  from Dart through home_widget and localised there, where AppStrings and the
+  Ge'ez numeral helpers live. These few are static, and the widget picker shows
+  them before the app has ever run, so they cannot come from Dart.
+
+  Amharic is the default locale of this app, so it lives here in values/ and
+  English goes in values-en/.
+-->
+<resources>
+    <string name="widget_daily_verse_label">የዕለቱ ቃል</string>
+    <string name="widget_daily_verse_description">የዕለቱን የመጽሐፍ ቅዱስ ቃል በመነሻ ገጽዎ ላይ ይመልከቱ።</string>
+    <string name="widget_daily_verse_badge">የዕለቱ ቃል</string>
+
+    <string name="widget_continue_reading_label">ንባብ ቀጥል</string>
+    <string name="widget_continue_reading_description">ያቆሙበትን ቦታ በአንድ ንክኪ ይቀጥሉ።</string>
+    <string name="widget_continue_label">ንባብ ቀጥል</string>
+
+    <string name="widget_streak_label">ተከታታይ ንባብ</string>
+    <string name="widget_streak_description">ተከታታይ የንባብ ቀኖችዎን ይከታተሉ።</string>
+
+    <string name="widget_open_app">መተግበሪያውን ይክፈቱ</string>
+    <string name="widget_start_reading">ንባብ ይጀምሩ</string>
+</resources>

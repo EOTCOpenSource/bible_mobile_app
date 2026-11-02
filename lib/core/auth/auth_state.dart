@@ -272,6 +272,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         longestStreak: mergedLongest,
         longestStreakStart: local.longestStreakStart,
         longestStreakEnd: local.longestStreakEnd,
+        // Freezes are earned on this device and the server does not track
+        // them, so a merge must carry the local balance rather than zero it.
+        freezeCredits: local.freezeCredits,
       );
 
       _ref.invalidate(readingStreakStateProvider);

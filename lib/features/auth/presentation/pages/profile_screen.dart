@@ -156,8 +156,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final s = L10n.of(context);
-    final user = ref.watch(authStateProvider).user;
-    if (user == null) return const SizedBox.shrink();
+    final auth = ref.watch(authStateProvider);
+    final user = auth.user;
+
+    // Session restore runs on launch, so opening this page early used to paint
+    // a blank screen and stay blank. Separate the two reasons `user` is null:
+    // still checking, versus checked and signed out.
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: c.parchment,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _PlainTopBar(title: s.profileTitle, colors: c),
+              Expanded(
+                child: Center(
+                  child: auth.isUnknown
+                      ? CircularProgressIndicator(color: c.primary)
+                      : Text(
+                          s.profileSignedOut,
+                          style: AppTypography.amharicBody
+                              .copyWith(color: c.textMuted, fontSize: 14),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: c.parchment,
@@ -279,6 +306,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 // ── Top bar ────────────────────────────────────────────────────────────────
+
+/// Back button and title only — the loading and signed-out states have no user
+/// to hang the overflow menu off.
+class _PlainTopBar extends StatelessWidget {
+  const _PlainTopBar({required this.title, required this.colors});
+  final String title;
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: c.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: c.borderSubtle),
+              ),
+              alignment: Alignment.center,
+              child: Icon(Icons.chevron_left_rounded,
+                  color: c.textOnParchment, size: 22),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            title,
+            style: AppTypography.amharicLabel
+                .copyWith(color: c.textOnParchment, fontSize: 15),
+          ),
+          const Spacer(),
+          const SizedBox(width: 38),
+        ],
+      ),
+    );
+  }
+}
 
 class _TopBar extends ConsumerWidget {
   const _TopBar({required this.user, required this.colors});
@@ -504,12 +574,16 @@ class _EditableAvatarSection extends StatelessWidget {
 
     Widget avatar;
     if (user.avatar != null) {
+      // Initials stand in while the photo is in flight as well as when it
+      // fails, so a slow network shows a filled circle rather than a hole.
       avatar = ClipOval(
         child: Image.network(
           user.avatar!,
           width: 96,
           height: 96,
           fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) =>
+              progress == null ? child : _initialsCircle(c),
           errorBuilder: (context, e, st) => _initialsCircle(c),
         ),
       );
